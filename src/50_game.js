@@ -284,6 +284,7 @@ function update(dt){
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
   P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);P.vx*=Math.pow(.02,dt);
+  if(!S.adv&&G.shieldTier>=0)P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);
   if(P.cd>0)P.cd-=dt;if(P.atk>0)P.atk-=dt;if(P.inv>0)P.inv-=dt;if(P.hurt>0)P.hurt-=dt;if(P.ab>0)P.ab-=dt;if(P.shield>0)P.shield=Math.max(0,P.shield-dt*1.5);
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
   if(keys.atk)attack();if(keys.abl)useAbility();if(keys.use)useMissionObject();
