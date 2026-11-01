@@ -322,6 +322,7 @@ function heroOpts(){
   return o;
 }
 function drawScene(cam){
+  g.save();if(S.adv){g.translate(0,-(S.camY||0));adventureWorldDraw(cam);}
   if(S.activeInteract){
     const ix=Math.round(S.activeInteract.x-cam);
     R(ix-9,GY-24,18,24,'#493b29');R(ix-7,GY-22,14,19,'#c9a24a');
@@ -342,14 +343,21 @@ function drawScene(cam){
     R(x-4,y-8,8,8,'#17101a');R(x-3,y-7,6,6,col);R(x-3,y-7,6,2,sh(col,.45));R(x-1,y-5,2,2,'#fff');
     if(d.it.rar>=2&&Math.sin(S.t*8+d.x)>.6)R(x+4,y-12,1,3,'#fff');}
   if(S.npc){const o={...NPCS[S.npc.k],w:-1,ph:0};drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);}
-  FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
+  if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
-  drawPerson(P.x-cam,GY,P.face,heroOpts());
+  drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
+  if(keys.block&&G.shieldTier>=0){
+    const x=Math.round(P.x-cam+P.face*10),y=Math.round(GY+(P.py||0)-27);
+    R(x-5,y-11,10,23,G.shieldTier>=2?'#5ba7ed':G.shieldTier===1?'#9295a2':'#8a643a');
+    R(x-3,y-9,6,18,'#34475d');R(x-1,y-7,2,12,'#f0d48b');
+    if(G.shieldTier>=2){g.strokeStyle='#9feaff';g.strokeRect(x-8,y-13,16,27);}
+  }
   if(P.shield>0){g.strokeStyle='rgba(159,209,255,.7)';g.lineWidth=1;g.strokeRect(Math.round(P.x-cam)-10.5,GY-50.5,21,52);}
   for(const pr of proj){const x=Math.round(pr.x-cam),y=pr.y,f=pr.face;
     if(pr.type==='arrow'){R(x-4,y,9,1,'#d8c8a0');R(f>0?x+5:x-6,y-1,2,3,'#ccc');R(f>0?x-5:x+4,y-1,1,3,pr.hostile?'#a33':'#e0e0e0');}
     else if(pr.type==='dawn'){R(x-4,y-3,9,7,'rgba(255,230,120,.3)');R(x-3,y-2,7,5,'#ffe27a');R(x-2,y-1,5,3,'#fff');R(x-7*f,y,4,1,'rgba(255,240,150,.6)');}
     else{R(x-4,y-3,9,7,'rgba(180,90,255,.3)');R(x-3,y-2,7,5,'#6a22b0');R(x-2,y-1,5,3,'#d27aff');R(x-7*f,y,4,1,'rgba(180,90,255,.6)');}}
+  g.restore();
 }
 function draw(){
   const pk=S.mode==='prologue'?'ash':S.pal;buildLayers(pk);if(!LAY)return;
