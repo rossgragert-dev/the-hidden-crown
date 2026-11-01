@@ -19,7 +19,7 @@ const MISSIONS=[
  areas:[
   {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'armory',seed:3,
     combatAt:[{x:560,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.5}]}],
-    platforms:[{x:320,w:112,y:-26},{x:600,w:165,y:-54},{x:780,w:78,y:-28}],
+    platforms:[{x:320,w:112,y:-26,kind:'workbench'},{x:600,w:165,y:-54,kind:'loft'},{x:780,w:78,y:-28,kind:'rack'}],
     objects:[
      {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'outfit',rarity:1},
      {kind:'key',label:'IRON KEY',x:368,y:-26,flag:'squireArmoryKey'},
@@ -39,7 +39,7 @@ const MISSIONS=[
    ]}]},
   {id:'stables',title:'The Castle Stables',reg:'hearth',explore:{length:995,scenery:'stable',seed:9,
     combatAt:[{x:300,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.4},{k:'rat',s:1,d:.9}]}],
-    platforms:[{x:170,w:115,y:-23},{x:520,w:165,y:-36},{x:740,w:110,y:-26}],
+    platforms:[{x:170,w:115,y:-23,kind:'hay'},{x:520,w:165,y:-36,kind:'hayloft'},{x:740,w:110,y:-26,kind:'tackbench'}],
     objects:[
      {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
      {kind:'horse',label:'GROOM HALVARD HORSE',x:416,y:0,flag:'squireHorse'},
@@ -53,7 +53,7 @@ const MISSIONS=[
      L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
    ]}]},
   {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,
-    platforms:[{x:170,w:136,y:-34},{x:700,w:118,y:-45}],
+    platforms:[{x:170,w:136,y:-34,kind:'bleachers'},{x:700,w:118,y:-45,kind:'bleachers'}],
     objects:[
      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
      {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
@@ -68,7 +68,7 @@ const MISSIONS=[
      N('Get the spare lances on the raised platform. At the lists, tap USE when the moving marker reaches the green band.')
    ]}]},
   {id:'greenroad',title:'The South Patrol Road',reg:'green',explore:{length:1260,scenery:'road',seed:27,
-    platforms:[{x:270,w:115,y:-28},{x:800,w:160,y:-34}],
+    platforms:[{x:270,w:115,y:-28,kind:'outcrop'},{x:800,w:160,y:-34,kind:'outcrop'}],
     combatAt:[
       {x:320,list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6}]},
       {x:680,list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
