@@ -252,6 +252,31 @@ function startPrologue(){
        N('He had not. Ser *Halvard* carried the last *Aldaris* through the flames.')],()=>fade(()=>startMission('m1')));
 }
 
+/* ================= iOS ZOOM GUARD ================= */
+/* Safari can ignore user-scalable=no and interpret fast repeated taps as page zoom.
+   Keep rapid presses actionable (pointerdown handlers still run), but cancel the
+   second synthetic click/tap zoom. Do not interfere with scrolling in menus. */
+(function(){
+  let previousTap=0,previousX=-1000,previousY=-1000;
+  document.addEventListener('touchend',function(e){
+    if(document.body.dataset.mode!=='play'||modal.classList.contains('on')||e.touches.length||e.changedTouches.length!==1){
+      previousTap=0;return;
+    }
+    const tap=e.changedTouches[0],now=Date.now();
+    const repeat=now-previousTap<380&&Math.abs(tap.clientX-previousX)<36&&Math.abs(tap.clientY-previousY)<36;
+    previousTap=now;previousX=tap.clientX;previousY=tap.clientY;
+    if(repeat&&e.cancelable)e.preventDefault();
+  },{passive:false});
+  document.addEventListener('dblclick',function(e){
+    if(document.body.dataset.mode==='play'&&!modal.classList.contains('on'))e.preventDefault();
+  },{passive:false});
+  ['gesturestart','gesturechange'].forEach(function(type){
+    document.addEventListener(type,function(e){
+      if(document.body.dataset.mode==='play'&&!modal.classList.contains('on'))e.preventDefault();
+    },{passive:false});
+  });
+})();
+
 /* ================= INPUT ================= */
 document.querySelectorAll('[data-k]').forEach(b=>{
   const k=b.dataset.k,up=()=>{keys[k]=0;b.classList.remove('on');};
