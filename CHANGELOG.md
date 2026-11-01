@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0 (development branch — not merged)
+- Added opt-in multi-area quest data format with per-area maps, objectives, scene changes and checkpoint saves, preserving existing single-area missions.
+- Rebuilt M10 Fire at Hearthmoor into six connected battlefields and a richer siege narrative.
+- New interactable world-object objectives (USE / X), defendable structures with health and retry, and a compact mission objective tracker.
+- Added checkpoint resume from the world-map mission briefing without changing the existing save key.
+- Added a Playwright quest regression and branch-only GitHub Actions workflow; corrected bot timeout behavior and the boot test's old absolute path.
+- See `docs/LIVING_QUEST_ENGINE_V0_5_0.md`. Still requires green CI and iPhone playtesting before release.
+
 ## 0.4.0 (current)
 - World map with story-gated roads, route-finding and animated travel; missions start only at their location.
 - Four dungeons with their own environments (Thornwood forest, Hollowdeep caves, Greywatch mine, Ashfall keep).
