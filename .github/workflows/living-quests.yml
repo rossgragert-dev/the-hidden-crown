@@ -1,0 +1,26 @@
+name: Living Quest Engine
+on:
+  push:
+    branches:
+      - development/v0.5.0-living-quests
+  pull_request:
+    branches:
+      - main
+jobs:
+  game-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: mkdir -p /tmp/shots
+      - run: npm run build
+      - run: git diff --exit-code -- index.html
+      - run: npm run test:smoke
+      - run: npm run test:boot
+      - run: npm run test:quest
+      - run: npm run test:bot
