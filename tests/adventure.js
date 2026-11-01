@@ -71,9 +71,18 @@ const {pathToFileURL}=require('url'),path=require('path');
   assert.ok((await obj('gear')).flag);
   const start=await obj('joust');
   assert.ok(start.used);
-  for(let i=0;i<3;i++)await page.evaluate(()=>{
-   const g=window.__G;g.S.joust.t=.92;g.adventureUse();
+  await page.evaluate(()=>{
+   const g=window.__G,J=g.S.joust;let n=0;
+   while(g.S.joust&&n++<20000){
+    const j=g.S.joust;
+    if(j.phase==='approach'&&!j.used&&j.a.x+14>=j.anchor+9-4)g.adventureUse();
+    g.joustStep(j,1/60);
+    if(g.joustDone(j)){g.adventureUpdate?0:0;break;}
+   }
+   g.adventureUpdate&&0;
   });
+  await page.waitForFunction(()=>!window.__G.S.joust||window.__G.joustDone(window.__G.S.joust),{timeout:5000});
+  await page.waitForFunction(()=>!window.__G.S.joust,{timeout:5000});
   assert.equal(await page.evaluate(()=>window.__G.G.flags.squireJoust),1);
   await obj('exit');await page.waitForTimeout(1180);await skip();
   assert.equal(await where(),'greenroad');

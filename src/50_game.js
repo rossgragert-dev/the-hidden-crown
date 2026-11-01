@@ -72,7 +72,7 @@ function missionHud(force){
   if(S.mode!=='play'||!S.areaData){box.style.display='none';return;}
   const a=S.areaData,goals=S.beats.filter(b=>b.st.goal);
   const current=goals.find(b=>!S.goalsDone[b.i]);
-  const label=S.joust?'Lance '+S.joust.round+'/3: tap USE at the green mark':current?current.st.goal:'Proceed to the next area';
+  const label=S.joust?'Pass '+S.joust.round+'/'+S.joust.passes+': tap USE as the rider reaches your hand':current?current.st.goal:'Proceed to the next area';
   const count=goals.filter(b=>S.goalsDone[b.i]).length;
   const guard=S.guard?' | '+S.guard.name+' '+Math.max(0,Math.ceil(S.guard.hp))+'/'+S.guard.max:'';
   const html=(S.areaIndex+1)+'/'+S.mission.areas.length+'  '+a.title+'  ('+count+'/'+goals.length+')'+guard+'|'+label;
@@ -290,7 +290,7 @@ function update(dt){
   if(S.mode==='done'){S.cam=lerp(S.cam,S.cam,0);return;}
   if(S.mode!=='play')return;
   if(S.talk){P.mv=false;FOL.forEach(f=>f.mv=false);return;}
-  const dir=(keys.r?1:0)-(keys.l?1:0);P.mv=dir!==0;if(dir)P.face=dir;
+  const dir=S.joust?0:(keys.r?1:0)-(keys.l?1:0);P.mv=dir!==0;if(dir)P.face=dir;
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
   P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);P.vx*=Math.pow(.02,dt);
@@ -316,7 +316,7 @@ function update(dt){
     const ob=S.adv?adventureNear():null;
     const near=!!ob||(S.activeInteract&&Math.abs(P.x-S.activeInteract.x)<=28);
     use.style.display=S.joust||S.activeInteract||ob?'flex':'none';
-    use.textContent=S.joust?'LANCE':'USE';
+    use.textContent=S.joust?(S.joust.role==='rider'?'COUCH':'OFFER'):'USE';
     const guard=$('blockbtn');if(guard)guard.style.display=G.shieldTier>=0?'flex':'none';
     use.style.opacity=near?'1':'.45';
   }

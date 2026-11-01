@@ -38,7 +38,7 @@ function adventureNear(){
 }
 function adventureUse(){
   if(!S.adv||S.talk||S.arena)return false;
-  if(S.joust){adventureLance();return true;}
+  if(S.joust){joustAct(S.joust);return true;}
   const o=adventureNear();
   if(!o)return false;
   if(o.need&&!G.flags[o.need]){toast(o.locked||'A KEY OR TASK IS MISSING');sfx(110,.18,'square',.04);return true;}
@@ -49,8 +49,8 @@ function adventureUse(){
     endMissionArea();return true;
   }
   if(o.kind==='joust'){
-    S.joust={t:0,round:1,score:0,object:o};
-    toast('HAND OVER THE LANCE WHEN THE RIDER REACHES THE MARK');return true;
+    joustPrebake();P.face=1;S.joust=joustCreate({role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
+    S.joust.on=joustOn;toast('OFFER THE LANCE AS THE RIDER REACHES YOUR HAND');return true;
   }
   o.done=true;
   if(o.flag){G.flags[o.flag]=1;save();}
@@ -73,27 +73,21 @@ function adventureUse(){
   missionHud(true);sfx(510,.14,'triangle',.04);
   return true;
 }
-function adventureLance(){
-  const j=S.joust;
-  if(!j)return;
-  const good=j.t>=.72&&j.t<=1.16;
-  if(good){j.score++;toast('PERFECT LANCE HANDOFF!');sfx(650,.17,'triangle',.06);}
-  else{toast('MISSED THE TIMING — NEXT PASS');sfx(130,.18,'sawtooth',.05);}
-  adventureNextPass();
+function joustOn(k,v){
+  if(k==='handoff'){toast('PERFECT LANCE HANDOFF!');sfx(650,.17,'triangle',.06);}
+  else if(k==='resolve'&&!(v&&v.pts)){toast(v.verdict);sfx(130,.18,'sawtooth',.05);}
+  else if(k==='start')sfx(180,.2,'sawtooth',.03);
 }
-function adventureNextPass(){
+function adventureJoustFinish(){
   const j=S.joust;if(!j)return;
-  j.round++;j.t=0;
-  if(j.round>3){
-    const o=j.object;o.done=true;G.flags[o.flag||'joustServed']=1;save();
-    S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / 3 HANDOFFS');
-    if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
-    missionHud(true);
-  }
+  const o=j.object;if(o){o.done=true;G.flags[o.flag||'joustServed']=1;save();}
+  S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / '+j.passes+' HANDOFFS');
+  if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
+  missionHud(true);
 }
 function adventureUpdate(dt){
   const a=S.adv;if(!a||S.mode!=='play')return;
-  if(S.joust){S.joust.t+=dt;if(S.joust.t>=1.85)adventureNextPass();}
+  if(S.joust){joustStep(S.joust,dt);if(joustDone(S.joust))adventureJoustFinish();}
   const prev=P.py||0;
   // Walk off ledges naturally. A platform only supports the hero while
   // the feet are over its interval; no invisible floor under upper stories.
@@ -315,20 +309,8 @@ function adventureWorldDraw(cam){
       R(x-3,py-20,6,6,'#e8c469');
       if(o.kind==='key'){R(x+7,py-10,8,3,'#e9cb52');}
     }
-    g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
-    g.fillText(o.label||o.kind.toUpperCase(),x,py-51);
+    if(!(S.joust&&o.kind==='joust')){g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
+    g.fillText(o.label||o.kind.toUpperCase(),x,py-51);}
   }
-  if(S.joust){
-    const j=S.joust,w=94,x=clamp(P.x-cam-48,6,Math.max(6,W-103)),py=y+(P.py||0)-97;
-    const riderX=x+95-Math.round(j.t/1.85*100);
-    R(riderX-9,py-50,28,9,'#6d4939');R(riderX+8,py-57,8,13,'#664032');
-    R(riderX-6,py-43,4,9,'#49322a');R(riderX+12,py-43,4,9,'#49322a');
-    R(riderX+1,py-66,6,17,'#86898e');R(riderX,py-70,8,8,'#d6ae79');
-    R(riderX+7,py-62,34,2,'#e2c481');
-    R(x-4,py-22,105,45,'rgba(12,10,14,.88)');
-    R(x,py,94,7,'#49362b');R(x+38,py,18,7,'#96bd55');
-    R(x+Math.min(91,j.t/1.85*91),py-3,3,14,'#ffdf7e');
-    g.textAlign='left';g.font='bold 8px Courier New';g.fillStyle='#ffedbb';
-    g.fillText('LANCE '+j.round+'/3  USE TO HAND OFF',x,py-8);
-  }
+  if(S.joust){joustDraw(S.joust,cam,y);joustHud(S.joust,clamp(P.x-cam-48,6,Math.max(6,W-117)),y-96);}
 }

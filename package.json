@@ -11,6 +11,7 @@
     "test:bot": "node tests/bot.js",
     "test:quest": "node tests/quest.js",
     "test:zoom": "node tests/zoom.js",
+    "test:joust": "node tests/joust.js",
     "test:adventure": "node tests/adventure.js"
   },
   "devDependencies": {

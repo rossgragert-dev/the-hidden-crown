@@ -28,7 +28,11 @@ const {pathToFileURL}=require('url'),path=require('path'),fs=require('fs');
   await place(300,0);await shot('08-lists-entry');
   await place(520,0);await shot('09-lists-joust-start');
   await page.evaluate(()=>{const g=window.__G;g.S.adv.objects.forEach(o=>{if(o.kind==='gear')o.done=true;});g.G.flags.squireLances=1;g.P.x=527;g.P.py=0;g.adventureUse&&g.adventureUse();});
-  await page.waitForTimeout(900);await shot('10-lists-joust-pass');
+  const adv=async(f)=>page.evaluate(f);
+  await adv(()=>{const g=window.__G,J=g.S.joust;let n=0;while(J&&!(J.phase==='approach'&&J.a.x>J.anchor-110)&&n++<5000)g.joustStep(J,1/60);});
+  await shot('10-lists-joust-approach');
+  await adv(()=>{const g=window.__G,J=g.S.joust;let n=0;while(J&&J.a.x+14<J.anchor+4&&n++<5000)g.joustStep(J,1/60);g.adventureUse();g.joustStep(J,1/60);g.joustStep(J,1/60);});
+  await shot('11-lists-joust-handoff');
   await ctx.close();
  }
  console.log(errs.join('\n')||'evidence captured to '+out);
