@@ -144,7 +144,7 @@ function travel(pth,dest){
         id:'travel-'+roadAreas.length,title:e.n+' — day '+(n+1),reg,
         explore:{
           length:len,seed:seed%997,scenery:terrain,
-          platforms:[{x:260,w:120,y:-26},{x:610,w:135,y:-36}],
+          platforms:[{x:260,w:120,y:-26,kind:'outcrop'},{x:610,w:135,y:-36,kind:'outcrop'}],
           objects:[
             {kind:'chest',label:'ROADSIDE CACHE',x:315,y:-26,slot:'trinket',rarity:1},
             {kind:'exit',label:'CONTINUE JOURNEY',x:len-48,y:0}
