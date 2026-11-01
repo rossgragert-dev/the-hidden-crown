@@ -91,6 +91,8 @@ function mcard(m){
   return '<div class="card k'+(st==='lock'?' lock':'')+'" '+(st!=='lock'?'data-a="brief" data-v="'+m.id+'"':'')+'><h4>'+(st==='done'?'&#10003; ':'')+m.title+'<span class="pill" style="color:'+col+';border-color:'+col+'">'+nm+'</span><span class="pill" style="color:#aaa;border-color:#555">Lv '+m.lvl+'</span></h4><p>'+(st==='lock'?'Locked. Finish an earlier mission first.':m.desc)+'</p></div>';
 }
 function mstate(m){
+  // Legacy saves from v0.4/v0.5 already progressed beyond the new prologue.
+  if(m.id==='m0'&&G.done.m1&&!G.done.m0)return 'done';
   if(m.type==='main'){if(!m.req||G.done[m.req])return G.done[m.id]?'done':'open';return 'lock';}
   return G.done[m.after]?(G.done[m.id]?'done':'open'):'lock';
 }
@@ -118,17 +120,56 @@ function renderBoard(){
   showModal(h);
 }
 function travel(pth,dest){
-  UI.trav=true;const mk=$('mk');let i=0,t=0;
-  const finish=()=>{clearInterval(iv);UI.trav=false;G.loc=dest;save();UI.node=dest;UI.msg='';renderBoard();};
-  const iv=setInterval(()=>{
-    if(!modal.classList.contains('on')){finish();return;}
-    if(i>=pth.length){finish();return;}
-    const e=pth[i].e,fwd=pth[i].fwd,A=fwd?NODES[e.a]:NODES[e.b],B=fwd?NODES[e.b]:NODES[e.a];
-    const tm=$('tmsg');if(tm)tm.textContent='Traveling: '+e.n+' ('+e.d+' day'+(e.d>1?'s':'')+')';
-    t+=.04;const pt=bez([A.x,A.y],e.c,[B.x,B.y],Math.min(1,t));if(mk)mk.setAttribute('transform','translate('+pt[0]+' '+(pt[1]-30)+')');
-    if(t>=1){G.day=(G.day||1)+e.d;t=0;i++;}
-  },30);
+  // Every world-map leg is now a traversable road. Local terrain changes
+  // the enemy deck and scenery; travel-day segments vary by stable hash.
+  if(!pth||!pth.length){UI.node=dest;renderBoard();return;}
+  const roadAreas=[],dayStart=G.day||1;
+  function routeSeed(a,b,day){
+    const str=a+'|'+b+'|'+day;
+    let h=2166136261;for(let k=0;k<str.length;k++)h=Math.imul(h^str.charCodeAt(k),16777619);
+    return h>>>0;
+  }
+  for(const path of pth){
+    const e=path.e,A=NODES[e.a],B=NODES[e.b];
+    const ids=e.a+'-'+e.b;
+    let terrain='road',reg='green',deck=['bandit','archer','blight'];
+    if(/fen|cave/.test(ids)){terrain='marsh';reg='fen';deck=['blight','hound','ashen'];}
+    else if(/thorn/.test(ids)){terrain='forest';reg='forest';deck=['blight','bandit','archer'];}
+    else if(/mine|ironvale/.test(ids)){terrain='mountain';reg='mine';deck=['bandit','archer','ashen'];}
+    else if(/keep/.test(ids)){terrain='ruins';reg='keep';deck=['ashen','bandit','archer'];}
+    for(let n=0;n<e.d;n++){
+      const seed=routeSeed(ids,String(n),dayStart+roadAreas.length),len=890+(seed%290);
+      const pick=(i)=>deck[(seed+i*7+(seed>>>8))%deck.length];
+      roadAreas.push({
+        id:'travel-'+roadAreas.length,title:e.n+' — day '+(n+1),reg,
+        explore:{
+          length:len,seed:seed%997,scenery:terrain,
+          platforms:[{x:260,w:120,y:-26},{x:610,w:135,y:-36}],
+          objects:[
+            {kind:'chest',label:'ROADSIDE CACHE',x:315,y:-26,slot:'trinket',rarity:1},
+            {kind:'exit',label:'CONTINUE JOURNEY',x:len-48,y:0}
+          ],
+          combatAt:[
+            {x:200,list:[{k:pick(0),s:1,d:0},{k:pick(1),s:-1,d:.7}]},
+            {x:550,list:[{k:pick(2),s:1,d:0},{k:pick(3),s:-1,d:.8},{k:pick(4),s:1,d:1.6}]}
+          ]
+        },
+        steps:[{t:'explore',goal:'Cross '+e.n+' and reach the next waypoint',intro:[
+          N('The road between '+A.n+' and '+B.n+' stretches ahead. On the horizon, the weather and the land are changing.'),
+          N('You travel alone. Stay alert for patrols, reavers, beasts and hidden supplies.')
+        ]}]
+      });
+    }
+  }
+  const m={
+    id:'journey-'+dayStart+'-'+dest,type:'travel',act:1,title:'Journey to '+NODES[dest].n,
+    reg:'road',lvl:Math.max(1,G.lvl),loc:G.loc,endLoc:dest,
+    travelDays:pth.reduce((sum,p)=>sum+p.e.d,0),areas:roadAreas
+  };
+  MBY[m.id]=m;
+  fade(()=>startMission(m.id));
 }
+
 function renderBrief(id){
   const m=MBY[id],done=!!G.done[id],xp=Math.round((60+35*m.lvl)*(m.type==='side'?.6:1)*(done?.4:1));
   let h=hdr(m.title,m.type==='main'?'MAIN QUEST':'SIDE QUEST');
@@ -249,7 +290,7 @@ function startPrologue(){
   say([N('Auremark. Sixteen years ago. The *Night* of *Ash*.'),
        N('King Roderan lay *poisoned* by the very man sworn to guard his throne.'),
        N('Regent *Maldric* Vane burned the royal nursery. The kingdom was told the infant prince had *perished*.'),
-       N('He had not. Ser *Halvard* carried the last *Aldaris* through the flames.')],()=>fade(()=>startMission('m1')));
+       N('He had not. Ser *Halvard* carried the last *Aldaris* through the flames.')],()=>fade(()=>startMission('m0')));
 }
 
 /* ================= iOS ZOOM GUARD ================= */
@@ -280,20 +321,20 @@ function startPrologue(){
 /* ================= INPUT ================= */
 document.querySelectorAll('[data-k]').forEach(b=>{
   const k=b.dataset.k,up=()=>{keys[k]=0;b.classList.remove('on');};
-  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use')useMissionObject();try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use'){if(!adventureUse())useMissionObject();keys.use=0;}if(k==='jump')adventureJump();try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
 });
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();setW(+b.dataset.w);}));
 $('mode').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleMode();});
 $('panel').addEventListener('pointerdown',e=>{if(e.target.closest('.opt'))return;adv();});
 cv.addEventListener('pointerdown',()=>{if(S.talk)adv();});
-const KM={x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
+const KM={ArrowUp:'jump',w:'jump',W:'jump',Shift:'block',x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
 addEventListener('keydown',e=>{
   if(modal.classList.contains('on')){if(e.key==='Escape'&&S.mode==='play')hideModal();return;}
   if(S.mode!=='play'&&S.mode!=='prologue')return;
   if(e.key==='Enter'||(e.key===' '&&S.talk)){adv();e.preventDefault();return;}
   if(e.key===' '){keys.atk=1;e.preventDefault();return;}
-  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use')useMissionObject();e.preventDefault();}
+  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use'&&!e.repeat){if(!adventureUse())useMissionObject();keys.use=0;}if(KM[e.key]==='jump'&&!e.repeat)adventureJump();e.preventDefault();}
   if(e.key==='1')setW(0);if(e.key==='2')setW(1);if(e.key==='3')setW(2);if(e.key==='q'||e.key==='Q')toggleMode();
   if(e.key==='b'||e.key==='B')ACT.bag();if(e.key==='k'||e.key==='K')ACT.skills();if(e.key==='Escape')renderMenu();
 });
@@ -304,4 +345,4 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},useMissionObject,loadMissionArea,missionHud};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud};

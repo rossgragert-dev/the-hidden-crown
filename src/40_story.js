@@ -12,7 +12,76 @@ const L=(who,text)=>({who,text}),N=text=>({who:'',text});
 const REG={hearth:{n:'Castle Hearthmoor',pal:'day'},green:{n:'The Greenmarch',pal:'day'},fen:{n:'Veilfen Reeds',pal:'fen'},night:{n:'Hearthmoor by Night',pal:'night'},forest:{n:'Thornwood',pal:'wood'},cave:{n:'Hollowdeep Caves',pal:'cave'},mine:{n:'Greywatch Mine',pal:'mine'},keep:{n:'Ashfall Keep',pal:'keep'},chapel:{n:'Hearthmoor Chapel',pal:'keep'},road:{n:'The Southern Road',pal:'day'}};
 const ACTN={1:'ACT I: THE SQUIRE',2:'ACT II: THE KNIGHT',3:'ACT III: THE KING'};
 const MISSIONS=[
-{id:'m1',type:'main',act:1,title:'Eyes Up',reg:'hearth',lvl:1,desc:'Castle Hearthmoor. A squire, his mentor, and the first blight wolves.',steps:[
+{id:'m0',type:'main',act:1,title:"The Knight's Squire",reg:'hearth',lvl:1,
+ desc:"Before the crown, a boy's life: fetch Halvard's armor, groom his horse, and serve lances at the tournament.",
+ areas:[
+  {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'armory',seed:3,
+    platforms:[{x:320,w:112,y:-26},{x:600,w:165,y:-54},{x:780,w:78,y:-28}],
+    objects:[
+     {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'armor',rarity:1},
+     {kind:'key',label:'IRON KEY',x:368,y:-26,flag:'squireArmoryKey'},
+     {kind:'shield',label:'PRACTICE SHIELD',x:500,y:0,flag:'squireShield',tier:0},
+     {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
+     {kind:'gear',label:'TOURNAMENT HELM',x:742,y:-54,flag:'squireHelmet'},
+     {kind:'gear',label:'POLISHING OIL',x:813,y:-28,flag:'squireOil'},
+     {kind:'gear',label:'LANCE BUNDLE',x:897,y:0,flag:'squireLancesReady'},
+     {kind:'exit',label:'STABLES DOOR',x:994,y:0,need:'squireArmoryKey',
+      needFlags:['squireArmor','squireHelmet','squireOil','squireLancesReady','squireShield'],locked:'FIND THE ARMORY KEY'}
+    ]
+   },steps:[{t:'explore',goal:'Prepare Halvard\'s tournament armor, helm, polish and lances',intro:[
+     N('Sixteen years after the Night of Ash, an unknown prince lives as an ordinary squire at Castle Hearthmoor.'),
+     L('Ser Halvard','Corin! I need my breastplate, tournament helm, polishing oil, and a bundle of sound lances before I ride. The upper racks are locked; find the iron key.'),
+     L('Corin','Aye, Father. I will have every buckle shining before the trumpets sound.'),
+     N('Move with your left thumb and tap JUMP with your right. Search the armor racks, leap to the upper loft, and tap USE near supplies.')
+   ]}]},
+  {id:'stables',title:'The Castle Stables',reg:'hearth',explore:{length:995,scenery:'stable',seed:9,
+    platforms:[{x:170,w:115,y:-23},{x:520,w:165,y:-36},{x:740,w:110,y:-26}],
+    objects:[
+     {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
+     {kind:'horse',label:'GROOM HALVARD HORSE',x:416,y:0,flag:'squireHorse'},
+     {kind:'gear',label:'TOURNAMENT SADDLE',x:602,y:-36,flag:'squireSaddle'},
+     {kind:'exit',label:'TO THE LISTS',x:935,y:0,needFlags:['squireHorse','squireSaddle']}
+    ]
+   },steps:[{t:'explore',goal:"Groom Halvard's horse and retrieve the saddle",intro:[
+     N('The stables smell of leather, straw and cold morning air.'),
+     L('Stablemaster Tobren','A knight is only as ready as his horse. The saddle is stored above. Mind your footing, squire.'),
+     L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
+   ]}]},
+  {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,
+    platforms:[{x:170,w:136,y:-34},{x:700,w:118,y:-45}],
+    objects:[
+     {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
+     {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
+     {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'sword'},
+     {kind:'exit',label:'PATROL GATE',x:956,y:0,needFlags:['squireJoust']}
+    ]
+   },steps:[{t:'explore',goal:'Collect spare lances and assist Halvard during the joust',intro:[
+     N('Bright pennants ripple over the lists. Horns sound as mounted knights take their places.'),
+     L('Ser Halvard','Listen closely. I ride; you bring the lances. Hand each one across as I pass the marker.'),
+     L('Corin','And when may I joust?'),
+     L('Ser Halvard','When you have learned to stand on your own feet. The lance handoff is the first lesson.'),
+     N('Get the spare lances on the raised platform. At the lists, tap USE when the moving marker reaches the green band.')
+   ]}]},
+  {id:'greenroad',title:'The South Patrol Road',reg:'green',explore:{length:1260,scenery:'road',seed:27,
+    platforms:[{x:270,w:115,y:-28},{x:800,w:160,y:-34}],
+    combatAt:[
+      {x:320,list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6}]},
+      {x:680,list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
+      {x:970,list:[{k:'hound',s:1,d:0,boss:1,name:'Greenmarch Ravager',hpm:1.1}]}
+    ],
+    objects:[
+     {kind:'chest',label:'HIDDEN ROAD CACHE',x:324,y:-28,flag:'squireRoadCache',slot:'bow'},
+     {kind:'key',label:'PATROL SEAL',x:852,y:-34,flag:'squirePatrolSeal'},
+     {kind:'exit',label:'RETURN TO HEARTHMOOR',x:1205,y:0,need:'squirePatrolSeal'}
+    ]
+   },steps:[{t:'explore',goal:'Travel the patrol road, defeat threats and recover the seal',intro:[
+     L('Ser Halvard','You served well. Now I send you along the southern road. Travel on foot; learn every turning of the kingdom.'),
+     L('Corin','Alone?'),
+     L('Ser Halvard','A knight must know when to walk without a shadow at his heel. Keep your shield to hand.'),
+     N('Travel the road yourself. Blight creatures, reavers and archers may be lying in wait; recover the patrol seal on the upper ledge.')
+   ]}]}
+ ]},
+{id:'m1',type:'main',act:1,title:'Eyes Up',reg:'hearth',lvl:1,req:'m0',desc:'Castle Hearthmoor. A squire, his mentor, and the first blight wolves.',steps:[
  {t:'say',lines:[
   N('Sixteen years later, at Castle Hearthmoor, a *squire* named Corin polishes his master\'s armor. He does not know who he is.'),
   N('*You* do.'),
@@ -262,6 +331,6 @@ const STUBS=[
  [3,'Gates of Aurelith'],[3,'The Siege'],[3,'Streets of Gold and Ash'],[3,'The Ashen Hand\'s Last Knife'],[3,'The Throne Room Duel'],[3,'The Crown Answers'],[3,'First Decree'],[3,'The Hungry Winter'],
  [3,'The Faction Reckoning'],[3,'The Ghost of Roderan'],[3,'Dawnroot Heart'],[3,'The Last Blight'],[3,'The Final Decree'],[3,'The Kingdom Remembers']
 ];
-const LOC={m1:'hearth',m2:'green',m3:'green',m4:'fen',m5:'hearth',m6:'hearth',m7:'hearth',m8:'hearth',m9:'hearth',m10:'hearth',m11:'hearth',m12:'green',s1:'hearth',s2:'green',s3:'green',s4:'fen',s5:'hearth',d1:'thorn',d2:'cave',d3:'mine',d4:'keep'};
+const LOC={m0:'hearth',m1:'hearth',m2:'green',m3:'green',m4:'fen',m5:'hearth',m6:'hearth',m7:'hearth',m8:'hearth',m9:'hearth',m10:'hearth',m11:'hearth',m12:'green',s1:'hearth',s2:'green',s3:'green',s4:'fen',s5:'hearth',d1:'thorn',d2:'cave',d3:'mine',d4:'keep'};
 MISSIONS.forEach(m=>{if(!m.loc)m.loc=LOC[m.id];});
 const MBY=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
