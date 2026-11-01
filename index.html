@@ -1086,7 +1086,7 @@ function adventureBegin(area){
   if(!d){S.adv=null;P.py=0;P.vy=0;P.grounded=true;S.camY=0;return;}
   S.adv={
     length:d.length||1000,
-    platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y})),
+    platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y,kind:p.kind||null})),
     objects:(d.objects||[]).map((o,i)=>Object.assign({i,done:!S.replay&&!!(o.flag&&G.flags[o.flag])},o)),
     scenery:d.scenery||'castle',seed:d.seed||5,verticalCamera:!!d.verticalCamera,
     progress:0,combatAt:(d.combatAt||[]).map((w,i)=>Object.assign({i,done:false},w))
