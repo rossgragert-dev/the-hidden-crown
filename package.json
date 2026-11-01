@@ -1,6 +1,6 @@
 {
   "name": "hidden-crown",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "description": "The Hidden Crown: medieval fantasy mobile RPG, single-file HTML5 canvas",
   "scripts": {
@@ -10,7 +10,10 @@
     "test:boot": "node tests/boot.js",
     "test:bot": "node tests/bot.js",
     "test:quest": "node tests/quest.js",
-    "test:zoom": "node tests/zoom.js"
+    "test:zoom": "node tests/zoom.js",
+    "test:adventure": "node tests/adventure.js"
   },
-  "devDependencies": { "playwright": "^1.40.0" }
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  }
 }
