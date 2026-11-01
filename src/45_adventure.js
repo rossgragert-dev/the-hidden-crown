@@ -128,9 +128,18 @@ function adventureWorldDraw(cam){
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;
-    if(a.scenery==='road'){
-      if(v%2===0){
-        R(x,y-64,3,64,'#58412e');R(x-12,y-73,27,18,'#406036');
+    if(['road','forest','marsh','mountain','ruins'].indexOf(a.scenery)>=0){
+      if(a.scenery==='marsh'){
+        R(x,y-12,44,8,'#354b49');R(x+7,y-26,3,24,'#426e50');
+        R(x+17,y-32,3,30,'#628351');R(x+29,y-23,3,21,'#52754d');
+      }else if(a.scenery==='mountain'){
+        R(x-6,y-52,50,52,'#6f6965');R(x+8,y-69,24,35,'#92918c');
+        R(x+19,y-73,7,12,'#bec5c4');
+      }else if(a.scenery==='ruins'){
+        R(x,y-61,12,61,'#7d7373');R(x+41,y-43,9,43,'#777079');
+        R(x-5,y-66,61,7,'#aaa092');
+      }else if(v%2===0){
+        R(x,y-64,3,64,'#58412e');R(x-12,y-73,27,18,a.scenery==='forest'?'#244e2d':'#406036');
         R(x-6,y-83,15,20,'#45693e');R(x+2,y-64,3,6,'#305333');
       }else{
         R(x,y-20,23,20,'#726b5b');R(x+4,y-31,13,11,'#857663');
