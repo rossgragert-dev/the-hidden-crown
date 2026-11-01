@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1 (development branch — not merged)
+- New `src/46_horse.js`: vector horse rig baked to palette-true pixel frames (cached) with 2-bone IK legs and idle/walk/trot/canter/gallop/charge/halt/recoil/groom poses, coats, tack states (halter, stable blanket, saddled, tourney caparison), dirty/groomed look and rider anchors.
+- New `src/47_joust.js`: ONE deterministic fixed-step joust engine used by both roles. `squire` (Corin on foot hands Halvard a lance; positional reach test) and `rider` (mounted lance-vs-lance with seeded opponent). Easy mode via `G.opts.joustEasy`. Replaces the old timing bar; M0 flags, 3 passes and +35 gold on 2+ handoffs unchanged.
+- Stables: real horse replaces the rectangle, with hay, bucket, grooming animation and dirty→groomed→saddled states. Seated-rider legs in `personParts`.
+- Tests: `tests/joust.js` (determinism, misses, easy mode, rider role); `tests/adventure.js` drives the new engine; `tests/evidence.js` captures before/after scene screenshots.
+- Deferred: mounted joust is engine-level only (no menu "Joust Lab" or story scene yet); armory and tournament-stand scenery redraw; horse combat.
+
 ## 0.5.0 (development branch — not merged)
 - Added opt-in multi-area quest data format with per-area maps, objectives, scene changes and checkpoint saves, preserving existing single-area missions.
 - Rebuilt M10 Fire at Hearthmoor into six connected battlefields and a richer siege narrative.

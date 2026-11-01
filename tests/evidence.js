@@ -22,7 +22,7 @@ const {pathToFileURL}=require('url'),path=require('path'),fs=require('fs');
   await place(880,0);await shot('04-armory-forge-lances');
   await page.evaluate(()=>{window.__G.loadMissionArea(1);});await settle(500);
   await place(330,0);await shot('05-stables-entry');
-  await place(430,0);await shot('06-stables-horse');
+  await place(430,0);await shot('06-stables-horse');await page.evaluate(()=>{const g=window.__G;g.adventureUse();});await page.waitForTimeout(300);await shot('06b-stables-grooming');await page.waitForTimeout(1200);await shot('06c-stables-groomed');
   await place(610,-36);await shot('07-stables-loft-saddle');
   await page.evaluate(()=>{window.__G.loadMissionArea(2);});await settle(500);
   await place(300,0);await shot('08-lists-entry');

@@ -1095,7 +1095,7 @@ function adventureUse(){
   }else if(o.kind==='gear'){
     toast('COLLECTED: '+o.label);
   }else if(o.kind==='horse'){
-    toast('HORSE GROOMED AND READY');
+    o.groomT=1.1;toast('HORSE GROOMED AND READY');
   }else if(o.kind==='door'){
     toast('DOOR UNLOCKED');
   }else toast('OBJECTIVE COMPLETE');
@@ -1319,7 +1319,7 @@ function adventureWorldDraw(cam){
     R(x+p.w-9,py+9,4,Math.min(32,-p.y-4),'#514347');
   }
   for(const o of a.objects){
-    if(o.done)continue;
+    if(o.done&&o.kind!=='horse')continue;
     const x=Math.round(o.x-cam),py=Math.round(y+(o.y||0));
     if(x<-40||x>W+40)continue;
     const locked=o.need&&!G.flags[o.need];
@@ -1331,15 +1331,21 @@ function adventureWorldDraw(cam){
       R(x-12,py-15,24,15,'#503127');R(x-12,py-19,24,7,'#9c653b');
       R(x-2,py-15,4,10,'#ebc664');
     }else if(o.kind==='horse'){
-      R(x-20,py-29,36,22,'#815131');R(x+10,py-40,13,20,'#765039');
-      R(x-14,py-7,5,8,'#453329');R(x+8,py-7,5,8,'#453329');
-      R(x+20,py-33,3,3,'#ead9a4');
+      // stall dressing: hay, bucket, tack hook
+      R(x+30,py-8,22,8,'#c9a85a');R(x+33,py-11,16,4,'#dcc070');R(x+36,py-13,3,2,'#e8d08a');
+      R(x-48,py-10,9,10,'#6a4a2a');R(x-48,py-10,9,2,'#8a6a3a');R(x-47,py-8,7,1,'#3a2a18');
+      const gr=!!o.done,sd=G.flags.squireSaddle,gt=o.groomT>0;
+      if(gt)o.groomT-=1/60;
+      const ph=gt?S.t*3.2:S.t*.35;
+      drawHorse(x,py,1,{v:'bay',tk:sd?'saddled':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
+      if(gt&&Math.floor(S.t*14)%2)R(x+Math.round(Math.sin(S.t*9)*14),py-34-Math.round((S.t*40)%12),1,2,'#fff6c0');
+      else if(gr&&Math.floor(S.t*2.2)%5===0)R(x-10+Math.floor(S.t*7)%24,py-30,1,1,'#fff6c0');
     }else{
       R(x-9,py-16,18,16,o.kind==='key'?'#b59e4b':o.kind==='shield'?'#4d6e91':'#6e5843');
       R(x-3,py-20,6,6,'#e8c469');
       if(o.kind==='key'){R(x+7,py-10,8,3,'#e9cb52');}
     }
-    if(!(S.joust&&o.kind==='joust')){g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
+    if(!(S.joust&&o.kind==='joust')&&!o.done){g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
     g.fillText(o.label||o.kind.toUpperCase(),x,py-51);}
   }
   if(S.joust){joustDraw(S.joust,cam,y);joustHud(S.joust,clamp(P.x-cam-48,6,Math.max(6,W-117)),y-96);}
