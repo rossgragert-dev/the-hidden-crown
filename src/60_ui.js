@@ -133,8 +133,10 @@ function renderBrief(id){
   const m=MBY[id],done=!!G.done[id],xp=Math.round((60+35*m.lvl)*(m.type==='side'?.6:1)*(done?.4:1));
   let h=hdr(m.title,m.type==='main'?'MAIN QUEST':'SIDE QUEST');
   h+='<div class="card"><p style="font-size:13px">'+m.desc+'</p><p>Region: <b>'+REG[m.reg].n+'</b></p><p>Recommended level: <b style="color:'+(G.lvl<m.lvl?'#ff7a6a':'#6fe07a')+'">'+m.lvl+'</b> (you are Lv '+G.lvl+')</p><p>Rewards: ~'+xp+' XP, gold, and loot'+(done?'':', plus story choices that move your compass')+'.</p>'+(done?'<p class="dn">Replay: reduced XP, story choices skipped. Good for farming gear.</p>':'')+'</div>';
+  const cp=m.areas&&G.checkpoint&&G.checkpoint.id===id?G.checkpoint:null;
+  if(m.areas)h+='<div class="card"><b>'+m.areas.length+' connected battlefields</b> &middot; Multiple objectives &middot; Checkpoint saves'+(cp?'<p>Checkpoint: '+m.areas[cp.area].title+'</p>':'')+'</div>';
   const there=G.loc===m.loc;if(!there)h+='<div class="card"><p class="dn">You are at '+NODES[G.loc].n+'. This mission is at '+NODES[m.loc].n+'. Travel there on the map first.</p></div>';
-  h+='<div class="row" style="display:flex;gap:8px"><button class="bt go'+(there?'':' dim')+'" data-a="begin" data-v="'+id+'" style="flex:1">BEGIN</button><button class="bt" data-a="'+(there?'board':'showloc')+'" data-v="'+m.loc+'" style="flex:1">'+(there?'BACK':'SHOW ON MAP')+'</button></div>';
+  h+='<div class="row" style="display:flex;gap:8px"><button class="bt go'+(there?'':' dim')+'" data-a="begin" data-v="'+id+'" style="flex:1">'+(cp?'RESUME':'BEGIN')</button><button class="bt" data-a="'+(there?'board':'showloc')+'" data-v="'+m.loc+'" style="flex:1">'+(there?'BACK':'SHOW ON MAP')+'</button></div>';
   showModal(h);
 }
 /* ---- bag ---- */
@@ -212,7 +214,8 @@ const ACT={
   flt(v){UI.flt=v;renderBag();},
   unequip(v){const it=G.eq[v];if(it){G.eq[v]=null;G.inv.push(it);calc();save();}UI.sel=null;renderBag();hud(true);},
   brief(v){renderBrief(v);},
-  begin(v){fade(()=>startMission(v));},
+  begin(v){const cp=G.checkpoint&&G.checkpoint.id===v;fade(()=>startMission(v,!!cp));},
+  restart(v){if(G.checkpoint&&G.checkpoint.id===v){G.checkpoint=null;save();}fade(()=>startMission(v,false));},
   bag(){UI.sel=null;renderBag();},
   skills(){renderSkills();},
   menu(){renderMenu();},
@@ -259,7 +262,7 @@ document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('pointerdown
 $('mode').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleMode();});
 $('panel').addEventListener('pointerdown',e=>{if(e.target.closest('.opt'))return;adv();});
 cv.addEventListener('pointerdown',()=>{if(S.talk)adv();});
-const KM={ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
+const KM={x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
 addEventListener('keydown',e=>{
   if(modal.classList.contains('on')){if(e.key==='Escape'&&S.mode==='play')hideModal();return;}
   if(S.mode!=='play'&&S.mode!=='prologue')return;
@@ -276,4 +279,4 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;}};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},useMissionObject,loadMissionArea,missionHud};
