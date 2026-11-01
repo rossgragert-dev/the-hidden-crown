@@ -136,7 +136,7 @@ function renderBrief(id){
   const cp=m.areas&&G.checkpoint&&G.checkpoint.id===id?G.checkpoint:null;
   if(m.areas)h+='<div class="card"><b>'+m.areas.length+' connected battlefields</b> &middot; Multiple objectives &middot; Checkpoint saves'+(cp?'<p>Checkpoint: '+m.areas[cp.area].title+'</p>':'')+'</div>';
   const there=G.loc===m.loc;if(!there)h+='<div class="card"><p class="dn">You are at '+NODES[G.loc].n+'. This mission is at '+NODES[m.loc].n+'. Travel there on the map first.</p></div>';
-  h+='<div class="row" style="display:flex;gap:8px"><button class="bt go'+(there?'':' dim')+'" data-a="begin" data-v="'+id+'" style="flex:1">'+(cp?'RESUME':'BEGIN')</button><button class="bt" data-a="'+(there?'board':'showloc')+'" data-v="'+m.loc+'" style="flex:1">'+(there?'BACK':'SHOW ON MAP')+'</button></div>';
+  h+='<div class="row" style="display:flex;gap:8px"><button class="bt go'+(there?'':' dim')+'" data-a="begin" data-v="'+id+'" style="flex:1">'+(cp?'RESUME':'BEGIN')+'</button><button class="bt" data-a="'+(there?'board':'showloc')+'" data-v="'+m.loc+'" style="flex:1">'+(there?'BACK':'SHOW ON MAP')+'</button></div>';
   showModal(h);
 }
 /* ---- bag ---- */
