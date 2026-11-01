@@ -8,7 +8,12 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 html,body{margin:0;height:100%;background:#000;color:#f4e9c8;font-family:"Courier New",ui-monospace,monospace;overflow:hidden;touch-action:none}
 #cv{position:fixed;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;background:#111}
-button{font-family:inherit}
+/* Keep rapid gameplay taps from becoming Safari double-tap zoom. 
+   Menus retain vertical scrolling; touch combat controls never request browser gestures. */
+button{font-family:inherit;touch-action:manipulation;-webkit-touch-callout:none}
+#cv,#hud,#ctl,#panel,#title{touch-action:none}
+#modal{touch-action:pan-y}
+#modal button{touch-action:manipulation}
 /* HUD */
 #hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;padding:max(8px,env(safe-area-inset-top)) 10px 0;pointer-events:none;font-weight:bold;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000;z-index:4}
 .bars{width:132px}
@@ -39,6 +44,11 @@ button{font-family:inherit}
 .opt{font:inherit;text-align:left;background:rgba(20,14,8,.95);color:#f4e9c8;border:2px solid #c9a24a;border-radius:10px;padding:9px 12px;cursor:pointer}
 .opt b{display:block;color:#ffd34a;font-size:15px;-webkit-text-stroke:0}
 .opt small{display:block;font-size:12px;opacity:.85;margin-top:2px;font-weight:normal;-webkit-text-stroke:0}
+/* objective overlay: compact and readable on mobile */
+#objtrack{position:fixed;left:10px;top:max(63px,calc(env(safe-area-inset-top) + 53px));max-width:min(72vw,310px);z-index:6;pointer-events:none;background:rgba(16,13,18,.86);border:1px solid #b39b65;border-radius:7px;padding:5px 8px;color:#fff0c6;font:10px/1.35 "Courier New",monospace}
+#objtrack strong{display:block;color:#ffd34a;font-size:10px;margin-bottom:2px}
+#objtrack span{display:block}
+#usebtn{pointer-events:auto;display:none;position:absolute;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translateX(-50%);width:62px;height:62px;font-size:12px;border-color:#fff3b8;background:rgba(59,44,22,.9)}
 /* controls */
 #ctl{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:10px 12px calc(14px + env(safe-area-inset-bottom));pointer-events:none;z-index:5}
 .pad{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
@@ -92,6 +102,8 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 #boot b{display:block;font:900 26px Impact,'Arial Black',sans-serif;color:#ffd34a;margin-bottom:10px}
 #boot code{color:#ff9a8a;font-size:12px}
 @media (orientation:landscape){
+ #usebtn{width:44px;height:44px;font-size:10px;bottom:calc(72px + env(safe-area-inset-bottom))}
+ #objtrack{top:max(46px,calc(env(safe-area-inset-top) + 38px));max-width:45vw}
  .btn{width:54px;height:54px;font-size:14px}.btn.big{width:68px;height:68px}.btn.sm{width:40px;height:40px;font-size:9px}.btn.abl{width:46px;height:46px}
  .wk{grid-template-columns:repeat(2,40px);gap:6px}
  #ctl{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
@@ -110,9 +122,11 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 </div>
 <div id="boss"><span id="bname"></span><div class="bar"><i id="bhp"></i></div></div>
 <div id="toast"></div>
+<div id="objtrack" aria-live="polite" style="display:none"></div>
 <div id="panel"><div id="cap"></div><div id="ch"></div></div>
 <div id="ctl">
   <div class="pad"><button class="btn" data-k="l">&#9664;</button><button class="btn" data-k="r">&#9654;</button></div>
+  <button class="btn" id="usebtn" data-k="use" aria-label="Use nearby object">USE</button>
   <div class="pad">
     <div class="wk">
       <button class="btn sm sel" data-w="0">SWORD</button>
@@ -164,14 +178,14 @@ function sfx(f,d,type,v){if(!AC)return;try{const t=AC.currentTime,o=AC.createOsc
 /* ---------- persistent game data ---------- */
 const SAVEKEY='hiddencrown.save.v2';
 const G={};
-function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1});}
+function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null});}
 function save(){try{localStorage.setItem(SAVEKEY,JSON.stringify(G));}catch(e){}}
 function load(){try{const s=localStorage.getItem(SAVEKEY);if(!s)return false;newG();Object.assign(G,JSON.parse(s));return true;}catch(e){return false;}}
 function hasSave(){try{return !!localStorage.getItem(SAVEKEY);}catch(e){return false;}}
 newG();
 
 /* ---------- runtime state ---------- */
-const keys={l:0,r:0,atk:0,abl:0};
+const keys={l:0,r:0,atk:0,abl:0,use:0};
 const S={mode:'title',t:0,cam:0,talk:false,choosing:false,q:[],qcb:null,arena:false,arenaL:0,arenaR:0,spawnQ:[],spawnT:0,curList:null,waveCb:null,dusk:false,blight:.08,npc:null,shake:0,mission:null,replay:false,beats:[],bi:0,chests:[],pal:'day',paused:false,pro:{x:60},rew:null,tm:[],m:{},ilvl:1,boost:0};
 const P={x:30,face:1,hp:100,max:100,mp:30,mmax:30,w:0,cd:0,atk:0,atkMax:.2,inv:0,hurt:0,vx:0,mv:false,ab:0,abMax:6,shield:0,lastHeal:0};
 const FOL=[{x:0,face:1,mv:false,k:'halv'},{x:0,face:1,mv:false,k:'lysa'}];
@@ -809,20 +823,66 @@ const MISSIONS=[
  {t:'loot',slot:'sword',rar:2,lines:[L('Commander Brandt','A knight\'s blade. Make it *count*.')]},
  {t:'chest',boost:1.5,out:.25}
 ]},
-{id:'m10',type:'main',act:1,title:'Fire at Hearthmoor',reg:'night',lvl:7,req:'m9',desc:'Regent Vane\'s army arrives at dawn. They want the relic, and the boy who carries it.',steps:[
- {t:'say',lines:[N('Smoke on the horizon. War banners under the dawn. Regent Vane\'s army has come.'),L('Commander Brandt','*Walls!* Archers on the ramparts! Ser Corin, take the gate!'),L('Ser Halvard','They are not here for the castle, boy. They are here for the *relic*. For *you*.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.6},{k:'bandit',s:1,d:1.2},{k:'archer',s:-1,d:1.8},{k:'bandit',s:1,d:2.4}]},
- {t:'choice',prompt:'The gate is cracking. Villagers pound on the postern.',opts:[
-  {label:'Hold the gate',desc:'Fight to the last. Buy them time.',c:4,cl:'Duty',flag:'heldGate',xp:50,lines:[N('Corin plants his shield. Behind him, the gate holds.')]},
-  {label:'Open the postern',desc:'Evacuate the villagers first.',c:12,cl:'Compassion',flag:'evacuated',maxhp:8,lines:[N('Hundreds stream into the chapel and cellars. They will not forget this.')]},
-  {label:'Burn the bridge',desc:'Cut the approach. Anyone outside burns.',c:-10,cl:'Ruthless',flag:'burnedBridge',lines:[N('Fire swallows the bridge. Screams drift over the walls.')]}]},
- {t:'say',lines:()=>G.flags.brannochAlly?[L('Brannoch','*Orphan!* On your left! ...I mean, Ser Corin.')]:G.flags.brannochFoe?[L('Brannoch','I would sooner die than... fine. *Fine*. Go.')]:[N('Hearthmoor\'s defenders fall back to the inner keep.')]},
- {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.5},{k:'ashen',s:1,d:1},{k:'bandit',s:-1,d:1.8},{k:'bandit',s:1,d:2.4}]},
- {t:'say',lines:()=>G.flags.sorrelSpared?[N('Captain Sorrel stands at the edge of the field. He lowers his blade, and leads his men *away*.')]:G.flags.sorrelDead?[N('Without Sorrel, the Regency line wavers. But the Ashen Hand does not.')]:[N('Lord Garran Vale, the Regent\'s hammer, rides through the broken gate.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0,boss:1,name:'Lord Garran Vale',hpm:7,dmgm:1.4,sp:{col:'#5a2a8a',metal:'#c0c8d8',trim:'#e8b84a',look:2,helm:'#c0c8d8',crest:'plume',crestC:'#5a2a8a',cape:'#2a1040',iris:'#3a2a5a',scar:0,nosh:1,w:0}},{k:'ashen',s:-1,d:2.5},{k:'ashen',s:1,d:4}]},
- {t:'say',lines:[N('Garran falls. From the ramparts, an arrow arcs through the smoke.'),L('Lysa','*Halvard!*'),N('Ser Halvard drops to one knee, a shaft through his shoulder. Smoke pours from every tower of Hearthmoor.'),L('Ser Halvard','Run, boy. The cellar road. *Now*.')]},
- {t:'chest',boost:2.2,out:.35}
-]},
+{id:'m10',type:'main',act:1,title:'Fire at Hearthmoor',reg:'night',lvl:7,req:'m9',
+ desc:'The fall of Hearthmoor. Cross six battlefields, defend the gate, save civilians, protect the chapel, and escape the keep.',
+ areas:[
+ {id:'outskirts',title:'The Outer Fields',reg:'green',steps:[
+  {t:'say',lines:[N('Smoke darkens the eastern sky. Regency banners fill the valley below Hearthmoor.'),L('Lysa','Scouts on the farm road. If they reach the walls first, the castle will be taken *unaware*.'),L('Corin','Then we get to the watchtower. Sound the alarm.')]},
+  {t:'wave',goal:'Break through the Regency scouts',list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.4},{k:'archer',s:-1,d:2.2}]},
+  {t:'interact',goal:'Reach the watchtower and ring the alarm',name:'ALARM BELL',flag:'m10warned',lines:[L('Corin','Hearthmoor! To *arms*!'),N('The warning bell cuts through the smoke. Soldiers rush to their posts.')]},
+  {t:'say',lines:[L('Ser Halvard','You bought us a few precious minutes. Ride to the *gatehouse*. We shall need every one.')]}
+ ]},
+ {id:'gatehouse',title:'The Broken Gate',reg:'hearth',steps:[
+  {t:'say',lines:[N('The gatehouse shudders under the Regent\'s battering rams.'),L('Commander Brandt','*Hold* the portcullis! They must not reach the village.')]},
+  {t:'defend',goal:'Keep the gate standing through the assault',target:'Gate',hp:145,list:[
+    {k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3},{k:'ashen',s:-1,d:2.1},{k:'archer',s:1,d:3.0}
+   ],outro:[L('Commander Brandt','The first assault is broken. Now seal the mechanism!')]},
+  {t:'interact',goal:'Reach the winch and secure the portcullis',name:'GATE WINCH',flag:'m10gateSecured',lines:[N('Iron chains grind. The portcullis slams shut behind the final defenders.')]},
+  {t:'say',lines:[L('Lysa','Smoke in the lower streets. The villagers are still inside.'),L('Corin','Then the battle is not finished.')]}
+ ]},
+ {id:'village',title:'The Burning Village',reg:'night',steps:[
+  {t:'say',lines:[N('Hearthmoor\'s lower village burns. Families flee between shattered market stalls.'),L('Lysa','There are people behind the barricade. And Regency soldiers at the storehouse.')]},
+  {t:'wave',goal:'Clear the market street',list:[
+    {k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.8},{k:'ashen',s:1,d:1.7},{k:'bandit',s:-1,d:2.4}
+   ]},
+  {t:'choice',goal:'Decide whom to save in the village',prompt:'The gate is cracking again. Villagers pound on the postern.',opts:[
+    {label:'Hold the gate',desc:'Guard the passage while families escape.',c:4,cl:'Duty',flag:'heldGate',xp:50,lines:[N('Corin holds the line while the last families pass through the smoke.')]},
+    {label:'Open the postern',desc:'Evacuate everyone, even if the gate falls.',c:12,cl:'Compassion',flag:'evacuated',maxhp:8,lines:[N('Hundreds stream into the chapel and cellars. They will remember.')]},
+    {label:'Burn the bridge',desc:'Cut off the attack. Some may be left outside.',c:-10,cl:'Ruthless',flag:'burnedBridge',lines:[N('Flames swallow the bridge. Behind them the street falls silent.')]}
+   ]},
+  {t:'interact',goal:'Recover the remaining supplies',name:'SUPPLY CACHE',flag:'m10supplies',lines:[N('Corin gathers medicine, bandages and dry provisions for the survivors.')]}
+ ]},
+ {id:'chapel',title:'The Chapel Ward',reg:'chapel',steps:[
+  {t:'say',lines:[N('Under the chapel, the Oathcrown shard burns brighter than the candles.'),L('Magister Ione','The blight feels the shard. If I can raise the old *ward*, the wounded can escape.'),L('Corin','Tell me what you need.')]},
+  {t:'wave',goal:'Clear the chapel approach',list:[
+    {k:'blight',s:1,d:0},{k:'blight',s:-1,d:.5},{k:'hound',s:1,d:1.4},{k:'ashen',s:-1,d:2.3}
+   ]},
+  {t:'interact',goal:'Activate the Dawnroot focus',name:'WARD FOCUS',flag:'m10focus',lines:[L('Magister Ione','Now! The ward is awake. Hold it while I bind the runes.')]},
+  {t:'defend',goal:'Protect Ione\'s ward from the blight',target:'Chapel Ward',hp:160,list:[
+    {k:'blight',s:1,d:0},{k:'blight',s:-1,d:.55},{k:'ashen',s:1,d:1.2},{k:'blight',s:-1,d:1.8},{k:'hound',s:1,d:2.8}
+   ],outro:[L('Magister Ione','It holds! Go to the keep. I will shepherd the wounded through the crypts.')]}
+ ]},
+ {id:'keep',title:'The Inner Keep',reg:'keep',steps:[
+  {t:'say',lines:()=>G.flags.brannochAlly?[L('Brannoch','Ser Corin! I kept the stair open. Now we hold it *together*.')]:G.flags.brannochFoe?[L('Brannoch','You are late, orphan. I have no intention of dying for your *pride*.')]:[N('In the inner keep, the last defenders gather behind the fallen banners.')]},
+  {t:'wave',goal:'Fight through the elite assault',list:[
+    {k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.7},{k:'archer',s:1,d:1.4},{k:'bandit',s:-1,d:2.1}
+   ]},
+  {t:'say',lines:()=>G.flags.sorrelSpared?[N('Captain Sorrel stands beyond the broken gate. Recognizing Corin, he withdraws his men without a word.')]:G.flags.sorrelDead?[N('Without Sorrel, the Regency line falters. The Ashen Hand presses on.')]:[N('Lord Garran Vale storms into the keep, armored in the Regent\'s colors.')]},
+  {t:'wave',goal:'Defeat Lord Garran Vale',list:[
+    {k:'bandit',s:1,d:0,boss:1,name:'Lord Garran Vale',hpm:7,dmgm:1.4,sp:{col:'#5a2a8a',metal:'#c0c8d8',trim:'#e8b84a',look:2,helm:'#c0c8d8',crest:'plume',crestC:'#5a2a8a',cape:'#2a1040',iris:'#3a2a5a',nosh:1,w:0}},
+    {k:'ashen',s:-1,d:2.5},{k:'archer',s:1,d:4}
+   ],outro:[N('Garran falls. An arrow arcs down from the ramparts.'),L('Lysa','*Halvard*!'),N('A shaft strikes Halvard\'s shoulder. He drops to one knee.'),L('Ser Halvard','The cellar passage. Go, boy! The *castle* is lost.')]}
+ ]},
+ {id:'cellar',title:'The Cellar Passage',reg:'cave',steps:[
+  {t:'say',lines:[N('Smoke follows Corin into the tunnels below Hearthmoor.'),L('Lysa','The eastern tunnel is blocked. We need to open the old escape shaft.'),L('Ser Halvard','Quickly. They are behind us.')]},
+  {t:'interact',goal:'Open the ancient cellar lock',name:'CELLAR LOCK',flag:'m10cellarOpen',lines:[N('A rusted lever gives way. Cold air pours from the forgotten passage.') ]},
+  {t:'wave',goal:'Drive off the pursuing enemies',list:[
+    {k:'ashen',s:-1,d:0},{k:'blight',s:1,d:.8},{k:'hound',s:1,d:1.8},{k:'ashen',s:-1,d:2.5}
+   ]},
+  {t:'chest',boost:2.2,out:.35,goal:'Gather provisions for the road',lines:[L('Lysa','Take what we can carry. The wounded will need it.')]},
+  {t:'say',flag:'m10escaped',goal:'Escape the fallen castle',lines:[N('Behind them, the banners of Hearthmoor vanish in the flames.'),L('Corin','The castle may have fallen. But we are not *finished*.'),N('Beyond the passage waits the Greenmarch and the long night.')]}
+ ]}
+ ]},
 {id:'m11',type:'main',act:1,title:'The Long Night',reg:'night',lvl:8,req:'m10',endLoc:'green',desc:'Through the cellar road and across the Greenmarch, with the Regency on their heels.',steps:[
  {t:'say',lines:[N('Through the cellar road and out into the smoking dark. Behind them, Hearthmoor burns.'),L('Lysa','He is losing blood. We cannot outrun them like this.'),L('Ser Halvard','Leave me... I will hold them at the *bridge*.')]},
  {t:'choice',prompt:'Halvard can barely stand.',opts:[
@@ -916,24 +976,93 @@ function shift(d,label){G.c=clamp(G.c+d,-100,100);if(label)toast(label+'  '+(d>0
 function fade(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),250);},850);}
 
 /* ================= MISSION FLOW ================= */
-function resetField(){enemies=[];proj=[];drops=[];fxs=[];parts=[];S.chests=[];S.npc=null;S.arena=false;S.talk=false;S.choosing=false;S.q=[];line=null;S.tm=[];cap.classList.remove('show');chb.innerHTML='';}
-function startMission(id){
-  const m=MBY[id];S.mission=m;S.replay=!!G.done[id];S.pal=REG[m.reg].pal;S.ilvl=m.lvl;S.boost=0;
+function resetField(){enemies=[];proj=[];drops=[];fxs=[];parts=[];S.chests=[];S.npc=null;S.arena=false;S.activeInteract=null;S.guard=null;keys.use=0;S.talk=false;S.choosing=false;S.q=[];line=null;S.tm=[];cap.classList.remove('show');chb.innerHTML='';}
+function startMission(id,resume){
+  const m=MBY[id];if(!m)return;
+  S.mission=m;S.replay=!!G.done[id];S.ilvl=m.lvl;S.boost=0;
   S.rew={xp:0,gold:0,items:[],lv:0,c0:G.c};
   $('title').style.display='none';hideModal();resetField();S.mode='play';document.body.dataset.mode='play';
-  calc();P.hp=P.max;P.mp=P.mmax;P.x=30;P.face=1;P.vx=0;P.inv=1;P.shield=0;P.ab=0;S.cam=0;
-  S.blight=m.reg==='fen'?.1:.06+.012*m.lvl;
-  S.beats=m.steps.map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
-  S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
-  FOL[0].x=2;FOL[1].x=-14;FOL[0].k=(G.flags.halvardStands&&G.done.m11)?'ione':'halv';buildLayers(S.pal);hud(true);
+  calc();P.hp=P.max;P.mp=P.mmax;P.inv=1;P.shield=0;P.ab=0;P.vx=0;
+  FOL[0].k=(G.flags.halvardStands&&G.done.m11)?'ione':'halv';
+  const cp=resume&&G.checkpoint&&G.checkpoint.id===id?G.checkpoint:null;
+  loadMissionArea(cp&&m.areas?clamp(cp.area,0,m.areas.length-1):0);
 }
+function loadMissionArea(idx){
+  const m=S.mission,area=m.areas?m.areas[idx]:null;
+  resetField();S.areaIndex=idx;S.areaData=area;S.goalsDone={};
+  S.pal=REG[area&&area.reg?area.reg:m.reg].pal;
+  S.blight=S.pal==='fen'?.1:.06+.012*m.lvl;
+  P.x=30;P.face=1;P.vx=0;P.inv=1;S.cam=0;
+  S.beats=(area?area.steps:m.steps).map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
+  S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
+  FOL[0].x=2;FOL[1].x=-14;buildLayers(S.pal);hud(true);missionHud(true);
+  if(area)toast('CHAPTER '+(idx+1)+' / '+m.areas.length+': '+area.title);
+}
+function endMissionArea(){
+  const m=S.mission;
+  if(!m.areas||S.areaIndex>=m.areas.length-1){completeMission();return;}
+  const idx=S.areaIndex+1;
+  G.checkpoint={id:m.id,area:idx};save();
+  P.hp=Math.min(P.max,P.hp+Math.round(P.max*.25));
+  P.mp=Math.min(P.mmax,P.mp+Math.round(P.mmax*.3));
+  fade(()=>{if(S.mission===m&&S.mode==='play')loadMissionArea(idx);});
+}
+function missionHud(force){
+  const box=$('objtrack');if(!box)return;
+  if(S.mode!=='play'||!S.areaData){box.style.display='none';return;}
+  const a=S.areaData,goals=S.beats.filter(b=>b.st.goal);
+  const current=goals.find(b=>!S.goalsDone[b.i]);
+  const label=current?current.st.goal:'Proceed to the next area';
+  const count=goals.filter(b=>S.goalsDone[b.i]).length;
+  const guard=S.guard?' | '+S.guard.name+' '+Math.max(0,Math.ceil(S.guard.hp))+'/'+S.guard.max:'';
+  const html=(S.areaIndex+1)+'/'+S.mission.areas.length+'  '+a.title+'  ('+count+'/'+goals.length+')'+guard+'|'+label;
+  if(force||box.dataset.text!==html){
+    box.dataset.text=html;box.textContent='';
+    const strong=document.createElement('strong');strong.textContent=html.split('|')[0];
+    const small=document.createElement('span');small.textContent=html.split('|')[1];
+    box.appendChild(strong);box.appendChild(small);
+  }
+  box.style.display=S.talk||enemies.some(e=>e.boss&&!e.dead)?'none':'block';
+}
+function useMissionObject(){
+  const ob=S.activeInteract;if(!ob||S.talk||S.arena||Math.abs(P.x-ob.x)>28)return false;
+  S.activeInteract=null;keys.use=0;sfx(560,.16,'triangle',.05);
+  if(ob.st.flag)G.flags[ob.st.flag]=1;
+  if(ob.st.lines)say(LN(ob.st.lines),ob.done);else ob.done();
+  return true;
+}
+function hurtGuard(n){
+  if(!S.guard)return;
+  S.guard.hp=Math.max(0,S.guard.hp-n);missionHud(true);
+  if(S.guard.hp>0)return;
+  toast(S.guard.name.toUpperCase()+' BREACHED — RETRY DEFENSE');
+  S.guard.hp=S.guard.max;enemies=[];proj=[];
+  S.spawnQ=S.curList.map(o=>({...o}));S.spawnT=-1;
+  P.x=S.guard.x+22;P.inv=1.5;
+}
+
 const LN=x=>typeof x==='function'?x():x;
 function runStep(b){
-  const st=b.st,last=b.i===S.beats.length-1,fin=()=>{if(st.flag)G.flags[st.flag]=1;if(last)completeMission();};
+  const st=b.st,last=b.i===S.beats.length-1,fin=()=>{
+    if(st.flag)G.flags[st.flag]=1;
+    if(st.goal)S.goalsDone[b.i]=true;
+    missionHud(true);if(last)endMissionArea();
+  };
   switch(st.t){
    case 'say':if(st.npc)S.npc={k:st.npc.k,x:P.x+90,face:-1};say(LN(st.lines),fin);break;
    case 'toast':toast(st.text);fin();break;
    case 'wave':{S.npc=null;const go=()=>wave(st.list,()=>{if(st.outro)say(LN(st.outro),fin);else fin();});if(st.intro)say(LN(st.intro),go);else go();break;}
+   case 'defend':{
+     const go=()=>{
+       S.guard={x:P.x-24,hp:st.hp||110,max:st.hp||110,name:st.target||'Ward'};
+       wave(st.list,()=>{S.guard=null;missionHud(true);if(st.outro)say(LN(st.outro),fin);else fin();});
+       missionHud(true);
+     };
+     if(st.intro)say(LN(st.intro),go);else go();break;
+   }
+   case 'interact':
+     S.npc=null;S.activeInteract={x:b.x+110,st,done:fin};
+     toast('REACH '+st.name.toUpperCase()+' AND TAP USE');break;
    case 'choice':if(S.replay){S.npc=null;fin();break;}
      choose(st.prompt,st.opts.map(o=>({label:o.label,desc:o.desc,fn:()=>applyChoice(o,fin)})));break;
    case 'chest':{const run=()=>{openChest(b,st.boost||0,st.out);fin();};if(st.lines)say(LN(st.lines),run);else run();break;}
@@ -976,7 +1105,7 @@ function completeMission(){
   gainXP(Math.round((60+35*m.lvl)*(m.type==='side'?.6:1)*mul));
   const gd=Math.round((20+12*m.lvl)*(first?1:.5));G.gold+=gd;S.rew.gold+=gd;
   addItem(genItem(m.lvl+1,rollRar(S.boost+(m.type==='main'?1.5:.8))),true);
-  G.done[m.id]=1;G.loc=m.endLoc||m.loc||G.loc;save();
+  G.done[m.id]=1;if(G.checkpoint&&G.checkpoint.id===m.id)G.checkpoint=null;G.loc=m.endLoc||m.loc||G.loc;save();missionHud(true);
   toast('MISSION COMPLETE');sfx(520,.5,'triangle',.06);
   later(1.4,()=>openResults(m,first));
 }
@@ -1041,14 +1170,14 @@ function updateCombat(dt){
     e.t+=dt;if(e.hurt>0)e.hurt-=dt;if(e.fear>0)e.fear-=dt;if(e.stun>0)e.stun-=dt;e.cd-=dt;if(e.atkA>0)e.atkA-=dt*4;
     e.x+=e.vx*dt;e.vx*=Math.pow(.02,dt);
     if(S.arena){if(!e.in&&e.x>S.arenaL+8&&e.x<S.arenaR-8)e.in=true;if(e.in)e.x=clamp(e.x,S.arenaL+6,S.arenaR-6);}
-    const d=P.x-e.x,ad=Math.abs(d),def=e.def,sp=def.spd;e.face=d>=0?1:-1;e.mv=false;
+    const targetGuard=!!S.guard&&Math.abs(e.x-S.guard.x)<Math.abs(e.x-P.x)+38;const d=(targetGuard?S.guard.x:P.x)-e.x,ad=Math.abs(d),def=e.def,sp=def.spd;e.face=d>=0?1:-1;e.mv=false;
     if(e.stun>0)continue;
     if(e.wind>0){e.wind-=dt;if(e.wind<=0){
-      if(e.dashPend){e.dashPend=false;e.vx=e.face*270;e.dashT=.22;e.cd=1.3;e.dashHit=0;}
-      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:'arrow',dmg:e.dmg,hostile:1,life:2.2,face:e.face});e.cd=1.8+rnd()*.6;e.atkA=1;}
-      else{e.atkA=1;if(ad<def.rng+10)hurtPlayer(e.dmg,e.face);e.cd=1.2+rnd()*.4;}}
+      if(e.dashPend){e.dashPend=false;e.vx=e.face*270;e.dashT=.22;e.cd=1.3;e.dashHit=0;e.dashGuard=targetGuard;}
+      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:'arrow',dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard});e.cd=1.8+rnd()*.6;e.atkA=1;}
+      else{e.atkA=1;if(ad<def.rng+10){if(targetGuard)hurtGuard(e.dmg);else hurtPlayer(e.dmg,e.face);}e.cd=1.2+rnd()*.4;}}
       continue;}
-    if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;hurtPlayer(e.dmg,e.face);}continue;}
+    if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;if(e.dashGuard&&S.guard)hurtGuard(e.dmg);else hurtPlayer(e.dmg,e.face);}continue;}
     if(S.arena&&!e.in){e.x+=Math.sign(d)*sp*1.3*dt;e.mv=true;continue;}
     if(e.fear>0){e.x-=Math.sign(d)*sp*dt;e.mv=true;continue;}
     if(def.ranged){const room=e.x>S.arenaL+22&&e.x<S.arenaR-22;if(ad<60&&room){e.x-=Math.sign(d)*sp*dt;e.mv=true;}else if(ad>135){e.x+=Math.sign(d)*sp*dt;e.mv=true;}else if(e.cd<=0)e.wind=.5;continue;}
@@ -1057,7 +1186,7 @@ function updateCombat(dt){
   }
   for(const pr of proj){
     pr.x+=pr.vx*dt;pr.life-=dt;
-    if(pr.hostile){if(Math.abs(pr.x-P.x)<8){hurtPlayer(pr.dmg,pr.face);pr.life=0;}continue;}
+    if(pr.hostile){if(pr.guard&&S.guard){if(Math.abs(pr.x-S.guard.x)<8){hurtGuard(pr.dmg);pr.life=0;}}else if(Math.abs(pr.x-P.x)<8){hurtPlayer(pr.dmg,pr.face);pr.life=0;}continue;}
     for(const e of enemies){if(e.dead||pr.hits.includes(e))continue;if(Math.abs(e.x-pr.x)<(e.def.k?16:9)){
       pr.hits.push(e);hitEnemy(e,pr.dmg,pr.crit,pr.face,pr.type==='arrow'?40:25);
       if(pr.type==='dawn'){P.hp=Math.min(P.max,P.hp+S.m.dawnHeal);burst(P.x,GY-24,'#fff6b0',4,50);if(S.m.shieldPer)P.shield=Math.min(40,P.shield+S.m.shieldPer);}
@@ -1092,7 +1221,7 @@ function update(dt){
   P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);P.vx*=Math.pow(.02,dt);
   if(P.cd>0)P.cd-=dt;if(P.atk>0)P.atk-=dt;if(P.inv>0)P.inv-=dt;if(P.hurt>0)P.hurt-=dt;if(P.ab>0)P.ab-=dt;if(P.shield>0)P.shield=Math.max(0,P.shield-dt*1.5);
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
-  if(keys.atk)attack();if(keys.abl)useAbility();
+  if(keys.atk)attack();if(keys.abl)useAbility();if(keys.use)useMissionObject();
   FOL.forEach((f,i)=>{const tx=P.x-(i?46:28),d=tx-f.x;f.mv=Math.abs(d)>3;f.x+=d*Math.min(1,dt*2.6);f.face=P.face;});
   if(S.arena){S.spawnT+=dt;S.spawnQ=S.spawnQ.filter(o=>{if(S.spawnT>=o.d){spawn(o);return false;}return true;});}
   updateCombat(dt);
@@ -1105,7 +1234,13 @@ function update(dt){
   if(P.hp<=0){toast('Corin falls... and rises again');P.hp=P.max;P.mp=P.mmax;P.inv=1.2;P.shield=0;
     if(S.arena){enemies=[];proj=[];S.spawnQ=S.curList.map(o=>({...o}));S.spawnT=-1;P.x=S.arenaL+30;}}
   if(S.arena&&!S.spawnQ.length&&!enemies.length){S.arena=false;const cb=S.waveCb;S.waveCb=null;if(cb)cb();}
-  if(!S.talk&&!S.arena&&S.bi<S.beats.length&&P.x>=S.beats[S.bi].x){const b=S.beats[S.bi++];runStep(b);}
+  if(!S.talk&&!S.arena&&!S.activeInteract&&S.bi<S.beats.length&&P.x>=S.beats[S.bi].x){const b=S.beats[S.bi++];runStep(b);}
+  const use=$('usebtn');if(use){
+    const near=S.activeInteract&&Math.abs(P.x-S.activeInteract.x)<=28;
+    use.style.display=S.activeInteract?'flex':'none';
+    use.style.opacity=near?'1':'.45';
+  }
+  missionHud(false);
   const tgt=S.arena?S.arenaL:clamp(P.x-W*.4,0,Math.max(0,last+60-W));
   S.cam=lerp(S.cam,tgt,Math.min(1,dt*6));
 }
@@ -1121,6 +1256,20 @@ function heroOpts(){
   return o;
 }
 function drawScene(cam){
+  if(S.activeInteract){
+    const ix=Math.round(S.activeInteract.x-cam);
+    R(ix-9,GY-24,18,24,'#493b29');R(ix-7,GY-22,14,19,'#c9a24a');
+    R(ix-4,GY-19,8,13,'#37251e');R(ix-11,GY-29,22,5,'#f4df9b');
+    g.fillStyle='#fff7ce';g.font='bold 8px Courier New';g.textAlign='center';
+    g.fillText(S.activeInteract.st.name,ix,GY-36);
+  }
+  if(S.guard){
+    const ix=Math.round(S.guard.x-cam);
+    R(ix-12,GY-37,24,37,'#6b5541');R(ix-9,GY-34,18,29,'#c8aa6a');
+    R(ix-5,GY-29,10,20,'#394d80');
+    R(ix-14,GY-43,28,4,'#321d16');
+    R(ix-14,GY-43,Math.round(28*S.guard.hp/S.guard.max),4,'#78da82');
+  }
   for(const c of S.chests)drawChest(c.x-cam,c.open,S.t);
   for(const d of drops){const x=Math.round(d.x-cam),y=Math.round(d.y),col=itemCol(d.it),pul=.5+.5*Math.sin(S.t*6);
     if(d.g){g.fillStyle=rgba(col,.22+.1*pul);g.fillRect(x-2,y-34,5,34);g.fillStyle=rgba(col,.5);g.fillRect(x,y-34,1,34);}
@@ -1310,8 +1459,10 @@ function renderBrief(id){
   const m=MBY[id],done=!!G.done[id],xp=Math.round((60+35*m.lvl)*(m.type==='side'?.6:1)*(done?.4:1));
   let h=hdr(m.title,m.type==='main'?'MAIN QUEST':'SIDE QUEST');
   h+='<div class="card"><p style="font-size:13px">'+m.desc+'</p><p>Region: <b>'+REG[m.reg].n+'</b></p><p>Recommended level: <b style="color:'+(G.lvl<m.lvl?'#ff7a6a':'#6fe07a')+'">'+m.lvl+'</b> (you are Lv '+G.lvl+')</p><p>Rewards: ~'+xp+' XP, gold, and loot'+(done?'':', plus story choices that move your compass')+'.</p>'+(done?'<p class="dn">Replay: reduced XP, story choices skipped. Good for farming gear.</p>':'')+'</div>';
+  const cp=m.areas&&G.checkpoint&&G.checkpoint.id===id?G.checkpoint:null;
+  if(m.areas)h+='<div class="card"><b>'+m.areas.length+' connected battlefields</b> &middot; Multiple objectives &middot; Checkpoint saves'+(cp?'<p>Checkpoint: '+m.areas[cp.area].title+'</p>':'')+'</div>';
   const there=G.loc===m.loc;if(!there)h+='<div class="card"><p class="dn">You are at '+NODES[G.loc].n+'. This mission is at '+NODES[m.loc].n+'. Travel there on the map first.</p></div>';
-  h+='<div class="row" style="display:flex;gap:8px"><button class="bt go'+(there?'':' dim')+'" data-a="begin" data-v="'+id+'" style="flex:1">BEGIN</button><button class="bt" data-a="'+(there?'board':'showloc')+'" data-v="'+m.loc+'" style="flex:1">'+(there?'BACK':'SHOW ON MAP')+'</button></div>';
+  h+='<div class="row" style="display:flex;gap:8px"><button class="bt go'+(there?'':' dim')+'" data-a="begin" data-v="'+id+'" style="flex:1">'+(cp?'RESUME':'BEGIN')+'</button><button class="bt" data-a="'+(there?'board':'showloc')+'" data-v="'+m.loc+'" style="flex:1">'+(there?'BACK':'SHOW ON MAP')+'</button></div>';
   showModal(h);
 }
 /* ---- bag ---- */
@@ -1389,7 +1540,8 @@ const ACT={
   flt(v){UI.flt=v;renderBag();},
   unequip(v){const it=G.eq[v];if(it){G.eq[v]=null;G.inv.push(it);calc();save();}UI.sel=null;renderBag();hud(true);},
   brief(v){renderBrief(v);},
-  begin(v){fade(()=>startMission(v));},
+  begin(v){const cp=G.checkpoint&&G.checkpoint.id===v;fade(()=>startMission(v,!!cp));},
+  restart(v){if(G.checkpoint&&G.checkpoint.id===v){G.checkpoint=null;save();}fade(()=>startMission(v,false));},
   bag(){UI.sel=null;renderBag();},
   skills(){renderSkills();},
   menu(){renderMenu();},
@@ -1426,23 +1578,48 @@ function startPrologue(){
        N('He had not. Ser *Halvard* carried the last *Aldaris* through the flames.')],()=>fade(()=>startMission('m1')));
 }
 
+/* ================= iOS ZOOM GUARD ================= */
+/* Safari can ignore user-scalable=no and interpret fast repeated taps as page zoom.
+   Keep rapid presses actionable (pointerdown handlers still run), but cancel the
+   second synthetic click/tap zoom. Do not interfere with scrolling in menus. */
+(function(){
+  let previousTap=0,previousX=-1000,previousY=-1000;
+  document.addEventListener('touchend',function(e){
+    if(document.body.dataset.mode!=='play'||modal.classList.contains('on')||e.touches.length||e.changedTouches.length!==1){
+      previousTap=0;return;
+    }
+    const tap=e.changedTouches[0],now=Date.now();
+    const repeat=now-previousTap<380&&Math.abs(tap.clientX-previousX)<36&&Math.abs(tap.clientY-previousY)<36;
+    previousTap=now;previousX=tap.clientX;previousY=tap.clientY;
+    if(repeat&&e.cancelable)e.preventDefault();
+  },{passive:false});
+  document.addEventListener('dblclick',function(e){
+    if(document.body.dataset.mode==='play'&&!modal.classList.contains('on'))e.preventDefault();
+  },{passive:false});
+  ['gesturestart','gesturechange'].forEach(function(type){
+    document.addEventListener(type,function(e){
+      if(document.body.dataset.mode==='play'&&!modal.classList.contains('on'))e.preventDefault();
+    },{passive:false});
+  });
+})();
+
 /* ================= INPUT ================= */
 document.querySelectorAll('[data-k]').forEach(b=>{
   const k=b.dataset.k,up=()=>{keys[k]=0;b.classList.remove('on');};
-  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use')useMissionObject();try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
 });
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();setW(+b.dataset.w);}));
 $('mode').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleMode();});
 $('panel').addEventListener('pointerdown',e=>{if(e.target.closest('.opt'))return;adv();});
 cv.addEventListener('pointerdown',()=>{if(S.talk)adv();});
-const KM={ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
+const KM={x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
 addEventListener('keydown',e=>{
   if(modal.classList.contains('on')){if(e.key==='Escape'&&S.mode==='play')hideModal();return;}
   if(S.mode!=='play'&&S.mode!=='prologue')return;
   if(e.key==='Enter'||(e.key===' '&&S.talk)){adv();e.preventDefault();return;}
   if(e.key===' '){keys.atk=1;e.preventDefault();return;}
-  if(KM[e.key]){keys[KM[e.key]]=1;e.preventDefault();}
+  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use')useMissionObject();e.preventDefault();}
   if(e.key==='1')setW(0);if(e.key==='2')setW(1);if(e.key==='3')setW(2);if(e.key==='q'||e.key==='Q')toggleMode();
   if(e.key==='b'||e.key==='B')ACT.bag();if(e.key==='k'||e.key==='K')ACT.skills();if(e.key==='Escape')renderMenu();
 });
@@ -1453,7 +1630,7 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;}};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},useMissionObject,loadMissionArea,missionHud};
 })();
 </script>
 </body>

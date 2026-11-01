@@ -140,20 +140,66 @@ const MISSIONS=[
  {t:'loot',slot:'sword',rar:2,lines:[L('Commander Brandt','A knight\'s blade. Make it *count*.')]},
  {t:'chest',boost:1.5,out:.25}
 ]},
-{id:'m10',type:'main',act:1,title:'Fire at Hearthmoor',reg:'night',lvl:7,req:'m9',desc:'Regent Vane\'s army arrives at dawn. They want the relic, and the boy who carries it.',steps:[
- {t:'say',lines:[N('Smoke on the horizon. War banners under the dawn. Regent Vane\'s army has come.'),L('Commander Brandt','*Walls!* Archers on the ramparts! Ser Corin, take the gate!'),L('Ser Halvard','They are not here for the castle, boy. They are here for the *relic*. For *you*.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.6},{k:'bandit',s:1,d:1.2},{k:'archer',s:-1,d:1.8},{k:'bandit',s:1,d:2.4}]},
- {t:'choice',prompt:'The gate is cracking. Villagers pound on the postern.',opts:[
-  {label:'Hold the gate',desc:'Fight to the last. Buy them time.',c:4,cl:'Duty',flag:'heldGate',xp:50,lines:[N('Corin plants his shield. Behind him, the gate holds.')]},
-  {label:'Open the postern',desc:'Evacuate the villagers first.',c:12,cl:'Compassion',flag:'evacuated',maxhp:8,lines:[N('Hundreds stream into the chapel and cellars. They will not forget this.')]},
-  {label:'Burn the bridge',desc:'Cut the approach. Anyone outside burns.',c:-10,cl:'Ruthless',flag:'burnedBridge',lines:[N('Fire swallows the bridge. Screams drift over the walls.')]}]},
- {t:'say',lines:()=>G.flags.brannochAlly?[L('Brannoch','*Orphan!* On your left! ...I mean, Ser Corin.')]:G.flags.brannochFoe?[L('Brannoch','I would sooner die than... fine. *Fine*. Go.')]:[N('Hearthmoor\'s defenders fall back to the inner keep.')]},
- {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.5},{k:'ashen',s:1,d:1},{k:'bandit',s:-1,d:1.8},{k:'bandit',s:1,d:2.4}]},
- {t:'say',lines:()=>G.flags.sorrelSpared?[N('Captain Sorrel stands at the edge of the field. He lowers his blade, and leads his men *away*.')]:G.flags.sorrelDead?[N('Without Sorrel, the Regency line wavers. But the Ashen Hand does not.')]:[N('Lord Garran Vale, the Regent\'s hammer, rides through the broken gate.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0,boss:1,name:'Lord Garran Vale',hpm:7,dmgm:1.4,sp:{col:'#5a2a8a',metal:'#c0c8d8',trim:'#e8b84a',look:2,helm:'#c0c8d8',crest:'plume',crestC:'#5a2a8a',cape:'#2a1040',iris:'#3a2a5a',scar:0,nosh:1,w:0}},{k:'ashen',s:-1,d:2.5},{k:'ashen',s:1,d:4}]},
- {t:'say',lines:[N('Garran falls. From the ramparts, an arrow arcs through the smoke.'),L('Lysa','*Halvard!*'),N('Ser Halvard drops to one knee, a shaft through his shoulder. Smoke pours from every tower of Hearthmoor.'),L('Ser Halvard','Run, boy. The cellar road. *Now*.')]},
- {t:'chest',boost:2.2,out:.35}
-]},
+{id:'m10',type:'main',act:1,title:'Fire at Hearthmoor',reg:'night',lvl:7,req:'m9',
+ desc:'The fall of Hearthmoor. Cross six battlefields, defend the gate, save civilians, protect the chapel, and escape the keep.',
+ areas:[
+ {id:'outskirts',title:'The Outer Fields',reg:'green',steps:[
+  {t:'say',lines:[N('Smoke darkens the eastern sky. Regency banners fill the valley below Hearthmoor.'),L('Lysa','Scouts on the farm road. If they reach the walls first, the castle will be taken *unaware*.'),L('Corin','Then we get to the watchtower. Sound the alarm.')]},
+  {t:'wave',goal:'Break through the Regency scouts',list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.4},{k:'archer',s:-1,d:2.2}]},
+  {t:'interact',goal:'Reach the watchtower and ring the alarm',name:'ALARM BELL',flag:'m10warned',lines:[L('Corin','Hearthmoor! To *arms*!'),N('The warning bell cuts through the smoke. Soldiers rush to their posts.')]},
+  {t:'say',lines:[L('Ser Halvard','You bought us a few precious minutes. Ride to the *gatehouse*. We shall need every one.')]}
+ ]},
+ {id:'gatehouse',title:'The Broken Gate',reg:'hearth',steps:[
+  {t:'say',lines:[N('The gatehouse shudders under the Regent\'s battering rams.'),L('Commander Brandt','*Hold* the portcullis! They must not reach the village.')]},
+  {t:'defend',goal:'Keep the gate standing through the assault',target:'Gate',hp:145,list:[
+    {k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3},{k:'ashen',s:-1,d:2.1},{k:'archer',s:1,d:3.0}
+   ],outro:[L('Commander Brandt','The first assault is broken. Now seal the mechanism!')]},
+  {t:'interact',goal:'Reach the winch and secure the portcullis',name:'GATE WINCH',flag:'m10gateSecured',lines:[N('Iron chains grind. The portcullis slams shut behind the final defenders.')]},
+  {t:'say',lines:[L('Lysa','Smoke in the lower streets. The villagers are still inside.'),L('Corin','Then the battle is not finished.')]}
+ ]},
+ {id:'village',title:'The Burning Village',reg:'night',steps:[
+  {t:'say',lines:[N('Hearthmoor\'s lower village burns. Families flee between shattered market stalls.'),L('Lysa','There are people behind the barricade. And Regency soldiers at the storehouse.')]},
+  {t:'wave',goal:'Clear the market street',list:[
+    {k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.8},{k:'ashen',s:1,d:1.7},{k:'bandit',s:-1,d:2.4}
+   ]},
+  {t:'choice',goal:'Decide whom to save in the village',prompt:'The gate is cracking again. Villagers pound on the postern.',opts:[
+    {label:'Hold the gate',desc:'Guard the passage while families escape.',c:4,cl:'Duty',flag:'heldGate',xp:50,lines:[N('Corin holds the line while the last families pass through the smoke.')]},
+    {label:'Open the postern',desc:'Evacuate everyone, even if the gate falls.',c:12,cl:'Compassion',flag:'evacuated',maxhp:8,lines:[N('Hundreds stream into the chapel and cellars. They will remember.')]},
+    {label:'Burn the bridge',desc:'Cut off the attack. Some may be left outside.',c:-10,cl:'Ruthless',flag:'burnedBridge',lines:[N('Flames swallow the bridge. Behind them the street falls silent.')]}
+   ]},
+  {t:'interact',goal:'Recover the remaining supplies',name:'SUPPLY CACHE',flag:'m10supplies',lines:[N('Corin gathers medicine, bandages and dry provisions for the survivors.')]}
+ ]},
+ {id:'chapel',title:'The Chapel Ward',reg:'chapel',steps:[
+  {t:'say',lines:[N('Under the chapel, the Oathcrown shard burns brighter than the candles.'),L('Magister Ione','The blight feels the shard. If I can raise the old *ward*, the wounded can escape.'),L('Corin','Tell me what you need.')]},
+  {t:'wave',goal:'Clear the chapel approach',list:[
+    {k:'blight',s:1,d:0},{k:'blight',s:-1,d:.5},{k:'hound',s:1,d:1.4},{k:'ashen',s:-1,d:2.3}
+   ]},
+  {t:'interact',goal:'Activate the Dawnroot focus',name:'WARD FOCUS',flag:'m10focus',lines:[L('Magister Ione','Now! The ward is awake. Hold it while I bind the runes.')]},
+  {t:'defend',goal:'Protect Ione\'s ward from the blight',target:'Chapel Ward',hp:160,list:[
+    {k:'blight',s:1,d:0},{k:'blight',s:-1,d:.55},{k:'ashen',s:1,d:1.2},{k:'blight',s:-1,d:1.8},{k:'hound',s:1,d:2.8}
+   ],outro:[L('Magister Ione','It holds! Go to the keep. I will shepherd the wounded through the crypts.')]}
+ ]},
+ {id:'keep',title:'The Inner Keep',reg:'keep',steps:[
+  {t:'say',lines:()=>G.flags.brannochAlly?[L('Brannoch','Ser Corin! I kept the stair open. Now we hold it *together*.')]:G.flags.brannochFoe?[L('Brannoch','You are late, orphan. I have no intention of dying for your *pride*.')]:[N('In the inner keep, the last defenders gather behind the fallen banners.')]},
+  {t:'wave',goal:'Fight through the elite assault',list:[
+    {k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.7},{k:'archer',s:1,d:1.4},{k:'bandit',s:-1,d:2.1}
+   ]},
+  {t:'say',lines:()=>G.flags.sorrelSpared?[N('Captain Sorrel stands beyond the broken gate. Recognizing Corin, he withdraws his men without a word.')]:G.flags.sorrelDead?[N('Without Sorrel, the Regency line falters. The Ashen Hand presses on.')]:[N('Lord Garran Vale storms into the keep, armored in the Regent\'s colors.')]},
+  {t:'wave',goal:'Defeat Lord Garran Vale',list:[
+    {k:'bandit',s:1,d:0,boss:1,name:'Lord Garran Vale',hpm:7,dmgm:1.4,sp:{col:'#5a2a8a',metal:'#c0c8d8',trim:'#e8b84a',look:2,helm:'#c0c8d8',crest:'plume',crestC:'#5a2a8a',cape:'#2a1040',iris:'#3a2a5a',nosh:1,w:0}},
+    {k:'ashen',s:-1,d:2.5},{k:'archer',s:1,d:4}
+   ],outro:[N('Garran falls. An arrow arcs down from the ramparts.'),L('Lysa','*Halvard*!'),N('A shaft strikes Halvard\'s shoulder. He drops to one knee.'),L('Ser Halvard','The cellar passage. Go, boy! The *castle* is lost.')]}
+ ]},
+ {id:'cellar',title:'The Cellar Passage',reg:'cave',steps:[
+  {t:'say',lines:[N('Smoke follows Corin into the tunnels below Hearthmoor.'),L('Lysa','The eastern tunnel is blocked. We need to open the old escape shaft.'),L('Ser Halvard','Quickly. They are behind us.')]},
+  {t:'interact',goal:'Open the ancient cellar lock',name:'CELLAR LOCK',flag:'m10cellarOpen',lines:[N('A rusted lever gives way. Cold air pours from the forgotten passage.') ]},
+  {t:'wave',goal:'Drive off the pursuing enemies',list:[
+    {k:'ashen',s:-1,d:0},{k:'blight',s:1,d:.8},{k:'hound',s:1,d:1.8},{k:'ashen',s:-1,d:2.5}
+   ]},
+  {t:'chest',boost:2.2,out:.35,goal:'Gather provisions for the road',lines:[L('Lysa','Take what we can carry. The wounded will need it.')]},
+  {t:'say',flag:'m10escaped',goal:'Escape the fallen castle',lines:[N('Behind them, the banners of Hearthmoor vanish in the flames.'),L('Corin','The castle may have fallen. But we are not *finished*.'),N('Beyond the passage waits the Greenmarch and the long night.')]}
+ ]}
+ ]},
 {id:'m11',type:'main',act:1,title:'The Long Night',reg:'night',lvl:8,req:'m10',endLoc:'green',desc:'Through the cellar road and across the Greenmarch, with the Regency on their heels.',steps:[
  {t:'say',lines:[N('Through the cellar road and out into the smoking dark. Behind them, Hearthmoor burns.'),L('Lysa','He is losing blood. We cannot outrun them like this.'),L('Ser Halvard','Leave me... I will hold them at the *bridge*.')]},
  {t:'choice',prompt:'Halvard can barely stand.',opts:[

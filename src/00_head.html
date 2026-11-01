@@ -8,7 +8,12 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 html,body{margin:0;height:100%;background:#000;color:#f4e9c8;font-family:"Courier New",ui-monospace,monospace;overflow:hidden;touch-action:none}
 #cv{position:fixed;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;background:#111}
-button{font-family:inherit}
+/* Keep rapid gameplay taps from becoming Safari double-tap zoom. 
+   Menus retain vertical scrolling; touch combat controls never request browser gestures. */
+button{font-family:inherit;touch-action:manipulation;-webkit-touch-callout:none}
+#cv,#hud,#ctl,#panel,#title{touch-action:none}
+#modal{touch-action:pan-y}
+#modal button{touch-action:manipulation}
 /* HUD */
 #hud{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;padding:max(8px,env(safe-area-inset-top)) 10px 0;pointer-events:none;font-weight:bold;text-shadow:0 1px 0 #000,1px 0 0 #000,-1px 0 0 #000,0 -1px 0 #000;z-index:4}
 .bars{width:132px}
@@ -39,6 +44,11 @@ button{font-family:inherit}
 .opt{font:inherit;text-align:left;background:rgba(20,14,8,.95);color:#f4e9c8;border:2px solid #c9a24a;border-radius:10px;padding:9px 12px;cursor:pointer}
 .opt b{display:block;color:#ffd34a;font-size:15px;-webkit-text-stroke:0}
 .opt small{display:block;font-size:12px;opacity:.85;margin-top:2px;font-weight:normal;-webkit-text-stroke:0}
+/* objective overlay: compact and readable on mobile */
+#objtrack{position:fixed;left:10px;top:max(63px,calc(env(safe-area-inset-top) + 53px));max-width:min(72vw,310px);z-index:6;pointer-events:none;background:rgba(16,13,18,.86);border:1px solid #b39b65;border-radius:7px;padding:5px 8px;color:#fff0c6;font:10px/1.35 "Courier New",monospace}
+#objtrack strong{display:block;color:#ffd34a;font-size:10px;margin-bottom:2px}
+#objtrack span{display:block}
+#usebtn{pointer-events:auto;display:none;position:absolute;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translateX(-50%);width:62px;height:62px;font-size:12px;border-color:#fff3b8;background:rgba(59,44,22,.9)}
 /* controls */
 #ctl{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:10px 12px calc(14px + env(safe-area-inset-bottom));pointer-events:none;z-index:5}
 .pad{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
@@ -92,6 +102,8 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 #boot b{display:block;font:900 26px Impact,'Arial Black',sans-serif;color:#ffd34a;margin-bottom:10px}
 #boot code{color:#ff9a8a;font-size:12px}
 @media (orientation:landscape){
+ #usebtn{width:44px;height:44px;font-size:10px;bottom:calc(72px + env(safe-area-inset-bottom))}
+ #objtrack{top:max(46px,calc(env(safe-area-inset-top) + 38px));max-width:45vw}
  .btn{width:54px;height:54px;font-size:14px}.btn.big{width:68px;height:68px}.btn.sm{width:40px;height:40px;font-size:9px}.btn.abl{width:46px;height:46px}
  .wk{grid-template-columns:repeat(2,40px);gap:6px}
  #ctl{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
@@ -110,9 +122,11 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 </div>
 <div id="boss"><span id="bname"></span><div class="bar"><i id="bhp"></i></div></div>
 <div id="toast"></div>
+<div id="objtrack" aria-live="polite" style="display:none"></div>
 <div id="panel"><div id="cap"></div><div id="ch"></div></div>
 <div id="ctl">
   <div class="pad"><button class="btn" data-k="l">&#9664;</button><button class="btn" data-k="r">&#9654;</button></div>
+  <button class="btn" id="usebtn" data-k="use" aria-label="Use nearby object">USE</button>
   <div class="pad">
     <div class="wk">
       <button class="btn sm sel" data-w="0">SWORD</button>

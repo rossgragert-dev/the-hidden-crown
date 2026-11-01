@@ -20,7 +20,7 @@ const { chromium } = require('playwright');
   ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   page = await ctx.newPage();
   page.on('pageerror', e => errs.push('iframe: ' + e.message));
-  const fs = require('fs'); const html = fs.readFileSync('/home/claude/game/hidden-crown.html', 'utf8');
+  const fs = require('fs'); const html = fs.readFileSync(require('path').resolve(__dirname,'..','index.html'),'utf8');
   await page.setContent('<iframe id="f" sandbox="allow-scripts" style="width:390px;height:844px;border:0"></iframe>');
   await page.evaluate(h => { document.getElementById('f').srcdoc = h; }, html);
   await page.waitForTimeout(1200);
