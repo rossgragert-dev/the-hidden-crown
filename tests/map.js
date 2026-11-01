@@ -1,0 +1,36 @@
+const { chromium } = require('playwright');
+(async () => {
+  const browser = await chromium.launch();
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on('pageerror', e => errs.push('PAGEERR ' + e.message));
+  page.on('console', m => { if (m.type() === 'error') errs.push('CONSOLE ' + m.text()); });
+  await page.goto(require('url').pathToFileURL(require('path').resolve(__dirname,'..','index.html')).href);
+  await page.waitForTimeout(400);
+  await page.evaluate(() => { const g = window.__G; g.G.lvl = 8; g.G.pts = 4; g.G.done = { m1: 1, m2: 1, m3: 1, m4: 1, m5: 1, s1: 1 }; g.G.loc = 'hearth'; g.calc();
+    for (let i = 0; i < 6; i++) g.G.inv.push(g.genItem(5, i % 5, i % 2 ? 'outfit' : undefined)); g.openBoard(); });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: '/tmp/shots/M1-map.png' });
+  await page.evaluate(() => { document.getElementById('modal').scrollTop = 99999; });
+  await page.screenshot({ path: '/tmp/shots/M1b-map-bottom.png' });
+  await page.evaluate(() => { document.getElementById('modal').scrollTop = 0; window.__G.ACT.node('mine'); });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: '/tmp/shots/M2-mine.png' });
+  // travel
+  await page.evaluate(() => window.__G.ACT.go('mine'));
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: '/tmp/shots/M3-travel.png' });
+  await page.waitForTimeout(3500);
+  console.log('loc', await page.evaluate(() => window.__G.G.loc + ' day ' + window.__G.G.day));
+  await page.evaluate(() => window.__G.ACT.node('road'));
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: '/tmp/shots/M4-locked.png' });
+  await page.evaluate(() => { window.__G.ACT.bag(); window.__G.ACT.flt('outfit'); });
+  await page.waitForTimeout(300);
+  await page.evaluate(() => { const g = window.__G; const o = g.G.inv.find(i => i.slot === 'outfit'); g.ACT.selInv(o.id); g.ACT.equip(o.id); });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: '/tmp/shots/M5-bag-outfit.png' });
+  console.log(errs.join('\n') || 'no errors');
+  await browser.close();
+})();
