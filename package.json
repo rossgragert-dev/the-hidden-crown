@@ -9,7 +9,8 @@
     "test:smoke": "node tests/smoke.js",
     "test:boot": "node tests/boot.js",
     "test:bot": "node tests/bot.js",
-    "test:quest": "node tests/quest.js"
+    "test:quest": "node tests/quest.js",
+    "test:zoom": "node tests/zoom.js"
   },
   "devDependencies": { "playwright": "^1.40.0" }
 }
