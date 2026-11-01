@@ -8,7 +8,7 @@ function adventureBegin(area){
   S.adv={
     length:d.length||1000,
     platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y})),
-    objects:(d.objects||[]).map((o,i)=>Object.assign({i,done:false},o)),
+    objects:(d.objects||[]).map((o,i)=>Object.assign({i,done:!S.replay&&!!(o.flag&&G.flags[o.flag])},o)),
     scenery:d.scenery||'castle',seed:d.seed||5,
     progress:0,combatAt:(d.combatAt||[]).map((w,i)=>Object.assign({i,done:false},w))
   };
@@ -126,7 +126,8 @@ function adventureWorldDraw(cam){
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
     const x=i*110+((i*79+seed*19)%33)-cam;
-    const v=(i*61+seed*17)%7;
+    const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
+    const v=(hash^(hash>>>13))%13;
     if(a.scenery==='road'){
       if(v%2===0){
         R(x,y-64,3,64,'#58412e');R(x-12,y-73,27,18,'#406036');
@@ -176,6 +177,11 @@ function adventureWorldDraw(cam){
   }
   if(S.joust){
     const j=S.joust,w=94,x=clamp(P.x-cam-48,6,Math.max(6,W-103)),py=y+(P.py||0)-97;
+    const riderX=x+95-Math.round(j.t/1.85*100);
+    R(riderX-9,py-50,28,9,'#6d4939');R(riderX+8,py-57,8,13,'#664032');
+    R(riderX-6,py-43,4,9,'#49322a');R(riderX+12,py-43,4,9,'#49322a');
+    R(riderX+1,py-66,6,17,'#86898e');R(riderX,py-70,8,8,'#d6ae79');
+    R(riderX+7,py-62,34,2,'#e2c481');
     R(x-4,py-22,105,45,'rgba(12,10,14,.88)');
     R(x,py,94,7,'#49362b');R(x+38,py,18,7,'#96bd55');
     R(x+Math.min(91,j.t/1.85*91),py-3,3,14,'#ffdf7e');
