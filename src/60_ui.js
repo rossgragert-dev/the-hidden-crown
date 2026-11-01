@@ -345,4 +345,4 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud};
