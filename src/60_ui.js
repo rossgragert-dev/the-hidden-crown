@@ -249,7 +249,7 @@ function startPrologue(){
   say([N('Auremark. Sixteen years ago. The *Night* of *Ash*.'),
        N('King Roderan lay *poisoned* by the very man sworn to guard his throne.'),
        N('Regent *Maldric* Vane burned the royal nursery. The kingdom was told the infant prince had *perished*.'),
-       N('He had not. Ser *Halvard* carried the last *Aldaris* through the flames.')],()=>fade(()=>startMission('m1')));
+       N('He had not. Ser *Halvard* carried the last *Aldaris* through the flames.')],()=>fade(()=>startMission('m0')));
 }
 
 /* ================= iOS ZOOM GUARD ================= */
@@ -280,20 +280,20 @@ function startPrologue(){
 /* ================= INPUT ================= */
 document.querySelectorAll('[data-k]').forEach(b=>{
   const k=b.dataset.k,up=()=>{keys[k]=0;b.classList.remove('on');};
-  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use')useMissionObject();try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use'){if(!adventureUse())useMissionObject();}if(k==='jump')adventureJump();try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
 });
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();setW(+b.dataset.w);}));
 $('mode').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleMode();});
 $('panel').addEventListener('pointerdown',e=>{if(e.target.closest('.opt'))return;adv();});
 cv.addEventListener('pointerdown',()=>{if(S.talk)adv();});
-const KM={x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
+const KM={ArrowUp:'jump',w:'jump',W:'jump',Shift:'block',x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
 addEventListener('keydown',e=>{
   if(modal.classList.contains('on')){if(e.key==='Escape'&&S.mode==='play')hideModal();return;}
   if(S.mode!=='play'&&S.mode!=='prologue')return;
   if(e.key==='Enter'||(e.key===' '&&S.talk)){adv();e.preventDefault();return;}
   if(e.key===' '){keys.atk=1;e.preventDefault();return;}
-  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use')useMissionObject();e.preventDefault();}
+  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use'){if(!adventureUse())useMissionObject();}if(KM[e.key]==='jump'&&!e.repeat)adventureJump();e.preventDefault();}
   if(e.key==='1')setW(0);if(e.key==='2')setW(1);if(e.key==='3')setW(2);if(e.key==='q'||e.key==='Q')toggleMode();
   if(e.key==='b'||e.key==='B')ACT.bag();if(e.key==='k'||e.key==='K')ACT.skills();if(e.key==='Escape')renderMenu();
 });
@@ -304,4 +304,4 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},useMissionObject,loadMissionArea,missionHud};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud};
