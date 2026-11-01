@@ -278,8 +278,14 @@ function personParts(o){
   if(o.robe){
     A(-6,-T-12-bb,12,T+9,col);A(-6,-T-12-bb,12,2,cL,'n');A(-7,-5,14,3,cD);A(-3,-2,3,2,boot,'n');A(1+stride,-2,3,2,boot,'n');A(-6,-T-1-bb,12,2,trim,'n');
   }else{
+    if(o.mounted){ // seated: far leg behind, thigh across the saddle, shin down to the stirrup
+      const lg=o.leg||'#3b2f3a';
+      A(-3,-14,10,5,sh(lg,-.25));A(3,-10,3,8,sh(lg,-.25));A(2,-3,5,3,sh(boot,-.2),'n');
+      A(-4,-15,12,6,lg);A(-4,-15,12,1,sh(lg,.3),'n');A(5,-10,4,7,lg);A(4,-4,6,4,boot);A(4,-4,6,1,sh(boot,.3),'n');A(8,-1,3,1,'#c8c0b0','n');
+    }else{
     A(-3-stride,-lh,2,lh-3,leg,'n');A(2+stride,-lh,2,lh-3,leg,'n');
     A(-4-stride,-3-(stride>0?1:0),4,3,boot);A(1+stride,-3-(stride<0?1:0),5,3,boot);
+    }
     Au(-5,-T,10,5,cD);Au(-4,-T,2,5,col,'n');Au(1,-T,2,5,col,'n');
     Au(-6,-T-12,12,12,col);Au(-5,-T-11,4,5,cL,'n');
     if(look>=1&&!o.cloth){for(let i=0;i<4;i++)Au(-2+(i%2)*3,-T-11+i*3,2,1,cL,'n');}
