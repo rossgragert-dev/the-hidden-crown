@@ -44,7 +44,7 @@ const MISSIONS=[
      L('Stablemaster Tobren','A knight is only as ready as his horse. The saddle is stored above. Mind your footing, squire.'),
      L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
    ]}]},
-  {id:'lists',title:'The Tournament Lists',reg:'day',explore:{length:1030,scenery:'castle',seed:18,
+  {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'castle',seed:18,
     platforms:[{x:170,w:136,y:-34},{x:700,w:118,y:-45}],
     objects:[
      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
