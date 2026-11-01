@@ -32,7 +32,7 @@ const MISSIONS=[
       needFlags:['squireArmor','squireHelmet','squireOil','squireLancesReady','squireShield'],locked:'FIND THE ARMORY KEY'}
     ]
    },steps:[{t:'explore',goal:'Prepare Halvard\'s tournament armor, helm, polish and lances',intro:[
-     N('Sixteen years after the Night of Ash, an unknown prince lives as an ordinary squire at Castle Hearthmoor.'),
+     N('Castle Hearthmoor. The morning of the tournament. Halvard has left Corin responsible for preparing his equipment.'),
      L('Ser Halvard','Corin! I need my breastplate, tournament helm, polishing oil, and a bundle of sound lances before I ride. The upper racks are locked; find the iron key.'),
      L('Corin','Aye, Father. I will have every buckle shining before the trumpets sound.'),
      N('Move with your left thumb and tap JUMP with your right. Search the armor racks, leap to the upper loft, and tap USE near supplies.')
@@ -86,20 +86,22 @@ const MISSIONS=[
      N('Travel the road yourself. Blight creatures, reavers and archers may be lying in wait; recover the patrol seal on the upper ledge.')
    ]}]}
  ]},
-{id:'m1',type:'main',act:1,title:'Eyes Up',reg:'hearth',lvl:1,req:'m0',desc:'Castle Hearthmoor. A squire, his mentor, and the first blight wolves.',steps:[
- {t:'say',lines:[
-  N('Sixteen years later, at Castle Hearthmoor, a *squire* named Corin polishes his master\'s armor. He does not know who he is.'),
-  N('*You* do.'),
-  L('Ser Halvard','Eyes up, *Corin*. Blighted wolves are on the Greenmarch road, and the Regent\'s tax men will not ride out to face them.'),
-  L('Corin','Then we ride out, Ser. Somebody should.'),
-  L('Lysa','He says that like he is already a *knight*.'),
-  L('Ser Halvard','...Aye. Like he was *born* to it.'),
-  L('Corin','Why do you always look at me like that, Ser?'),
-  L('Ser Halvard','Draw your steel, boy. Learn *all* *three*: sword, staff, bow. A knight who knows one trick dies of it.')]},
- {t:'toast',text:'ATK to fight. SWORD / STAFF / BOW to swap. Open BAG and SKILLS anytime.'},
- {t:'wave',intro:[L('Lysa','*Blightlings!* Left and right, Corin!')],list:[{k:'blight',s:1,d:0},{k:'blight',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[L('Corin','They were wolves once. Look at their *eyes*.')]},
- {t:'chest',boost:0,lines:[L('Ser Halvard','The armory chest. Take what you can use. The rarer the gear, the brighter it *glows*.')]},
- {t:'say',lines:[L('Lysa','Whatever is killing the Greenmarch, it is *spreading*.'),L('Ser Halvard','Then we ride at dawn. Rest, both of you.')]}
+{id:'m1',type:'main',act:1,title:'Blight at the Castle Gates',reg:'hearth',lvl:1,req:'m0',
+ desc:"After the tournament and Corin's first patrol, blighted creatures approach the walls of Hearthmoor. Hold the castle approaches before the danger reaches the villagers.",
+ steps:[
+  {t:'say',lines:[
+    L('Ser Halvard','Back from the patrol already, Corin? Your report will have to wait. The watchmen have seen blighted creatures by the north gate.'),
+    L('Corin','I saw the same markings on the road. They are moving toward the village.'),
+    L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
+  ]},
+  {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'blight',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
+    L('Corin','They came all this way. There must be more of them on the Greenmarch.')
+  ]},
+  {t:'chest',boost:0,lines:[L('Ser Halvard','Take the supplies left beside the gate. You earned them.')]},
+  {t:'say',lines:[
+    L('Lysa','Something is driving these creatures out of the forest. We need to find out what.'),
+    L('Ser Halvard','At dawn, we ride toward the Greenmarch. Tonight, the castle is safe.')
+  ]}
 ]},
 {id:'m2',type:'main',act:1,title:'The Greenmarch Road',reg:'green',lvl:1,req:'m1',desc:'A Regency guard crawls out of the blight with a warning.',steps:[
  {t:'say',lines:[N('The Greenmarch. Fields that should be golden are grey with rot.'),L('Lysa','Tracks. Dozens. Heading for the village.')]},
