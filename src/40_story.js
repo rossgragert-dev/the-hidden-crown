@@ -334,3 +334,8 @@ const STUBS=[
 const LOC={m0:'hearth',m1:'hearth',m2:'green',m3:'green',m4:'fen',m5:'hearth',m6:'hearth',m7:'hearth',m8:'hearth',m9:'hearth',m10:'hearth',m11:'hearth',m12:'green',s1:'hearth',s2:'green',s3:'green',s4:'fen',s5:'hearth',d1:'thorn',d2:'cave',d3:'mine',d4:'keep'};
 MISSIONS.forEach(m=>{if(!m.loc)m.loc=LOC[m.id];});
 const MBY=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
+// Hidden preview mission (not on the world map): mounted jousting using the shared engine.
+MBY.joustlab={id:'joustlab',type:'lab',act:0,title:'Joust Lab',reg:'hearth',lvl:1,desc:'Preview of mounted jousting.',areas:[
+ {id:'lab',title:'Joust Lab: The Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,platforms:[],
+  objects:[{kind:'joust',role:'rider',label:'RIDE THE LISTS',x:527,y:0},{kind:'exit',label:'LEAVE LAB',x:956,y:0}]},
+  steps:[{t:'explore',goal:'Walk to the marker and ride three passes',intro:[N('Preview: Corin rides his own horse. Lower your lance as the foe lowers his.')]}]}]};

@@ -5,7 +5,9 @@
 - New `src/47_joust.js`: ONE deterministic fixed-step joust engine used by both roles. `squire` (Corin on foot hands Halvard a lance; positional reach test) and `rider` (mounted lance-vs-lance with seeded opponent). Easy mode via `G.opts.joustEasy`. Replaces the old timing bar; M0 flags, 3 passes and +35 gold on 2+ handoffs unchanged.
 - Stables: real horse replaces the rectangle, with hay, bucket, grooming animation and dirty→groomed→saddled states. Seated-rider legs in `personParts`.
 - Tests: `tests/joust.js` (determinism, misses, easy mode, rider role); `tests/adventure.js` drives the new engine; `tests/evidence.js` captures before/after scene screenshots.
-- Deferred: mounted joust is engine-level only (no menu "Joust Lab" or story scene yet); armory and tournament-stand scenery redraw; horse combat.
+- New `src/48_scenes.js`: redrawn armory (heraldry hall, weapon wall, forge with embers and anvil, plate-armour stands, torch light pools, rug runner) and tournament lists (sky/hills/castle parallax, timber stands with animated crowd that cheers during passes, striped pavilion, tilt barrier, hoof-marked sand).
+- MENU → JOUST LAB (PREVIEW): Corin on his own horse rides three passes against a seeded foe using the same engine (hidden `joustlab` mission, no story or reward side effects). MENU → EASY JOUSTING toggle. Joust HUD moved clear of the mission tracker; `tests/lab.js` added.
+- Deferred: mounted joust inside the story (tournament mission), horse combat, stable/armory prop-level object art, iPhone Safari playtest.
 
 ## 0.5.0 (development branch — not merged)
 - Added opt-in multi-area quest data format with per-area maps, objectives, scene changes and checkpoint saves, preserving existing single-area missions.

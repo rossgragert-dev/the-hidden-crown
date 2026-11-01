@@ -243,6 +243,8 @@ function renderMenu(){
   let h=hdr('MENU',goldStr());
   h+='<button class="bt go" data-a="close" style="width:100%;margin-bottom:8px">RESUME</button><button class="bt" data-a="bag" style="width:100%;margin-bottom:8px">BAG</button><button class="bt" data-a="skills" style="width:100%;margin-bottom:8px">SKILLS</button><button class="bt" data-a="savegame" style="width:100%;margin-bottom:8px">SAVE GAME</button>';
   if(S.mode==='play')h+='<button class="bt" data-a="abandon" style="width:100%;margin-bottom:8px">ABANDON MISSION</button>';
+  if(S.mode!=='play')h+='<button class="bt" data-a="joustlab" style="width:100%;margin-bottom:8px">JOUST LAB (PREVIEW)</button>';
+  h+='<button class="bt" data-a="jousteasy" style="width:100%;margin-bottom:8px">EASY JOUSTING: '+((G.opts&&G.opts.joustEasy)?'ON':'OFF')+'</button>';
   h+='<button class="bt" data-a="title" style="width:100%">SAVE &amp; QUIT TO TITLE</button>';
   showModal(h);
 }
@@ -270,6 +272,8 @@ const ACT={
   sell(v){const it=G.inv.find(x=>x.id===v);if(it)sellItem(it);UI.sel=null;renderBag();},
   sellcommon(){G.inv.filter(i=>i.rar===0).forEach(sellItem);UI.sel=null;renderBag();},
   savegame(){save();toast('Game saved');},
+  joustlab(){hideModal();fade(()=>startMission('joustlab'));},
+  jousteasy(){G.opts=G.opts||{};G.opts.joustEasy=!G.opts.joustEasy;save();renderMenu();},
   abandon(){hideModal();fade(()=>openBoard());},
   title(){save();hideModal();fade(()=>{resetField();showTitle();});}
 };

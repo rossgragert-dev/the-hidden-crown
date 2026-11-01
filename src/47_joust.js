@@ -99,7 +99,7 @@ function joustTick(J,dt){
 function joustStride(g){return {walk:1.7,trot:2.8,canter:3.2,gallop:4.2,idle:0}[g]||0;}
 function joustDone(J){return J.phase==='done';}
 // Prebake every pose the engine will show so the first pass does not hitch.
-function joustPrebake(){prebakeHorse('charger','tourney','hearth',['walk','trot','canter','gallop']);prebakeHorse('bay','tourney','crimson',['walk','trot','canter','gallop']);}
+function joustPrebake(){const gs=['walk','trot','canter','gallop'];prebakeHorse('charger','tourney','hearth',gs);prebakeHorse('chestnut','tourney','hearth',gs);prebakeHorse('black','tourney','crimson',gs);}
 const JOUST_HALV={...NPCS.halv,mv:true,w:3};
 function joustDraw(J,cam,gy){
   const ax=J.anchor-cam;
@@ -114,11 +114,11 @@ function joustDraw(J,cam,gy){
   if(J.role==='squire'&&J.handed&&J.phase!=='prep')lance.none=true;
   const laneY=gy-(J.role==='squire'?7:0);
   const ph=J.a.ph;
-  const m=drawMounted(a.x-cam,laneY,1,{v:J.role==='squire'?'charger':'charger',tk:'tourney',liv:'hearth',gait:a.gait,ph},rd,lance);
+  const m=drawMounted(a.x-cam,laneY,1,{v:J.role==='squire'?'charger':'chestnut',tk:'tourney',liv:'hearth',gait:a.gait,ph},rd,lance);
   if(J.role==='squire'&&J.handed){drawLance(Math.round(ax+10),gy-26,1,-70,{back:6});}
   if(J.role==='rider'){
     const b=J.b,bl={ang:b.set>=0?2:-26,none:false};
-    drawMounted(b.x-cam,laneY,-1,{v:'bay',tk:'tourney',liv:'crimson',gait:b.gait,ph:b.ph},{...NPCS.brannoch,mv:true,w:3,helm:'#8a8f9a',crest:'plume',crestC:'#2a2a34'},bl);
+    drawMounted(b.x-cam,laneY,-1,{v:'black',tk:'tourney',liv:'crimson',gait:b.gait,ph:b.ph},{...NPCS.brannoch,mv:true,w:3,helm:'#8a8f9a',crest:'plume',crestC:'#2a2a34'},bl);
   }
   // off-screen indicator for the narrow portrait view
   const rx=a.x-cam;
@@ -137,5 +137,5 @@ function joustHud(J,x,y){
   const t=J.role==='squire'?'PASS '+J.round+'/'+J.passes+'  HANDOFFS '+J.score:'PASS '+J.round+'/'+J.passes+'  YOU '+J.score+' FOE '+J.foe;
   g.fillText(t,x,y-4);
   g.fillStyle=J.phase==='resolve'?(J.verdict==='PERFECT HANDOFF'||J.verdict==='CLEAN HIT'?'#9be58a':'#ff9b8a'):'#c9b88a';
-  g.fillText(J.phase==='resolve'?J.verdict:J.phase==='prep'?'RIDER MOUNTING UP...':(J.role==='squire'?(J.used?'LANCE OUT...':'USE: OFFER THE LANCE'):(J.set>=0?'LANCE SET':'USE: COUCH THE LANCE')),x,y+8);
+  g.fillText(J.phase==='resolve'?J.verdict:J.phase==='prep'?'RIDER MOUNTING UP...':(J.role==='squire'?(J.used?'LANCE OUT...':'USE: OFFER THE LANCE'):(J.set>=0?'LANCE SET':(J.phase==='approach'&&J.b.x-J.a.x<420&&J.b.x-J.a.x>230?'LOWER LANCE NOW!':'USE: COUCH THE LANCE'))),x,y+8);
 }

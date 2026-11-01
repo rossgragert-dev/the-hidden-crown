@@ -50,6 +50,7 @@ function loadMissionArea(idx){
 }
 function endMissionArea(){
   const m=S.mission;
+  if(m.type==='lab'){hideModal();fade(()=>openBoard());return;}
   if(m.type==='travel'){
     if(S.areaIndex>=m.areas.length-1){
       G.loc=m.endLoc;G.day=(G.day||1)+m.travelDays;save();
@@ -72,7 +73,7 @@ function missionHud(force){
   if(S.mode!=='play'||!S.areaData){box.style.display='none';return;}
   const a=S.areaData,goals=S.beats.filter(b=>b.st.goal);
   const current=goals.find(b=>!S.goalsDone[b.i]);
-  const label=S.joust?'Pass '+S.joust.round+'/'+S.joust.passes+': tap USE as the rider reaches your hand':current?current.st.goal:'Proceed to the next area';
+  const label=S.joust?(S.joust.role==='rider'?'Pass '+S.joust.round+'/'+S.joust.passes+': tap COUCH when the foe lowers his lance':'Pass '+S.joust.round+'/'+S.joust.passes+': tap USE as the rider reaches your hand'):current?current.st.goal:'Proceed to the next area';
   const count=goals.filter(b=>S.goalsDone[b.i]).length;
   const guard=S.guard?' | '+S.guard.name+' '+Math.max(0,Math.ceil(S.guard.hp))+'/'+S.guard.max:'';
   const html=(S.areaIndex+1)+'/'+S.mission.areas.length+'  '+a.title+'  ('+count+'/'+goals.length+')'+guard+'|'+label;
@@ -321,8 +322,9 @@ function update(dt){
     use.style.opacity=near?'1':'.45';
   }
   missionHud(false);
-  const tgt=S.arena?S.arenaL:clamp(P.x-W*.4,0,Math.max(0,last+60-W));
-  S.cam=lerp(S.cam,tgt,Math.min(1,dt*6));
+  const rj=S.joust&&S.joust.role==='rider';
+  const tgt=S.arena?S.arenaL:clamp(P.x-W*(rj?.3:.4),0,Math.max(0,last+60-W));
+  S.cam=lerp(S.cam,tgt,Math.min(1,dt*(rj?14:6)));
 }
 
 /* ================= DRAW ================= */
@@ -359,7 +361,7 @@ function drawScene(cam){
   if(S.npc){const o={...NPCS[S.npc.k],w:-1,ph:0};drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);}
   if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
-  drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
+  if(!(S.joust&&S.joust.role==='rider'))drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
   if(keys.block&&G.shieldTier>=0){
     const x=Math.round(P.x-cam+P.face*10),y=Math.round(GY+(P.py||0)-27);
     R(x-5,y-11,10,23,G.shieldTier>=2?'#5ba7ed':G.shieldTier===1?'#9295a2':'#8a643a');
