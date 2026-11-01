@@ -6,6 +6,9 @@ on:
   pull_request:
     branches:
       - main
+concurrency:
+  group: living-quests-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   game-regressions:
     runs-on: ubuntu-latest
