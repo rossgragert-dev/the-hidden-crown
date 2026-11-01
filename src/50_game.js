@@ -383,12 +383,17 @@ function draw(){
   else if(S.mode==='title'||S.mode==='hub'){const hx=cam+W*.5;drawPerson(hx-30,GY,1,{...NPCS.halv,w:-1});drawPerson(hx-14,GY,1,{...NPCS.lysa,w:-1,ph:1});drawPerson(hx,GY,1,{...heroOpts(),mv:false,w:-1});}
   else drawScene(cam);
   for(const p of parts)if(p.k==='s'||p.k==='e'){g.globalAlpha=Math.min(1,p.life/p.max*1.5);R(p.x-cam,p.y,2,2,p.c);g.globalAlpha=1;}
-  if(LAY.fg)lyr(LAY.fg,1.25,cam);
-  const p0=PALS[pk];
-  if(pk==='ash'){g.fillStyle='rgba(255,120,30,'+(.07+.04*Math.sin(S.t*7)).toFixed(3)+')';g.fillRect(0,0,W,H);}
-  else if(p0.env){g.fillStyle=p0.tint;g.fillRect(0,0,W,H);}
-  else if(pk!=='night'){g.fillStyle='rgba(120,150,30,'+S.blight.toFixed(3)+')';g.fillRect(0,0,W,H);}
-  else{g.fillStyle='rgba(20,30,80,.12)';g.fillRect(0,0,W,H);}
+  // These hand-authored locations have their own indoor and arena foreground;
+  // do not paint exterior trees or landscape tint over castle walls.
+  const isUniqueRoom=!!(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0);
+  if(!isUniqueRoom){
+    if(LAY.fg)lyr(LAY.fg,1.25,cam);
+    const p0=PALS[pk];
+    if(pk==='ash'){g.fillStyle='rgba(255,120,30,'+(.07+.04*Math.sin(S.t*7)).toFixed(3)+')';g.fillRect(0,0,W,H);}
+    else if(p0.env){g.fillStyle=p0.tint;g.fillRect(0,0,W,H);}
+    else if(pk!=='night'){g.fillStyle='rgba(120,150,30,'+S.blight.toFixed(3)+')';g.fillRect(0,0,W,H);}
+    else{g.fillStyle='rgba(20,30,80,.12)';g.fillRect(0,0,W,H);}
+  }
   for(const f of fxs){
     if(f.k==='t'){g.font=(f.big?'bold 10px':'bold 8px')+' "Courier New",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='#000';g.globalAlpha=Math.min(1,f.life*2);{const tx=clamp(Math.round(f.x-cam),34,W-34);g.strokeText(f.txt,tx,Math.round(f.y));g.fillStyle=f.col;g.fillText(f.txt,tx,Math.round(f.y));}g.globalAlpha=1;}
     else{g.strokeStyle=f.col;g.globalAlpha=Math.min(1,f.life*2.5);g.lineWidth=2;g.beginPath();g.ellipse(Math.round(f.x-cam),Math.round(f.y),f.r,f.r*.45,0,0,7);g.stroke();g.globalAlpha=1;}
