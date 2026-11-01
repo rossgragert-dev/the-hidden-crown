@@ -36,8 +36,13 @@ const {pathToFileURL}=require('url');
     await page.evaluate(()=>{const g=window.__G;g.adv();g.adv();});
    }else if(state.interact){
     interactionCount++;
-    const used=await page.evaluate(()=>{const g=window.__G;g.P.x=g.S.activeInteract.x;return g.useMissionObject();});
-    assert.ok(used,'USE should complete nearby objective');
+    await page.evaluate(()=>{const g=window.__G;g.P.x=g.S.activeInteract.x;});
+    await page.waitForTimeout(80);
+    const use=page.locator('#usebtn');
+    assert.ok(await use.isVisible(),'USE must be visible near a world object');
+    await use.tap();
+    await page.waitForTimeout(60);
+    assert.equal(await page.evaluate(()=>!!window.__G.S.activeInteract),false,'Touch USE must complete objective');
    }else if(state.arena){
     await page.evaluate(()=>{
       const g=window.__G;g.S.spawnT=100;
