@@ -195,6 +195,32 @@ function killEnemy(e){
   if(e.boss){dropItem(genItem(S.ilvl+1,rollRar(S.boost+1.4)),e.x);S.shake=.3;}
   else if(rnd()<e.def.drop){if(rnd()<.06)dropItem(genItem(1,rollRar(S.boost+.5),'outfit'),e.x);else dropItem(genItem(S.ilvl,rollRar(S.boost)),e.x);}
 }
+// Vertical combat spaces use world Y relative to the floor (0 = ground).
+// A hero standing on a raised, solid platform is physically separated from
+// ground enemies. Airborne overlap still matters if Corin drops into an enemy.
+function enemyCombatHeight(e){return e.def.rat?10:e.def.h?48:e.def.big?33:22;}
+function heroAboveEnemyFloor(e){
+  return !!(S.adv&&P.grounded&&(P.py||0)<-12&&(e.py||0)>=-2);
+}
+function heroEnemyOverlap(e){
+  if(!S.adv)return true; // keep old flat missions unchanged
+  if(heroAboveEnemyFloor(e))return false;
+  const feet=P.py||0,ef=e.py||0;
+  return feet-1>ef-enemyCombatHeight(e)+2&&feet-44<ef-2;
+}
+function hostileProjectileHitsHero(pr){
+  if(Math.abs(pr.x-P.x)>=8)return false;
+  if(!S.adv)return true;
+  if(P.grounded&&(P.py||0)<-12&&pr.originGround!==false)return false;
+  const y=pr.y-GY,feet=P.py||0;
+  return y>=feet-43&&y<=feet-2;
+}
+function projectileHitsEnemy(pr,e){
+  if(Math.abs(pr.x-e.x)>=(e.def.k?16:9))return false;
+  if(!S.adv)return true;
+  const ey=(e.py||0),y=pr.y-GY;
+  return y>=ey-enemyCombatHeight(e)&&y<=ey-1;
+}
 function hurtPlayer(n,dir){
   if(P.inv>0||S.mode!=='play')return;
   if(keys.block&&G.shieldTier>=0&&P.guard>0&&dir===-P.face){
@@ -209,14 +235,14 @@ function hurtPlayer(n,dir){
   if(d>0){P.hp-=d;floatTxt(P.x,GY-58,'-'+d,'#ff7a6a');}
   P.inv=.7;P.hurt=.25;P.vx=dir*90;S.shake=.15;sfx(100,.15,'sawtooth',.06);
 }
-function fireProj(w,type,mul,vx,pierce){const [d,c]=rollHit(w,mul);proj.push({x:P.x+P.face*10,y:GY-30,vx:P.face*vx,type,dmg:d,crit:c,life:1.6,face:P.face,pierce:pierce||0,hits:[]});}
+function fireProj(w,type,mul,vx,pierce){const [d,c]=rollHit(w,mul);proj.push({x:P.x+P.face*10,y:GY+(P.py||0)-30,vx:P.face*vx,type,dmg:d,crit:c,life:1.6,face:P.face,pierce:pierce||0,hits:[]});}
 function attack(){
   if(P.cd>0||S.talk||S.mode!=='play')return;
   if(!G.eq[TN[P.w]])P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0;
   let nr=null,nd=1e9;for(const e of enemies){const d=Math.abs(e.x-P.x);if(d<nd){nd=d;nr=e;}}
   if(nr&&nd<120)P.face=nr.x>=P.x?1:-1;
   if(P.w===0){P.cd=.36;P.atk=P.atkMax=.22;sfx(200,.08,'sawtooth');
-    for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-8&&dx<(e.def.k?44:34)){const [d,c]=rollHit(0,1);hitEnemy(e,d,c,P.face,80);}}}
+    for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-8&&dx<(e.def.k?44:34)&&heroEnemyOverlap(e)){const [d,c]=rollHit(0,1);hitEnemy(e,d,c,P.face,80);}}}
   else if(P.w===1){const cost=S.dusk?3:2;if(P.mp<cost){toast('Not enough mana');P.cd=.3;return;}
     P.mp-=cost;P.cd=.6;P.atk=P.atkMax=.26;
     fireProj(1,S.dusk?'dusk':'dawn',S.dusk?1.25*(1+S.m.duskDmg/100):.85,150,S.m.staffPierce?1:0);
@@ -229,12 +255,12 @@ function useAbility(){
   if(S.talk||P.ab>0||S.mode!=='play')return;const a=abilityId();
   if(!a){toast(P.w===1?'Learn NOVA in SKILLS (Arcana)':P.w===2?'Learn VOLLEY in SKILLS (Wild)':'Learn BASH in SKILLS (Valor)');return;}
   if(a==='bash'){P.ab=P.abMax=6;P.atk=P.atkMax=.25;sfx(120,.2,'square',.06);ring(P.x+P.face*18,GY-20,26,'#e8e8f0');
-    for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-10&&dx<48){const [d,c]=rollHit(0,1.2);hitEnemy(e,d,c,P.face,130);e.stun=1.1;}}}
+    for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-10&&dx<48&&heroEnemyOverlap(e)){const [d,c]=rollHit(0,1.2);hitEnemy(e,d,c,P.face,130);e.stun=1.1;}}}
   else if(a==='whirl'){P.ab=P.abMax=9;P.atk=P.atkMax=.35;sfx(160,.3,'sawtooth',.06);ring(P.x,GY-18,52,'#ffffff');
-    for(const e of enemies){if(Math.abs(e.x-P.x)<54){const [d,c]=rollHit(0,1.5);hitEnemy(e,d,c,e.x>=P.x?1:-1,110);}}}
+    for(const e of enemies){if(Math.abs(e.x-P.x)<54&&heroEnemyOverlap(e)){const [d,c]=rollHit(0,1.5);hitEnemy(e,d,c,e.x>=P.x?1:-1,110);}}}
   else if(a==='nova'){if(P.mp<8){toast('Not enough mana');return;}P.mp-=8;P.ab=P.abMax=8;P.atk=P.atkMax=.3;sfx(S.dusk?90:620,.4,'triangle',.07);
     ring(P.x,GY-18,78,S.dusk?'#c070ff':'#ffe27a');
-    for(const e of enemies){if(Math.abs(e.x-P.x)<80){const [d,c]=rollHit(1,1.4*(S.dusk?1+S.m.duskDmg/100:1));hitEnemy(e,d,c,e.x>=P.x?1:-1,90);if(S.dusk)e.fear=S.m.fear+1.5;}}
+    for(const e of enemies){if(Math.abs(e.x-P.x)<80&&heroEnemyOverlap(e)){const [d,c]=rollHit(1,1.4*(S.dusk?1+S.m.duskDmg/100:1));hitEnemy(e,d,c,e.x>=P.x?1:-1,90);if(S.dusk)e.fear=S.m.fear+1.5;}}
     if(!S.dusk){P.hp=Math.min(P.max,P.hp+P.max*.12);burst(P.x,GY-20,'#fff6b0',10,100);}else G.c=clamp(G.c-3,-100,100);}
   else if(a==='volley'){P.ab=P.abMax=8;sfx(340,.1,'square',.05);
     for(let i=0;i<5;i++)later(i*.1,()=>{if(S.mode!=='play')return;P.atk=P.atkMax=.14;fireProj(2,'arrow',.9,260,S.m.arrowPierce);sfx(320+i*20,.06,'square');});}
@@ -248,10 +274,10 @@ function updateCombat(dt){
     if(e.stun>0)continue;
     if(e.wind>0){e.wind-=dt;if(e.wind<=0){
       if(e.dashPend){e.dashPend=false;e.vx=e.face*270;e.dashT=.22;e.cd=1.3;e.dashHit=0;e.dashGuard=targetGuard;}
-      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:'arrow',dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard});e.cd=1.8+rnd()*.6;e.atkA=1;}
-      else{e.atkA=1;if(ad<def.rng+10){if(targetGuard)hurtGuard(e.dmg);else hurtPlayer(e.dmg,e.face);}e.cd=1.2+rnd()*.4;}}
+      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:'arrow',dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard,originGround:(e.py||0)>=-2});e.cd=1.8+rnd()*.6;e.atkA=1;}
+      else{e.atkA=1;if(ad<def.rng+10){if(targetGuard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}e.cd=1.2+rnd()*.4;}}
       continue;}
-    if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;if(e.dashGuard&&S.guard)hurtGuard(e.dmg);else hurtPlayer(e.dmg,e.face);}continue;}
+    if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;if(e.dashGuard&&S.guard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}continue;}
     if(S.arena&&!e.in){e.x+=Math.sign(d)*sp*1.3*dt;e.mv=true;continue;}
     if(e.fear>0){e.x-=Math.sign(d)*sp*dt;e.mv=true;continue;}
     if(def.ranged){const room=e.x>S.arenaL+22&&e.x<S.arenaR-22;if(ad<60&&room){e.x-=Math.sign(d)*sp*dt;e.mv=true;}else if(ad>135){e.x+=Math.sign(d)*sp*dt;e.mv=true;}else if(e.cd<=0)e.wind=.5;continue;}
@@ -260,12 +286,12 @@ function updateCombat(dt){
   }
   for(const pr of proj){
     pr.x+=pr.vx*dt;pr.life-=dt;
-    if(pr.hostile){if(!pr.guard&&keys.block&&G.shieldTier>=0&&P.guard>=10&&pr.face===-P.face&&Math.abs(pr.x-P.x)<12&&Math.abs((P.py||0))<24){
+    if(pr.hostile){if(!pr.guard&&keys.block&&G.shieldTier>=0&&P.guard>=10&&pr.face===-P.face&&hostileProjectileHitsHero(pr)){
       P.guard=Math.max(0,P.guard-13);
       if(G.shieldTier>=2){pr.hostile=0;pr.vx=-pr.vx;pr.face=-pr.face;pr.hits=[];pr.pierce=0;pr.life=2;pr.dmg=Math.round(pr.dmg*1.3);toast('WARD REFLECT');sfx(740,.14,'triangle',.04);continue;}
       pr.life=0;toast('SHIELD BLOCK');sfx(140,.1,'square',.04);continue;
-    }if(pr.guard&&S.guard){if(Math.abs(pr.x-S.guard.x)<8){hurtGuard(pr.dmg);pr.life=0;}}else if(Math.abs(pr.x-P.x)<8){hurtPlayer(pr.dmg,pr.face);pr.life=0;}continue;}
-    for(const e of enemies){if(e.dead||pr.hits.includes(e))continue;if(Math.abs(e.x-pr.x)<(e.def.k?16:9)){
+    }if(pr.guard&&S.guard){if(Math.abs(pr.x-S.guard.x)<8){hurtGuard(pr.dmg);pr.life=0;}}else if(hostileProjectileHitsHero(pr)){hurtPlayer(pr.dmg,pr.face);pr.life=0;}continue;}
+    for(const e of enemies){if(e.dead||pr.hits.includes(e))continue;if(projectileHitsEnemy(pr,e)){
       pr.hits.push(e);hitEnemy(e,pr.dmg,pr.crit,pr.face,pr.type==='arrow'?40:25);
       if(pr.type==='dawn'){P.hp=Math.min(P.max,P.hp+S.m.dawnHeal);burst(P.x,GY-24,'#fff6b0',4,50);if(S.m.shieldPer)P.shield=Math.min(40,P.shield+S.m.shieldPer);}
       if(pr.type==='dusk')e.fear=S.m.fear;

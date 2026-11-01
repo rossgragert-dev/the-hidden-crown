@@ -7,7 +7,7 @@ function adventureBegin(area){
   if(!d){S.adv=null;P.py=0;P.vy=0;P.grounded=true;S.camY=0;return;}
   S.adv={
     length:d.length||1000,
-    platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y})),
+    platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y,kind:p.kind||null})),
     objects:(d.objects||[]).map((o,i)=>Object.assign({i,done:!S.replay&&!!(o.flag&&G.flags[o.flag])},o)),
     scenery:d.scenery||'castle',seed:d.seed||5,verticalCamera:!!d.verticalCamera,
     progress:0,combatAt:(d.combatAt||[]).map((w,i)=>Object.assign({i,done:false},w))
@@ -178,6 +178,98 @@ function adventureBackdrop(cam){
   return true;
 }
 
+// Platforms are world objects with a real structure underneath their collision
+// surface, not unexplained horizontal strips. Draw the exact top at p.y so the
+// sprite, its supporting legs/rock, and the physics always agree.
+function drawSupportedPlatform(p,cam,ground,scenery){
+  const x=Math.round(p.x-cam),w=p.w,top=Math.round(ground+p.y),h=Math.max(0,-p.y);
+  if(x>W+15||x+w<-15)return;
+  const kind=p.kind||(scenery==='stable'?'hayloft':scenery==='armory'?'loft':
+    scenery==='lists'?'bleachers':'outcrop');
+  const wood=['workbench','loft','rack','hayloft','tackbench','bleachers'].indexOf(kind)>=0;
+  if(!wood){
+    // Outcrops are stone rising from the earth. The shelf is supported by an
+    // irregular rock face that extends all the way down to the ground.
+    R(x+5,top+5,w-10,Math.max(0,h-5),'#5d5d5c');
+    for(let j=0;j<w-10;j+=18){
+      const v=Math.abs((Math.imul(j+11,29)+p.x*7)%11);
+      R(x+6+j,top+7+v,Math.min(15,w-18-j),Math.max(0,h-8-v),'#73736d');
+      R(x+9+j,top+8+v,3,Math.max(0,h-9-v),'#86877d');
+    }
+    R(x+1,top,w-2,6,'#9a9886');
+    R(x+4,top+1,w-8,2,'#c7bb93');
+    R(x+8,top+6,w-16,2,'#514e4b');
+    return;
+  }
+  if(kind==='hay'){
+    // Stack of hay bales with actual weight on the ground.
+    for(let row=0;row<Math.ceil(h/12);row++){
+      const by=ground-12*(row+1),shift=(row%2)*11;
+      for(let bx=0;bx<w;bx+=37){
+        const xx=x+bx+shift-5,ww=Math.min(36,x+w-xx);
+        if(ww<=0||xx>x+w)continue;
+        R(xx,by,ww,11,'#9c7938');R(xx+2,by+1,Math.max(0,ww-4),3,'#d5b25d');
+        R(xx+8,by+3,2,7,'#e6c876');R(xx+20,by+4,2,5,'#765329');
+      }
+    }
+    R(x,top,w,4,'#d4b364');
+    return;
+  }
+  const frame=kind==='bleachers'?'#684b35':kind==='workbench'||kind==='tackbench'?'#6e4b32':'#705238';
+  const highlight=kind==='bleachers'?'#c49b60':'#a78150';
+  const post=kind==='rack'?4:6;
+  // Visible posts connect the upper walking surface to the stone / soil floor.
+  for(const pos of [7,w-12]){
+    const px=x+pos;
+    R(px,top+5,post,Math.max(0,h-5),frame);
+    R(px+1,top+6,2,Math.max(0,h-6),highlight);
+    R(px-4,ground-4,post+8,4,'#4a3a30');
+  }
+  if(w>=125){const mid=x+Math.floor(w/2);R(mid,top+8,5,Math.max(0,h-8),frame);R(mid+1,top+9,2,Math.max(0,h-9),highlight);}
+  if(h>=26){
+    // Cross-bracing joins upper beams to lower supports and prevents the
+    // illusion that catwalks are floating above a worktable.
+    g.strokeStyle=frame;g.lineWidth=3;g.beginPath();
+    g.moveTo(x+10,top+10);g.lineTo(x+Math.min(42,w*.35),ground-7);
+    g.moveTo(x+w-10,top+10);g.lineTo(x+w-Math.min(42,w*.35),ground-7);
+    g.stroke();
+  }
+  if(kind==='loft'||kind==='hayloft'){
+    R(x-4,top-1,w+8,7,'#745132');
+    for(let i=0;i<w;i+=19){R(x+i,top,w>i+18?17:w-i,2,'#c39a61');R(x+i+1,top+4,2,2,'#413127');}
+    R(x+3,top+7,w-6,3,'#3f302b');
+    // A visible ladder signals how a real worker would reach the raised loft.
+    const lx=x+Math.max(15,Math.floor(w*.25));
+    R(lx,top+6,3,Math.max(0,h-6),'#ad8153');
+    R(lx+17,top+6,3,Math.max(0,h-6),'#ad8153');
+    for(let y=top+14;y<ground-2;y+=11)R(lx+2,y,16,3,'#c89c65');
+    if(kind==='hayloft'){R(x+31,top-6,20,6,'#c2a253');R(x+33,top-9,16,3,'#e8c273');}
+  }else if(kind==='bleachers'){
+    R(x,top,w,6,'#ad8053');R(x+2,top,w-4,2,'#dbb67a');
+    R(x+6,top-16,w-12,4,'#8a6845');
+    R(x+7,top-18,4,16,'#735339');R(x+w-12,top-18,4,16,'#735339');
+    R(x+6,top+6,w-12,2,'#442f23');
+  }else{
+    // A tabletop, workbench or storage rack with a full-width cabinet / shelf
+    // under the top; legs genuinely reach the floor.
+    R(x-2,top,w+4,5,'#b28a58');R(x,top,w,2,'#e4bd79');
+    R(x+4,top+6,w-8,4,frame);
+    if(h>17)R(x+12,ground-11,w-24,4,'#a07c55');
+    if(kind==='rack'){
+      for(let i=14;i<w-10;i+=18){
+        R(x+i,top-17,2,16,'#8d8b8a');R(x+i-4,top-20,10,4,'#c4a968');
+      }
+    }else if(kind==='workbench'){
+      R(x+16,top-8,w-32,7,'#51463c');
+      R(x+21,top-10,16,3,'#aab0b5');
+      R(x+w-34,top-10,9,3,'#d2bd89');
+    }else if(kind==='tackbench'){
+      R(x+18,top-10,22,6,'#8d6447');
+      R(x+50,top-12,26,8,'#9c7a54');
+    }
+  }
+}
+
 function adventureWorldDraw(cam){
   const a=S.adv;if(!a)return;
   const y=GY,seed=a.seed;
@@ -212,14 +304,7 @@ function adventureWorldDraw(cam){
       else{R(x+28,y-57,4,18,'#a76b32');R(x+24,y-65,12,9,'#e9bc60');}
     }
   }
-  for(const p of a.platforms){
-    const x=p.x-cam,py=y+p.y;
-    R(x,py,p.w,5,a.scenery==='stable'?'#7b5134':'#89838d');
-    R(x,py+5,p.w,4,'#524a4e');
-    for(let k=0;k<p.w;k+=26)R(x+k,py+1,3,2,'#d4b888');
-    R(x+5,py+9,4,Math.min(32,-p.y-4),'#514347');
-    R(x+p.w-9,py+9,4,Math.min(32,-p.y-4),'#514347');
-  }
+  for(const p of a.platforms)drawSupportedPlatform(p,cam,y,a.scenery);
   for(const o of a.objects){
     if(o.done&&o.kind!=='horse')continue;
     const x=Math.round(o.x-cam),py=Math.round(y+(o.y||0));
