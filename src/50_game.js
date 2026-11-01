@@ -72,7 +72,7 @@ function missionHud(force){
     const small=document.createElement('span');small.textContent=html.split('|')[1];
     box.appendChild(strong);box.appendChild(small);
   }
-  box.style.display=S.talk?'none':'block';
+  box.style.display=S.talk||enemies.some(e=>e.boss&&!e.dead)?'none':'block';
 }
 function useMissionObject(){
   const ob=S.activeInteract;if(!ob||S.talk||S.arena||Math.abs(P.x-ob.x)>28)return false;
