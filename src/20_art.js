@@ -352,8 +352,19 @@ function blightParts(e,def){
   A(-3,-13,3,3,'#9acd32');A(2,-11,2,2,'#c8e060');A(-6,-9,2,2,'#9acd32');
   return P0;
 }
+function drawRat(e,px,py,hit){
+  px=Math.round(px);const f=e.face>=0?1:-1,st=e.mv?Math.floor(S.t*14+e.t*3)%2:0;
+  const Q=(dx,dy,w,h,c)=>R(f>0?px+dx:px-dx-w,py+dy,w,h,hit?'#fff':c);
+  shadowAt(px,py,9);
+  Q(-12,-4,7,1,'#c49a8a');Q(-17,-6+st,5,1,'#c49a8a');Q(-19,-8+st,2,2,'#c49a8a'); // tail
+  Q(-7,-7,13,6,'#6b5a4c');Q(-7,-7,13,2,'#8a7462');Q(-7,-3,13,2,'#4a3c32');Q(-5,-9,8,2,'#7a6656'); // body
+  Q(5,-8,6,5,'#7a6656');Q(10,-6,3,3,'#9a7a6a');Q(12,-6,1,1,'#e89aa0');Q(7,-11,3,3,'#b08a7a');Q(8,-10,1,1,'#e8b0b0'); // head, ear
+  Q(8,-7,1,1,e.wind>0?'#ff3a2a':'#2a1a1a');Q(11,-4,3,1,'#ddd');Q(11,-6,4,1,'rgba(255,255,255,.5)'); // eye, whiskers
+  Q(-5,-2+(st?-1:0),2,3,'#3a2e28');Q(-1,-2+(st?0:-1),2,3,'#3a2e28');Q(3,-2+(st?-1:0),2,3,'#3a2e28');Q(7,-2+(st?0:-1),2,3,'#3a2e28');
+}
 function drawEnemy(e,cam,def){
   const px=e.x-cam,py=GY,k=def.k||1,hit=e.hurt>0&&Math.floor(S.t*30)%2;
+  if(def.rat){drawRat(e,px,py,hit);return;}
   if(def.h){const o={...def.sp,mv:e.mv,ph:e.t,w:def.w,atk:e.atkA>0?e.atkA:0};shadowAt(Math.round(px),py,14);
     drawBevel(personParts(o),px,py,e.face,{bevel:true,white:hit});
     if(e.wind>0)R(px-3,py-52,6,2,'#ff3a2a');

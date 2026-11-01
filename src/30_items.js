@@ -67,13 +67,37 @@ function equipItem(it){
   const old=G.eq[it.slot];G.inv=G.inv.filter(x=>x.id!==it.id);if(old)G.inv.push(old);G.eq[it.slot]=it;calc();save();
 }
 function sellItem(it){G.inv=G.inv.filter(x=>x.id!==it.id);G.gold+=sellVal(it);save();}
+function fixedItem(slot,name,dmg,rar,x){const it={id:Math.floor(rnd()*1e9).toString(36)+Date.now().toString(36),slot,rar:rar||0,ilvl:1,aff:[],name};if(dmg)it.dmg=dmg;return Object.assign(it,x||{});}
+// Corin starts with only a simple tunic and a wooden practice sword. The kit he used to carry is
+// locked away in G.stash and returned at his knighting (see knightCorin).
 function startGear(){
   const s=genItem(1,0,'sword');s.name='Squire\'s Sword';s.dmg=10;
   const t=genItem(1,0,'staff');t.name='Practice Staff';t.dmg=10;
   const b=genItem(1,0,'bow');b.name='Hunting Bow';b.dmg=9;
   const a=genItem(1,0,'armor');a.name='Squire\'s Tunic';a.def=4;a.col='#3a63b8';a.look=0;
-  G.eq={sword:s,staff:t,bow:b,armor:a,trinket:null,outfit:null};
+  G.stash=[s,t,b,a];G.sq=1;
+  const wood=fixedItem('sword','Wooden Practice Sword',6,0,{wood:1});
+  const tunic=fixedItem('outfit',OBY.blue.n,0,0,{oid:'blue'});
+  G.eq={sword:wood,staff:null,bow:null,armor:null,trinket:null,outfit:tunic};
+  P.w=0;
 }
+// Ser Halvard's blunt iron sword, given at the end of the tournament.
+function giveBluntSword(){
+  if(G.flags.bluntSword)return false;G.flags.bluntSword=1;
+  const it=fixedItem('sword','Blunt Iron Sword',9,0,{blunt:1});
+  addItem(it,true);if(G.eq.sword&&G.eq.sword.wood)equipItem(it);save();return true;
+}
+// Knighting: the stashed kit comes back and Halvard's ancestral blade (House Hearthmoor, NOT the
+// Act II sword tied to Corin's own bloodline) becomes his sword.
+function knightCorin(){
+  if(G.flags.knighted)return false;G.flags.knighted=1;
+  const heir=fixedItem('sword','Hearthmoor Heirloom Blade',18,2,{ilvl:6,heir:1,aff:[{k:'dmg',v:4}]});
+  const back=(G.stash||[]).slice();G.stash=[];
+  for(const it of back){if(!G.eq[it.slot])G.eq[it.slot]=it;else addItem(it,true);if(S.rew)S.rew.items.push(it);}
+  if(G.eq.sword)G.inv.push(G.eq.sword);G.eq.sword=heir;if(S.rew)S.rew.items.push(heir);
+  G.inv=G.inv.filter(x=>x.id!==heir.id);calc();save();return true;
+}
+
 
 /* ================= SKILLS ================= */
 const TREES={knight:{n:'VALOR',col:'#e8504a',d:'Sword & shield. Hold the line.'},arcana:{n:'ARCANA',col:'#b45cff',d:'Staff magic. Dawn mends, Dusk devours.'},wild:{n:'WILD',col:'#4cd964',d:'Bow & instinct. Strike from afar.'}};

@@ -183,9 +183,11 @@ function sfx(f,d,type,v){if(!AC)return;try{const t=AC.currentTime,o=AC.createOsc
 /* ---------- persistent game data ---------- */
 const SAVEKEY='hiddencrown.save.v2';
 const G={};
-function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null,shieldTier:-1});}
+function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null,shieldTier:-1,sq:1,stash:[]});}
 function save(){try{localStorage.setItem(SAVEKEY,JSON.stringify(G));}catch(e){}}
-function load(){try{const s=localStorage.getItem(SAVEKEY);if(!s)return false;newG();Object.assign(G,JSON.parse(s));return true;}catch(e){return false;}}
+function load(){try{const s=localStorage.getItem(SAVEKEY);if(!s)return false;newG();const p=JSON.parse(s);Object.assign(G,p);
+  // Saves from before the squire-kit change keep their gear and look (treated as already knighted).
+  if(!p.sq){G.sq=0;G.stash=[];G.flags=G.flags||{};G.flags.knighted=1;}return true;}catch(e){return false;}}
 function hasSave(){try{return !!localStorage.getItem(SAVEKEY);}catch(e){return false;}}
 newG();
 
@@ -550,8 +552,19 @@ function blightParts(e,def){
   A(-3,-13,3,3,'#9acd32');A(2,-11,2,2,'#c8e060');A(-6,-9,2,2,'#9acd32');
   return P0;
 }
+function drawRat(e,px,py,hit){
+  px=Math.round(px);const f=e.face>=0?1:-1,st=e.mv?Math.floor(S.t*14+e.t*3)%2:0;
+  const Q=(dx,dy,w,h,c)=>R(f>0?px+dx:px-dx-w,py+dy,w,h,hit?'#fff':c);
+  shadowAt(px,py,9);
+  Q(-12,-4,7,1,'#c49a8a');Q(-17,-6+st,5,1,'#c49a8a');Q(-19,-8+st,2,2,'#c49a8a'); // tail
+  Q(-7,-7,13,6,'#6b5a4c');Q(-7,-7,13,2,'#8a7462');Q(-7,-3,13,2,'#4a3c32');Q(-5,-9,8,2,'#7a6656'); // body
+  Q(5,-8,6,5,'#7a6656');Q(10,-6,3,3,'#9a7a6a');Q(12,-6,1,1,'#e89aa0');Q(7,-11,3,3,'#b08a7a');Q(8,-10,1,1,'#e8b0b0'); // head, ear
+  Q(8,-7,1,1,e.wind>0?'#ff3a2a':'#2a1a1a');Q(11,-4,3,1,'#ddd');Q(11,-6,4,1,'rgba(255,255,255,.5)'); // eye, whiskers
+  Q(-5,-2+(st?-1:0),2,3,'#3a2e28');Q(-1,-2+(st?0:-1),2,3,'#3a2e28');Q(3,-2+(st?-1:0),2,3,'#3a2e28');Q(7,-2+(st?0:-1),2,3,'#3a2e28');
+}
 function drawEnemy(e,cam,def){
   const px=e.x-cam,py=GY,k=def.k||1,hit=e.hurt>0&&Math.floor(S.t*30)%2;
+  if(def.rat){drawRat(e,px,py,hit);return;}
   if(def.h){const o={...def.sp,mv:e.mv,ph:e.t,w:def.w,atk:e.atkA>0?e.atkA:0};shadowAt(Math.round(px),py,14);
     drawBevel(personParts(o),px,py,e.face,{bevel:true,white:hit});
     if(e.wind>0)R(px-3,py-52,6,2,'#ff3a2a');
@@ -634,13 +647,37 @@ function equipItem(it){
   const old=G.eq[it.slot];G.inv=G.inv.filter(x=>x.id!==it.id);if(old)G.inv.push(old);G.eq[it.slot]=it;calc();save();
 }
 function sellItem(it){G.inv=G.inv.filter(x=>x.id!==it.id);G.gold+=sellVal(it);save();}
+function fixedItem(slot,name,dmg,rar,x){const it={id:Math.floor(rnd()*1e9).toString(36)+Date.now().toString(36),slot,rar:rar||0,ilvl:1,aff:[],name};if(dmg)it.dmg=dmg;return Object.assign(it,x||{});}
+// Corin starts with only a simple tunic and a wooden practice sword. The kit he used to carry is
+// locked away in G.stash and returned at his knighting (see knightCorin).
 function startGear(){
   const s=genItem(1,0,'sword');s.name='Squire\'s Sword';s.dmg=10;
   const t=genItem(1,0,'staff');t.name='Practice Staff';t.dmg=10;
   const b=genItem(1,0,'bow');b.name='Hunting Bow';b.dmg=9;
   const a=genItem(1,0,'armor');a.name='Squire\'s Tunic';a.def=4;a.col='#3a63b8';a.look=0;
-  G.eq={sword:s,staff:t,bow:b,armor:a,trinket:null,outfit:null};
+  G.stash=[s,t,b,a];G.sq=1;
+  const wood=fixedItem('sword','Wooden Practice Sword',6,0,{wood:1});
+  const tunic=fixedItem('outfit',OBY.blue.n,0,0,{oid:'blue'});
+  G.eq={sword:wood,staff:null,bow:null,armor:null,trinket:null,outfit:tunic};
+  P.w=0;
 }
+// Ser Halvard's blunt iron sword, given at the end of the tournament.
+function giveBluntSword(){
+  if(G.flags.bluntSword)return false;G.flags.bluntSword=1;
+  const it=fixedItem('sword','Blunt Iron Sword',9,0,{blunt:1});
+  addItem(it,true);if(G.eq.sword&&G.eq.sword.wood)equipItem(it);save();return true;
+}
+// Knighting: the stashed kit comes back and Halvard's ancestral blade (House Hearthmoor, NOT the
+// Act II sword tied to Corin's own bloodline) becomes his sword.
+function knightCorin(){
+  if(G.flags.knighted)return false;G.flags.knighted=1;
+  const heir=fixedItem('sword','Hearthmoor Heirloom Blade',18,2,{ilvl:6,heir:1,aff:[{k:'dmg',v:4}]});
+  const back=(G.stash||[]).slice();G.stash=[];
+  for(const it of back){if(!G.eq[it.slot])G.eq[it.slot]=it;else addItem(it,true);if(S.rew)S.rew.items.push(it);}
+  if(G.eq.sword)G.inv.push(G.eq.sword);G.eq.sword=heir;if(S.rew)S.rew.items.push(heir);
+  G.inv=G.inv.filter(x=>x.id!==heir.id);calc();save();return true;
+}
+
 
 /* ================= SKILLS ================= */
 const TREES={knight:{n:'VALOR',col:'#e8504a',d:'Sword & shield. Hold the line.'},arcana:{n:'ARCANA',col:'#b45cff',d:'Staff magic. Dawn mends, Dusk devours.'},wild:{n:'WILD',col:'#4cd964',d:'Bow & instinct. Strike from afar.'}};
@@ -693,7 +730,9 @@ function gainXP(n){
   if(up){calc();P.hp=P.max;P.mp=P.mmax;if(S.rew)S.rew.lv+=up;toast('LEVEL UP!  Lv '+G.lvl+'  (+1 skill point)');sfx(660,.4,'triangle',.06);burst(P.x,GY-20,'#ffe27a',24,160);}
 }
 /* ================= ENEMIES ================= */
+const KNIGHT_MISSION='m11'; // Halvard knights Corin as Act I's story peaks; change here to move the knighting
 const EN={
+ rat:{n:'Cellar Rat',hp:8,dmg:3,spd:62,rng:11,xp:3,g:[0,1],drop:.04,rat:1},
  blight:{n:'Blightling',hp:22,dmg:8,spd:40,rng:15,xp:10,g:[1,4],drop:.14},
  hound:{n:'Blight Hound',hp:90,dmg:16,spd:28,rng:30,xp:55,g:[12,22],drop:.7,k:1.7,big:1},
  bandit:{n:'Reaver',hp:34,dmg:9,spd:36,rng:18,xp:15,g:[3,9],drop:.2,h:1,w:0,sp:{col:'#8a3a2a',metal:'#6a6e78',trim:'#d0802a',hair:'#222',look:1,cape:'#3a2a22',helm:'#6a6e78',crest:'horns',leg:'#3a3036',scar:1,iris:'#8a2a1a',nosh:1,w:0}},
@@ -710,9 +749,10 @@ const MISSIONS=[
  desc:"Before the crown, a boy's life: fetch Halvard's armor, groom his horse, and serve lances at the tournament.",
  areas:[
   {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'armory',seed:3,
+    combatAt:[{x:560,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.5}]}],
     platforms:[{x:320,w:112,y:-26},{x:600,w:165,y:-54},{x:780,w:78,y:-28}],
     objects:[
-     {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'armor',rarity:1},
+     {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'outfit',rarity:1},
      {kind:'key',label:'IRON KEY',x:368,y:-26,flag:'squireArmoryKey'},
      {kind:'shield',label:'PRACTICE SHIELD',x:500,y:0,flag:'squireShield',tier:0},
      {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
@@ -729,6 +769,7 @@ const MISSIONS=[
      N('Move with your left thumb and tap JUMP with your right. Search the armor racks, leap to the upper loft, and tap USE near supplies.')
    ]}]},
   {id:'stables',title:'The Castle Stables',reg:'hearth',explore:{length:995,scenery:'stable',seed:9,
+    combatAt:[{x:300,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.4},{k:'rat',s:1,d:.9}]}],
     platforms:[{x:170,w:115,y:-23},{x:520,w:165,y:-36},{x:740,w:110,y:-26}],
     objects:[
      {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
@@ -739,6 +780,7 @@ const MISSIONS=[
    },steps:[{t:'explore',goal:"Groom Halvard's horse and retrieve the saddle",intro:[
      N('The stables smell of leather, straw and cold morning air.'),
      L('Stablemaster Tobren','A knight is only as ready as his horse. The saddle is stored above. Mind your footing, squire.'),
+     L('Stablemaster Tobren','And mind the rats. They have been at the grain again. Take that wooden practice sword and see them off.'),
      L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
    ]}]},
   {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,
@@ -746,7 +788,7 @@ const MISSIONS=[
     objects:[
      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
      {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
-     {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'sword'},
+     {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
      {kind:'exit',label:'PATROL GATE',x:956,y:0,needFlags:['squireJoust']}
     ]
    },steps:[{t:'explore',goal:'Collect spare lances and assist Halvard during the joust',intro:[
@@ -1121,6 +1163,7 @@ function adventureJoustFinish(){
   if(o){o.done=true;G.flags[o.flag||'joustServed']=1;save();}
   S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / '+j.passes+' HANDOFFS');
   if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
+  if(giveBluntSword())say([L('Ser Halvard','You served well, lad. This blade is blunt, but it is iron. A squire should feel real weight in his hand.'),N('BLUNT IRON SWORD RECEIVED')],()=>{});
   missionHud(true);
 }
 function adventureUpdate(dt){
@@ -1994,6 +2037,7 @@ function completeMission(){
   const gd=Math.round((20+12*m.lvl)*(first?1:.5));G.gold+=gd;S.rew.gold+=gd;
   addItem(genItem(m.lvl+1,rollRar(S.boost+(m.type==='main'?1.5:.8))),true);
   G.done[m.id]=1;
+  if(m.id===KNIGHT_MISSION&&knightCorin())toast('KNIGHTED BY SER HALVARD — YOUR OLD KIT IS RETURNED');
   if(m.id==='m8'){G.shieldTier=Math.max(G.shieldTier||0,1);toast('KNIGHT SHIELD UNLOCKED');}
   if(m.id==='m12'){G.shieldTier=Math.max(G.shieldTier||0,2);toast('DUSKWARD MIRROR UNLOCKED');}
   if(G.checkpoint&&G.checkpoint.id===m.id)G.checkpoint=null;G.loc=m.endLoc||m.loc||G.loc;save();missionHud(true);
@@ -2036,6 +2080,7 @@ function hurtPlayer(n,dir){
 function fireProj(w,type,mul,vx,pierce){const [d,c]=rollHit(w,mul);proj.push({x:P.x+P.face*10,y:GY-30,vx:P.face*vx,type,dmg:d,crit:c,life:1.6,face:P.face,pierce:pierce||0,hits:[]});}
 function attack(){
   if(P.cd>0||S.talk||S.mode!=='play')return;
+  if(!G.eq[TN[P.w]])P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0;
   let nr=null,nd=1e9;for(const e of enemies){const d=Math.abs(e.x-P.x);if(d<nd){nd=d;nr=e;}}
   if(nr&&nd<120)P.face=nr.x>=P.x?1:-1;
   if(P.w===0){P.cd=.36;P.atk=P.atkMax=.22;sfx(200,.08,'sawtooth');
@@ -2154,12 +2199,15 @@ function update(dt){
 
 /* ================= DRAW ================= */
 function heroOpts(){
-  const a=G.eq.armor,wi=G.eq[TN[P.w]],rc=wi?itemCol(wi):'#e9eef5',hi=wi&&wi.rar>=2,lk=a?a.look||0:0;
+  const kn=!!G.flags.knighted,a=G.eq.armor,wi=G.eq[TN[P.w]],rc=wi?itemCol(wi):'#e9eef5',hi=wi&&wi.rar>=2,lk=kn&&a?a.look||0:0;
   const o={...NPCS.corin,col:a&&a.col?a.col:'#2f5fd0',look:lk,mv:P.mv,w:P.w,atk:P.atk>0?P.atk/P.atkMax:0,hurt:P.hurt,orb:S.dusk?'#c070ff':'#fff3a0',
     wcol:P.w===2?(hi?mix('#9a6a32',rc,.5):'#9a6a32'):(hi?mix('#eef2fa',rc,.5):'#eef2fa'),wglow:wi&&wi.rar>=3?rgba(rc,.4):null,ph:0,quiver:P.w===2?1:0};
   if(lk>=2){o.helm=o.metal;o.crest='plume';o.crestC='#b02a3a';}
   const of=G.eq.outfit&&OBY[G.eq.outfit.oid];
-  if(of){o.col=of.col;o.tab=of.tab;o.trim=of.trim;o.cape=of.cape;if(of.metal)o.metal=of.metal;if(of.aura)o.aura=of.aura;if(of.plume){o.helm=o.metal;o.crest='plume';o.crestC=of.plume;}}
+  if(of){o.col=of.col;o.tab=of.tab;o.trim=of.trim;if(of.aura)o.aura=of.aura;
+    if(kn){o.cape=of.cape;if(of.metal)o.metal=of.metal;if(of.plume){o.helm=o.metal;o.crest='plume';o.crestC=of.plume;}}}
+  if(!kn){o.cloth=1;o.cape=null;o.helm=null;o.crest=null;o.metal='#8a7a5a';if(!of){o.col=a&&a.col?a.col:'#2f5fd0';}}
+  if(P.w===0&&wi&&wi.wood)o.wcol='#a97c4a';
   return o;
 }
 function drawScene(cam){
@@ -2232,8 +2280,10 @@ function draw(){
 let hudK='';
 function hud(force){
   const bo=enemies.find(e=>e.boss&&!e.dead);
-  const key=[Math.round(P.hp),P.max,Math.floor(P.mp),P.mmax,Math.round(G.c),G.lvl,G.xp,P.w,S.dusk,bo?Math.round(bo.hp):-1,Math.round(P.ab*4),abilityId()].join();
+  if(!G.eq[TN[P.w]])P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0;
+  const key=[Math.round(P.hp),P.max,Math.floor(P.mp),P.mmax,Math.round(G.c),G.lvl,G.xp,P.w,S.dusk,bo?Math.round(bo.hp):-1,Math.round(P.ab*4),abilityId(),G.eq.sword?1:0,G.eq.staff?1:0,G.eq.bow?1:0].join();
   if(key===hudK&&!force)return;hudK=key;
+  document.querySelectorAll('[data-w]').forEach(x=>{x.style.display=G.eq[TN[+x.dataset.w]]?'':'none';});$('mode').style.display=G.eq.staff?'':'none';
   $('hp').style.width=clamp(P.hp/P.max,0,1)*100+'%';$('mp').style.width=clamp(P.mp/P.mmax,0,1)*100+'%';$('xp').style.width=clamp(G.xp/xpNeed(G.lvl),0,1)*100+'%';
   $('lv').textContent='Lv '+G.lvl+(G.pts?'  ★'+G.pts:'');
   $('cm').style.left=(G.c+100)/200*100+'%';
@@ -2242,7 +2292,7 @@ function hud(force){
   document.querySelectorAll('[data-w]').forEach(x=>x.classList.toggle('sel',+x.dataset.w===P.w));
   $('boss').style.display=bo?'block':'none';if(bo){$('bname').textContent=bo.def.n;$('bhp').style.width=clamp(bo.hp/bo.max,0,1)*100+'%';}
 }
-function setW(i){P.w=i;hud(true);}
+function setW(i){if(!G.eq[TN[i]]){toast('NO '+TN[i].toUpperCase()+' EQUIPPED');return;}P.w=i;hud(true);}
 function toggleMode(){S.dusk=!S.dusk;const m=$('mode');m.textContent=S.dusk?'DUSK':'DAWN';m.className='btn sm'+(S.dusk?' dusk':'');}
 /* ================= MODALS ================= */
 const modal=$('modal'),mw=$('mw');
@@ -2595,7 +2645,7 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,genItem2:null,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
 })();
 </script>
 </body>

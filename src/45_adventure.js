@@ -86,6 +86,7 @@ function adventureJoustFinish(){
   if(o){o.done=true;G.flags[o.flag||'joustServed']=1;save();}
   S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / '+j.passes+' HANDOFFS');
   if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
+  if(giveBluntSword())say([L('Ser Halvard','You served well, lad. This blade is blunt, but it is iron. A squire should feel real weight in his hand.'),N('BLUNT IRON SWORD RECEIVED')],()=>{});
   missionHud(true);
 }
 function adventureUpdate(dt){

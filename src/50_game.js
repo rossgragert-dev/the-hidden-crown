@@ -169,6 +169,7 @@ function completeMission(){
   const gd=Math.round((20+12*m.lvl)*(first?1:.5));G.gold+=gd;S.rew.gold+=gd;
   addItem(genItem(m.lvl+1,rollRar(S.boost+(m.type==='main'?1.5:.8))),true);
   G.done[m.id]=1;
+  if(m.id===KNIGHT_MISSION&&knightCorin())toast('KNIGHTED BY SER HALVARD — YOUR OLD KIT IS RETURNED');
   if(m.id==='m8'){G.shieldTier=Math.max(G.shieldTier||0,1);toast('KNIGHT SHIELD UNLOCKED');}
   if(m.id==='m12'){G.shieldTier=Math.max(G.shieldTier||0,2);toast('DUSKWARD MIRROR UNLOCKED');}
   if(G.checkpoint&&G.checkpoint.id===m.id)G.checkpoint=null;G.loc=m.endLoc||m.loc||G.loc;save();missionHud(true);
@@ -211,6 +212,7 @@ function hurtPlayer(n,dir){
 function fireProj(w,type,mul,vx,pierce){const [d,c]=rollHit(w,mul);proj.push({x:P.x+P.face*10,y:GY-30,vx:P.face*vx,type,dmg:d,crit:c,life:1.6,face:P.face,pierce:pierce||0,hits:[]});}
 function attack(){
   if(P.cd>0||S.talk||S.mode!=='play')return;
+  if(!G.eq[TN[P.w]])P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0;
   let nr=null,nd=1e9;for(const e of enemies){const d=Math.abs(e.x-P.x);if(d<nd){nd=d;nr=e;}}
   if(nr&&nd<120)P.face=nr.x>=P.x?1:-1;
   if(P.w===0){P.cd=.36;P.atk=P.atkMax=.22;sfx(200,.08,'sawtooth');
@@ -329,12 +331,15 @@ function update(dt){
 
 /* ================= DRAW ================= */
 function heroOpts(){
-  const a=G.eq.armor,wi=G.eq[TN[P.w]],rc=wi?itemCol(wi):'#e9eef5',hi=wi&&wi.rar>=2,lk=a?a.look||0:0;
+  const kn=!!G.flags.knighted,a=G.eq.armor,wi=G.eq[TN[P.w]],rc=wi?itemCol(wi):'#e9eef5',hi=wi&&wi.rar>=2,lk=kn&&a?a.look||0:0;
   const o={...NPCS.corin,col:a&&a.col?a.col:'#2f5fd0',look:lk,mv:P.mv,w:P.w,atk:P.atk>0?P.atk/P.atkMax:0,hurt:P.hurt,orb:S.dusk?'#c070ff':'#fff3a0',
     wcol:P.w===2?(hi?mix('#9a6a32',rc,.5):'#9a6a32'):(hi?mix('#eef2fa',rc,.5):'#eef2fa'),wglow:wi&&wi.rar>=3?rgba(rc,.4):null,ph:0,quiver:P.w===2?1:0};
   if(lk>=2){o.helm=o.metal;o.crest='plume';o.crestC='#b02a3a';}
   const of=G.eq.outfit&&OBY[G.eq.outfit.oid];
-  if(of){o.col=of.col;o.tab=of.tab;o.trim=of.trim;o.cape=of.cape;if(of.metal)o.metal=of.metal;if(of.aura)o.aura=of.aura;if(of.plume){o.helm=o.metal;o.crest='plume';o.crestC=of.plume;}}
+  if(of){o.col=of.col;o.tab=of.tab;o.trim=of.trim;if(of.aura)o.aura=of.aura;
+    if(kn){o.cape=of.cape;if(of.metal)o.metal=of.metal;if(of.plume){o.helm=o.metal;o.crest='plume';o.crestC=of.plume;}}}
+  if(!kn){o.cloth=1;o.cape=null;o.helm=null;o.crest=null;o.metal='#8a7a5a';if(!of){o.col=a&&a.col?a.col:'#2f5fd0';}}
+  if(P.w===0&&wi&&wi.wood)o.wcol='#a97c4a';
   return o;
 }
 function drawScene(cam){
@@ -407,8 +412,10 @@ function draw(){
 let hudK='';
 function hud(force){
   const bo=enemies.find(e=>e.boss&&!e.dead);
-  const key=[Math.round(P.hp),P.max,Math.floor(P.mp),P.mmax,Math.round(G.c),G.lvl,G.xp,P.w,S.dusk,bo?Math.round(bo.hp):-1,Math.round(P.ab*4),abilityId()].join();
+  if(!G.eq[TN[P.w]])P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0;
+  const key=[Math.round(P.hp),P.max,Math.floor(P.mp),P.mmax,Math.round(G.c),G.lvl,G.xp,P.w,S.dusk,bo?Math.round(bo.hp):-1,Math.round(P.ab*4),abilityId(),G.eq.sword?1:0,G.eq.staff?1:0,G.eq.bow?1:0].join();
   if(key===hudK&&!force)return;hudK=key;
+  document.querySelectorAll('[data-w]').forEach(x=>{x.style.display=G.eq[TN[+x.dataset.w]]?'':'none';});$('mode').style.display=G.eq.staff?'':'none';
   $('hp').style.width=clamp(P.hp/P.max,0,1)*100+'%';$('mp').style.width=clamp(P.mp/P.mmax,0,1)*100+'%';$('xp').style.width=clamp(G.xp/xpNeed(G.lvl),0,1)*100+'%';
   $('lv').textContent='Lv '+G.lvl+(G.pts?'  ★'+G.pts:'');
   $('cm').style.left=(G.c+100)/200*100+'%';
@@ -417,5 +424,5 @@ function hud(force){
   document.querySelectorAll('[data-w]').forEach(x=>x.classList.toggle('sel',+x.dataset.w===P.w));
   $('boss').style.display=bo?'block':'none';if(bo){$('bname').textContent=bo.def.n;$('bhp').style.width=clamp(bo.hp/bo.max,0,1)*100+'%';}
 }
-function setW(i){P.w=i;hud(true);}
+function setW(i){if(!G.eq[TN[i]]){toast('NO '+TN[i].toUpperCase()+' EQUIPPED');return;}P.w=i;hud(true);}
 function toggleMode(){S.dusk=!S.dusk;const m=$('mode');m.textContent=S.dusk?'DUSK':'DAWN';m.className='btn sm'+(S.dusk?' dusk':'');}
