@@ -118,17 +118,56 @@ function renderBoard(){
   showModal(h);
 }
 function travel(pth,dest){
-  UI.trav=true;const mk=$('mk');let i=0,t=0;
-  const finish=()=>{clearInterval(iv);UI.trav=false;G.loc=dest;save();UI.node=dest;UI.msg='';renderBoard();};
-  const iv=setInterval(()=>{
-    if(!modal.classList.contains('on')){finish();return;}
-    if(i>=pth.length){finish();return;}
-    const e=pth[i].e,fwd=pth[i].fwd,A=fwd?NODES[e.a]:NODES[e.b],B=fwd?NODES[e.b]:NODES[e.a];
-    const tm=$('tmsg');if(tm)tm.textContent='Traveling: '+e.n+' ('+e.d+' day'+(e.d>1?'s':'')+')';
-    t+=.04;const pt=bez([A.x,A.y],e.c,[B.x,B.y],Math.min(1,t));if(mk)mk.setAttribute('transform','translate('+pt[0]+' '+(pt[1]-30)+')');
-    if(t>=1){G.day=(G.day||1)+e.d;t=0;i++;}
-  },30);
+  // Every world-map leg is now a traversable road. Local terrain changes
+  // the enemy deck and scenery; travel-day segments vary by stable hash.
+  if(!pth||!pth.length){UI.node=dest;renderBoard();return;}
+  const roadAreas=[],dayStart=G.day||1;
+  function routeSeed(a,b,day){
+    const str=a+'|'+b+'|'+day;
+    let h=2166136261;for(let k=0;k<str.length;k++)h=Math.imul(h^str.charCodeAt(k),16777619);
+    return h>>>0;
+  }
+  for(const path of pth){
+    const e=path.e,A=NODES[e.a],B=NODES[e.b];
+    const ids=e.a+'-'+e.b;
+    let terrain='road',reg='green',deck=['bandit','archer','blight'];
+    if(/fen|cave/.test(ids)){terrain='marsh';reg='fen';deck=['blight','hound','ashen'];}
+    else if(/thorn/.test(ids)){terrain='forest';reg='forest';deck=['blight','bandit','archer'];}
+    else if(/mine|ironvale/.test(ids)){terrain='mountain';reg='mine';deck=['bandit','archer','ashen'];}
+    else if(/keep/.test(ids)){terrain='ruins';reg='keep';deck=['ashen','bandit','archer'];}
+    for(let n=0;n<e.d;n++){
+      const seed=routeSeed(ids,String(n),dayStart+roadAreas.length),len=890+(seed%290);
+      const pick=(i)=>deck[(seed+i*7+(seed>>>8))%deck.length];
+      roadAreas.push({
+        id:'travel-'+roadAreas.length,title:e.n+' — day '+(n+1),reg,
+        explore:{
+          length:len,seed:seed%997,scenery:terrain,
+          platforms:[{x:260,w:120,y:-26},{x:610,w:135,y:-36}],
+          objects:[
+            {kind:'chest',label:'ROADSIDE CACHE',x:315,y:-26,slot:'trinket',rarity:1},
+            {kind:'exit',label:'CONTINUE JOURNEY',x:len-48,y:0}
+          ],
+          combatAt:[
+            {x:200,list:[{k:pick(0),s:1,d:0},{k:pick(1),s:-1,d:.7}]},
+            {x:550,list:[{k:pick(2),s:1,d:0},{k:pick(3),s:-1,d:.8},{k:pick(4),s:1,d:1.6}]}
+          ]
+        },
+        steps:[{t:'explore',goal:'Cross '+e.n+' and reach the next waypoint',intro:[
+          N('The road between '+A.n+' and '+B.n+' stretches ahead. On the horizon, the weather and the land are changing.'),
+          N('You travel alone. Stay alert for patrols, reavers, beasts and hidden supplies.')
+        ]}]
+      });
+    }
+  }
+  const m={
+    id:'journey-'+dayStart+'-'+dest,type:'travel',act:1,title:'Journey to '+NODES[dest].n,
+    reg:'road',lvl:Math.max(1,G.lvl),loc:G.loc,endLoc:dest,
+    travelDays:pth.reduce((sum,p)=>sum+p.e.d,0),areas:roadAreas
+  };
+  MBY[m.id]=m;
+  fade(()=>startMission(m.id));
 }
+
 function renderBrief(id){
   const m=MBY[id],done=!!G.done[id],xp=Math.round((60+35*m.lvl)*(m.type==='side'?.6:1)*(done?.4:1));
   let h=hdr(m.title,m.type==='main'?'MAIN QUEST':'SIDE QUEST');
