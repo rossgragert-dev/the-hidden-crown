@@ -255,7 +255,7 @@ function startPrologue(){
 /* ================= INPUT ================= */
 document.querySelectorAll('[data-k]').forEach(b=>{
   const k=b.dataset.k,up=()=>{keys[k]=0;b.classList.remove('on');};
-  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use')useMissionObject();try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
 });
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();setW(+b.dataset.w);}));
@@ -268,7 +268,7 @@ addEventListener('keydown',e=>{
   if(S.mode!=='play'&&S.mode!=='prologue')return;
   if(e.key==='Enter'||(e.key===' '&&S.talk)){adv();e.preventDefault();return;}
   if(e.key===' '){keys.atk=1;e.preventDefault();return;}
-  if(KM[e.key]){keys[KM[e.key]]=1;e.preventDefault();}
+  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use')useMissionObject();e.preventDefault();}
   if(e.key==='1')setW(0);if(e.key==='2')setW(1);if(e.key==='3')setW(2);if(e.key==='q'||e.key==='Q')toggleMode();
   if(e.key==='b'||e.key==='B')ACT.bag();if(e.key==='k'||e.key==='K')ACT.skills();if(e.key==='Escape')renderMenu();
 });
