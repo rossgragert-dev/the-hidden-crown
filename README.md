@@ -1,5 +1,7 @@
 # The Hidden Crown
 
+> **Current Claude development handoff (Nov 1, 2026):** [Horse / environment art + reusable jousting engine](docs/CLAUDE_HANDOFF_V0_6_1_VISUAL_JOUST.md). Start from the public branch `feature/claude-v061-visuals-joust`, which inherits the playable v0.6.0 squire platformer. This is a **handoff-only** branch until implementation begins; `main` is preserved.
+
 A medieval fantasy mobile action RPG in a single HTML file. A squire becomes a knight, then discovers he is the lost heir. Choose between a benevolent and a monstrous reign.
 
 ## Play it

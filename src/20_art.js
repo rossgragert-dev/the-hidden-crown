@@ -278,8 +278,14 @@ function personParts(o){
   if(o.robe){
     A(-6,-T-12-bb,12,T+9,col);A(-6,-T-12-bb,12,2,cL,'n');A(-7,-5,14,3,cD);A(-3,-2,3,2,boot,'n');A(1+stride,-2,3,2,boot,'n');A(-6,-T-1-bb,12,2,trim,'n');
   }else{
+    if(o.mounted){ // seated: far leg behind, thigh across the saddle, shin down to the stirrup
+      const lg=o.leg||'#3b2f3a';
+      A(-3,-14,10,5,sh(lg,-.25));A(3,-10,3,8,sh(lg,-.25));A(2,-3,5,3,sh(boot,-.2),'n');
+      A(-4,-15,12,6,lg);A(-4,-15,12,1,sh(lg,.3),'n');A(5,-10,4,7,lg);A(4,-4,6,4,boot);A(4,-4,6,1,sh(boot,.3),'n');A(8,-1,3,1,'#c8c0b0','n');
+    }else{
     A(-3-stride,-lh,2,lh-3,leg,'n');A(2+stride,-lh,2,lh-3,leg,'n');
     A(-4-stride,-3-(stride>0?1:0),4,3,boot);A(1+stride,-3-(stride<0?1:0),5,3,boot);
+    }
     Au(-5,-T,10,5,cD);Au(-4,-T,2,5,col,'n');Au(1,-T,2,5,col,'n');
     Au(-6,-T-12,12,12,col);Au(-5,-T-11,4,5,cL,'n');
     if(look>=1&&!o.cloth){for(let i=0;i<4;i++)Au(-2+(i%2)*3,-T-11+i*3,2,1,cL,'n');}
@@ -346,8 +352,19 @@ function blightParts(e,def){
   A(-3,-13,3,3,'#9acd32');A(2,-11,2,2,'#c8e060');A(-6,-9,2,2,'#9acd32');
   return P0;
 }
+function drawRat(e,px,py,hit){
+  px=Math.round(px);const f=e.face>=0?1:-1,st=e.mv?Math.floor(S.t*14+e.t*3)%2:0;
+  const Q=(dx,dy,w,h,c)=>R(f>0?px+dx:px-dx-w,py+dy,w,h,hit?'#fff':c);
+  shadowAt(px,py,9);
+  Q(-12,-4,7,1,'#c49a8a');Q(-17,-6+st,5,1,'#c49a8a');Q(-19,-8+st,2,2,'#c49a8a'); // tail
+  Q(-7,-7,13,6,'#6b5a4c');Q(-7,-7,13,2,'#8a7462');Q(-7,-3,13,2,'#4a3c32');Q(-5,-9,8,2,'#7a6656'); // body
+  Q(5,-8,6,5,'#7a6656');Q(10,-6,3,3,'#9a7a6a');Q(12,-6,1,1,'#e89aa0');Q(7,-11,3,3,'#b08a7a');Q(8,-10,1,1,'#e8b0b0'); // head, ear
+  Q(8,-7,1,1,e.wind>0?'#ff3a2a':'#2a1a1a');Q(11,-4,3,1,'#ddd');Q(11,-6,4,1,'rgba(255,255,255,.5)'); // eye, whiskers
+  Q(-5,-2+(st?-1:0),2,3,'#3a2e28');Q(-1,-2+(st?0:-1),2,3,'#3a2e28');Q(3,-2+(st?-1:0),2,3,'#3a2e28');Q(7,-2+(st?0:-1),2,3,'#3a2e28');
+}
 function drawEnemy(e,cam,def){
   const px=e.x-cam,py=GY,k=def.k||1,hit=e.hurt>0&&Math.floor(S.t*30)%2;
+  if(def.rat){drawRat(e,px,py,hit);return;}
   if(def.h){const o={...def.sp,mv:e.mv,ph:e.t,w:def.w,atk:e.atkA>0?e.atkA:0};shadowAt(Math.round(px),py,14);
     drawBevel(personParts(o),px,py,e.face,{bevel:true,white:hit});
     if(e.wind>0)R(px-3,py-52,6,2,'#ff3a2a');

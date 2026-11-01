@@ -1,5 +1,7 @@
 # HANDOFF: The Hidden Crown
 
+> **Newer handoff takes precedence for the current assignment:** `docs/CLAUDE_HANDOFF_V0_6_1_VISUAL_JOUST.md` on `feature/claude-v061-visuals-joust`. This legacy handoff describes the v0.4 era; v0.5 adds six-area Hearthmoor missions and v0.6 adds solo platforming, keyed rooms, right-thumb JUMP, a squire jousting tutorial and playable world-map roads. See `docs/SAGA_REFORGE_V0_6.md`. Read story canon here, but do not mistake historical feature status for the latest branch.
+
 Everything a new assistant (Claude, ChatGPT or a human) needs to continue this project. Read this file first, then `docs/STORY_BIBLE.md`, then the code in `src/`.
 
 Last updated: v0.4.0 (see CHANGELOG.md). Update the "Current state" and "Open work" sections whenever you hand off.

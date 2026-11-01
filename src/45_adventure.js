@@ -38,7 +38,7 @@ function adventureNear(){
 }
 function adventureUse(){
   if(!S.adv||S.talk||S.arena)return false;
-  if(S.joust){adventureLance();return true;}
+  if(S.joust){joustAct(S.joust);return true;}
   const o=adventureNear();
   if(!o)return false;
   if(o.need&&!G.flags[o.need]){toast(o.locked||'A KEY OR TASK IS MISSING');sfx(110,.18,'square',.04);return true;}
@@ -49,8 +49,9 @@ function adventureUse(){
     endMissionArea();return true;
   }
   if(o.kind==='joust'){
-    S.joust={t:0,round:1,score:0,object:o};
-    toast('HAND OVER THE LANCE WHEN THE RIDER REACHES THE MARK');return true;
+    joustPrebake();P.face=1;const rr=o.role==='rider';
+    S.joust=joustCreate(rr?{role:'rider',anchor:Math.round(o.x),object:o,lead:560,seed:5+Math.floor(S.t*7)%90}:{role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
+    S.joust.on=joustOn;toast(rr?'LOWER YOUR LANCE AS HE CHARGES':'OFFER THE LANCE AS THE RIDER REACHES YOUR HAND');return true;
   }
   o.done=true;
   if(o.flag){G.flags[o.flag]=1;save();}
@@ -65,7 +66,7 @@ function adventureUse(){
   }else if(o.kind==='gear'){
     toast('COLLECTED: '+o.label);
   }else if(o.kind==='horse'){
-    toast('HORSE GROOMED AND READY');
+    o.groomT=1.1;toast('HORSE GROOMED AND READY');
   }else if(o.kind==='door'){
     toast('DOOR UNLOCKED');
   }else toast('OBJECTIVE COMPLETE');
@@ -73,27 +74,24 @@ function adventureUse(){
   missionHud(true);sfx(510,.14,'triangle',.04);
   return true;
 }
-function adventureLance(){
-  const j=S.joust;
-  if(!j)return;
-  const good=j.t>=.72&&j.t<=1.16;
-  if(good){j.score++;toast('PERFECT LANCE HANDOFF!');sfx(650,.17,'triangle',.06);}
-  else{toast('MISSED THE TIMING — NEXT PASS');sfx(130,.18,'sawtooth',.05);}
-  adventureNextPass();
+function joustOn(k,v){
+  if(k==='handoff'){toast('PERFECT LANCE HANDOFF!');sfx(650,.17,'triangle',.06);}
+  else if(k==='resolve'&&!(v&&v.pts)){toast(v.verdict);sfx(130,.18,'sawtooth',.05);}
+  else if(k==='start')sfx(180,.2,'sawtooth',.03);
 }
-function adventureNextPass(){
+function adventureJoustFinish(){
   const j=S.joust;if(!j)return;
-  j.round++;j.t=0;
-  if(j.round>3){
-    const o=j.object;o.done=true;G.flags[o.flag||'joustServed']=1;save();
-    S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / 3 HANDOFFS');
-    if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
-    missionHud(true);
-  }
+  const o=j.object;
+  if(j.role==='rider'){S.joust=null;P.x=o.x-50;P.face=1;toast('LISTS ENDED — YOU '+j.score+'  FOE '+j.foe+(j.score>j.foe?'  YOU WIN':j.score<j.foe?'  FOE WINS':'  DRAW'));missionHud(true);return;}
+  if(o){o.done=true;G.flags[o.flag||'joustServed']=1;save();}
+  S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / '+j.passes+' HANDOFFS');
+  if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
+  if(giveBluntSword())say([L('Ser Halvard','You served well, lad. This blade is blunt, but it is iron. A squire should feel real weight in his hand.'),N('BLUNT IRON SWORD RECEIVED')],()=>{});
+  missionHud(true);
 }
 function adventureUpdate(dt){
   const a=S.adv;if(!a||S.mode!=='play')return;
-  if(S.joust){S.joust.t+=dt;if(S.joust.t>=1.85)adventureNextPass();}
+  if(S.joust){joustStep(S.joust,dt);if(joustDone(S.joust))adventureJoustFinish();else if(S.joust.role==='rider')P.x=clamp(S.joust.a.x,10,a.length);}
   const prev=P.py||0;
   // Walk off ledges naturally. A platform only supports the hero while
   // the feet are over its interval; no invisible floor under upper stories.
@@ -151,61 +149,7 @@ function adventureBackdrop(cam){
       R(j-(backCam%30)+3,y+3,21,2,'#6f6159');
       if(k%3===0)R(j-(backCam%30)+21,y+13,2,16,'#322e34');
     }
-    const first=Math.floor(backCam/170)-1,last=Math.ceil((backCam+W)/170)+1;
-    for(let n=first;n<=last;n++){
-      const x=n*170-backCam;
-      // Load-bearing castle pillar and carved vault.
-      R(x+2,24,15,y-24,'#302d39');R(x+5,25,8,y-25,'#6a6266');
-      R(x-1,20,21,8,'#938179');R(x+2,14,15,6,'#6b5e63');
-      R(x+16,30,45,6,'#76717a');R(x+61,35,47,5,'#5d5661');
-      R(x+108,30,45,6,'#76717a');R(x+150,20,21,8,'#938179');
-      R(x+155,24,12,y-24,'#302d39');R(x+158,26,6,y-26,'#655d65');
-      const style=((n%4)+4)%4;
-      if(style===0){ // hearthmoor heraldry and lances
-        R(x+61,y-183,42,7,'#b49561');
-        R(x+65,y-178,33,91,'#283b61');
-        R(x+67,y-175,29,4,'#af9555');
-        R(x+78,y-159,8,42,'#c4ad72');
-        R(x+71,y-144,22,7,'#c4ad72');
-        R(x+77,y-113,10,11,'#d7cba4');
-        for(let p=0;p<5;p++){R(x+22+p*6,y-77,2,63,'#bfa681');R(x+19+p*6,y-80,8,4,'#8d8c95');}
-      }else if(style===1){ // weapon racks and shields
-        R(x+38,y-79,96,6,'#34272c');R(x+41,y-74,90,4,'#a48053');
-        for(let k=0;k<5;k++){
-          const q=x+47+k*18;
-          R(q,y-124,2,65,'#cac3a8');R(q-5,y-105,12,4,'#9a8063');
-          R(q-1,y-134,4,11,'#9a9fa9');
-        }
-        R(x+72,y-65,30,37,'#314568');R(x+81,y-58,12,23,'#a99867');
-        R(x+84,y-49,6,7,'#f1d98f');
-      }else if(style===2){ // forge corner with flickering fire and tools
-        R(x+46,y-76,76,67,'#383138');R(x+52,y-71,64,57,'#63545a');
-        R(x+65,y-58,36,45,'#251c20');
-        const flame=8+Math.round(Math.sin(S.t*8+n)*4);
-        R(x+75,y-20-flame,19,flame,'#eb9b3e');
-        R(x+80,y-15-flame,9,flame,'#ffde70');
-        R(x+61,y-12,45,7,'#c2b2a2');
-        R(x+119,y-64,7,54,'#675257');R(x+113,y-77,18,14,'#939095');
-        R(x+28,y-58,20,9,'#7c838d');R(x+32,y-51,12,36,'#473f45');
-      }else{ // standing armor and storage alcove
-        R(x+47,y-87,67,74,'#2c2a34');
-        R(x+73,y-110,15,14,'#bbb5b1');R(x+69,y-96,23,40,'#8e969f');
-        R(x+65,y-88,6,34,'#6b707c');R(x+91,y-88,6,34,'#69727f');
-        R(x+74,y-59,6,42,'#777783');R(x+84,y-59,6,42,'#777783');
-        R(x+66,y-114,29,3,'#d3b778');
-        R(x+29,y-20,27,19,'#67503e');R(x+32,y-24,21,6,'#b08e58');
-        R(x+104,y-22,30,21,'#6d5340');R(x+108,y-26,23,6,'#aa8754');
-      }
-      // Every arch has a fixed torch fixture for warm indoor lighting.
-      R(x+137,y-147,3,22,'#987e57');R(x+132,y-150,13,5,'#a6a6a2');
-      const flicker=Math.round(Math.sin(S.t*11+n)*2);
-      R(x+136,y-165-flicker,6,17+flicker,'#f2a546');
-      R(x+138,y-161-flicker,3,10,'#ffe09a');
-      const glow=g.createRadialGradient(x+139,y-157,2,x+139,y-157,57);
-      glow.addColorStop(0,'rgba(245,151,63,.17)');
-      glow.addColorStop(1,'rgba(245,151,63,0)');
-      g.fillStyle=glow;g.fillRect(x+83,y-211,112,114);
-    }
+    sceneArmory(cam,backCam,y);
   }else if(kind==='stable'){
     R(0,0,W,H,'#22201f');
     R(0,0,W,y,'#5d4939');
@@ -229,25 +173,7 @@ function adventureBackdrop(cam){
       }
     }
   }else{ // the tournament is open-air, not a castle room
-    R(0,0,W,H,'#7197b7');R(0,y-96,W,95,'#9ec0c0');
-    R(0,y,W,H-y,'#bba67b');
-    for(let k=0;k<W+20;k+=9)R(k,y+2,7,3,'#ad9469');
-    for(let i=Math.floor(backCam/115)-1;i<Math.ceil((backCam+W)/115)+1;i++){
-      const x=i*115-backCam;
-      R(x+19,y-78,74,60,'#6e6670');
-      R(x+14,y-81,84,8,'#968e91');
-      for(let j=0;j<4;j++){
-        R(x+25+j*19,y-60,11,23,'#292e42');
-        R(x+23+j*19,y-64,15,4,'#c4b49b');
-      }
-      R(x+10,y-110,3,68,'#654733');
-      const colors=['#b7463e','#2c567e','#e2b55f'];
-      R(x+13,y-107,24,21,colors[Math.abs(i)%3]);
-      R(x+14,y-105,21,4,'#f2e2b4');
-      R(x,y-31,115,6,'#9c7648');
-      for(let s=0;s<4;s++)R(x+s*34,y-26,5,26,'#715037');
-      R(x+11,y-24,103,3,'#d0b17a');
-    }
+    sceneLists(cam,backCam,y);
   }
   return true;
 }
@@ -295,7 +221,7 @@ function adventureWorldDraw(cam){
     R(x+p.w-9,py+9,4,Math.min(32,-p.y-4),'#514347');
   }
   for(const o of a.objects){
-    if(o.done)continue;
+    if(o.done&&o.kind!=='horse')continue;
     const x=Math.round(o.x-cam),py=Math.round(y+(o.y||0));
     if(x<-40||x>W+40)continue;
     const locked=o.need&&!G.flags[o.need];
@@ -307,28 +233,22 @@ function adventureWorldDraw(cam){
       R(x-12,py-15,24,15,'#503127');R(x-12,py-19,24,7,'#9c653b');
       R(x-2,py-15,4,10,'#ebc664');
     }else if(o.kind==='horse'){
-      R(x-20,py-29,36,22,'#815131');R(x+10,py-40,13,20,'#765039');
-      R(x-14,py-7,5,8,'#453329');R(x+8,py-7,5,8,'#453329');
-      R(x+20,py-33,3,3,'#ead9a4');
+      // stall dressing: hay, bucket, tack hook
+      R(x+30,py-8,22,8,'#c9a85a');R(x+33,py-11,16,4,'#dcc070');R(x+36,py-13,3,2,'#e8d08a');
+      R(x-48,py-10,9,10,'#6a4a2a');R(x-48,py-10,9,2,'#8a6a3a');R(x-47,py-8,7,1,'#3a2a18');
+      const gr=!!o.done,sd=G.flags.squireSaddle,gt=o.groomT>0;
+      if(gt)o.groomT-=1/60;
+      const ph=gt?S.t*3.2:S.t*.35;
+      drawHorse(x,py,1,{v:'charger',tk:sd?'saddled':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
+      if(gt&&Math.floor(S.t*14)%2)R(x+Math.round(Math.sin(S.t*9)*14),py-34-Math.round((S.t*40)%12),1,2,'#fff6c0');
+      else if(gr&&Math.floor(S.t*2.2)%5===0)R(x-10+Math.floor(S.t*7)%24,py-30,1,1,'#fff6c0');
     }else{
       R(x-9,py-16,18,16,o.kind==='key'?'#b59e4b':o.kind==='shield'?'#4d6e91':'#6e5843');
       R(x-3,py-20,6,6,'#e8c469');
       if(o.kind==='key'){R(x+7,py-10,8,3,'#e9cb52');}
     }
-    g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
-    g.fillText(o.label||o.kind.toUpperCase(),x,py-51);
+    if(!(S.joust&&o.kind==='joust')&&!o.done){g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
+    g.fillText(o.label||o.kind.toUpperCase(),x,py-51);}
   }
-  if(S.joust){
-    const j=S.joust,w=94,x=clamp(P.x-cam-48,6,Math.max(6,W-103)),py=y+(P.py||0)-97;
-    const riderX=x+95-Math.round(j.t/1.85*100);
-    R(riderX-9,py-50,28,9,'#6d4939');R(riderX+8,py-57,8,13,'#664032');
-    R(riderX-6,py-43,4,9,'#49322a');R(riderX+12,py-43,4,9,'#49322a');
-    R(riderX+1,py-66,6,17,'#86898e');R(riderX,py-70,8,8,'#d6ae79');
-    R(riderX+7,py-62,34,2,'#e2c481');
-    R(x-4,py-22,105,45,'rgba(12,10,14,.88)');
-    R(x,py,94,7,'#49362b');R(x+38,py,18,7,'#96bd55');
-    R(x+Math.min(91,j.t/1.85*91),py-3,3,14,'#ffdf7e');
-    g.textAlign='left';g.font='bold 8px Courier New';g.fillStyle='#ffedbb';
-    g.fillText('LANCE '+j.round+'/3  USE TO HAND OFF',x,py-8);
-  }
+  if(S.joust){joustDraw(S.joust,cam,y);joustHud(S.joust,6,80);}
 }

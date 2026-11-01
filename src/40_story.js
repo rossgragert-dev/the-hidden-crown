@@ -1,5 +1,7 @@
 /* ================= ENEMIES ================= */
+const KNIGHT_MISSION='m11'; // Halvard knights Corin as Act I's story peaks; change here to move the knighting
 const EN={
+ rat:{n:'Cellar Rat',hp:8,dmg:3,spd:62,rng:11,xp:3,g:[0,1],drop:.04,rat:1},
  blight:{n:'Blightling',hp:22,dmg:8,spd:40,rng:15,xp:10,g:[1,4],drop:.14},
  hound:{n:'Blight Hound',hp:90,dmg:16,spd:28,rng:30,xp:55,g:[12,22],drop:.7,k:1.7,big:1},
  bandit:{n:'Reaver',hp:34,dmg:9,spd:36,rng:18,xp:15,g:[3,9],drop:.2,h:1,w:0,sp:{col:'#8a3a2a',metal:'#6a6e78',trim:'#d0802a',hair:'#222',look:1,cape:'#3a2a22',helm:'#6a6e78',crest:'horns',leg:'#3a3036',scar:1,iris:'#8a2a1a',nosh:1,w:0}},
@@ -16,9 +18,10 @@ const MISSIONS=[
  desc:"Before the crown, a boy's life: fetch Halvard's armor, groom his horse, and serve lances at the tournament.",
  areas:[
   {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'armory',seed:3,
+    combatAt:[{x:560,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.5}]}],
     platforms:[{x:320,w:112,y:-26},{x:600,w:165,y:-54},{x:780,w:78,y:-28}],
     objects:[
-     {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'armor',rarity:1},
+     {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'outfit',rarity:1},
      {kind:'key',label:'IRON KEY',x:368,y:-26,flag:'squireArmoryKey'},
      {kind:'shield',label:'PRACTICE SHIELD',x:500,y:0,flag:'squireShield',tier:0},
      {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
@@ -35,6 +38,7 @@ const MISSIONS=[
      N('Move with your left thumb and tap JUMP with your right. Search the armor racks, leap to the upper loft, and tap USE near supplies.')
    ]}]},
   {id:'stables',title:'The Castle Stables',reg:'hearth',explore:{length:995,scenery:'stable',seed:9,
+    combatAt:[{x:300,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.4},{k:'rat',s:1,d:.9}]}],
     platforms:[{x:170,w:115,y:-23},{x:520,w:165,y:-36},{x:740,w:110,y:-26}],
     objects:[
      {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
@@ -45,6 +49,7 @@ const MISSIONS=[
    },steps:[{t:'explore',goal:"Groom Halvard's horse and retrieve the saddle",intro:[
      N('The stables smell of leather, straw and cold morning air.'),
      L('Stablemaster Tobren','A knight is only as ready as his horse. The saddle is stored above. Mind your footing, squire.'),
+     L('Stablemaster Tobren','And mind the rats. They have been at the grain again. Take that wooden practice sword and see them off.'),
      L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
    ]}]},
   {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,
@@ -52,7 +57,7 @@ const MISSIONS=[
     objects:[
      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
      {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
-     {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'sword'},
+     {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
      {kind:'exit',label:'PATROL GATE',x:956,y:0,needFlags:['squireJoust']}
     ]
    },steps:[{t:'explore',goal:'Collect spare lances and assist Halvard during the joust',intro:[
@@ -334,3 +339,8 @@ const STUBS=[
 const LOC={m0:'hearth',m1:'hearth',m2:'green',m3:'green',m4:'fen',m5:'hearth',m6:'hearth',m7:'hearth',m8:'hearth',m9:'hearth',m10:'hearth',m11:'hearth',m12:'green',s1:'hearth',s2:'green',s3:'green',s4:'fen',s5:'hearth',d1:'thorn',d2:'cave',d3:'mine',d4:'keep'};
 MISSIONS.forEach(m=>{if(!m.loc)m.loc=LOC[m.id];});
 const MBY=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
+// Hidden preview mission (not on the world map): mounted jousting using the shared engine.
+MBY.joustlab={id:'joustlab',type:'lab',act:0,title:'Joust Lab',reg:'hearth',lvl:1,desc:'Preview of mounted jousting.',areas:[
+ {id:'lab',title:'Joust Lab: The Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,platforms:[],
+  objects:[{kind:'joust',role:'rider',label:'RIDE THE LISTS',x:527,y:0},{kind:'exit',label:'LEAVE LAB',x:956,y:0}]},
+  steps:[{t:'explore',goal:'Walk to the marker and ride three passes',intro:[N('Preview: Corin rides his own horse. Lower your lance as the foe lowers his.')]}]}]};
