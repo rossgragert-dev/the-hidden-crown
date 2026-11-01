@@ -31,14 +31,14 @@ function sfx(f,d,type,v){if(!AC)return;try{const t=AC.currentTime,o=AC.createOsc
 /* ---------- persistent game data ---------- */
 const SAVEKEY='hiddencrown.save.v2';
 const G={};
-function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1});}
+function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null});}
 function save(){try{localStorage.setItem(SAVEKEY,JSON.stringify(G));}catch(e){}}
 function load(){try{const s=localStorage.getItem(SAVEKEY);if(!s)return false;newG();Object.assign(G,JSON.parse(s));return true;}catch(e){return false;}}
 function hasSave(){try{return !!localStorage.getItem(SAVEKEY);}catch(e){return false;}}
 newG();
 
 /* ---------- runtime state ---------- */
-const keys={l:0,r:0,atk:0,abl:0};
+const keys={l:0,r:0,atk:0,abl:0,use:0};
 const S={mode:'title',t:0,cam:0,talk:false,choosing:false,q:[],qcb:null,arena:false,arenaL:0,arenaR:0,spawnQ:[],spawnT:0,curList:null,waveCb:null,dusk:false,blight:.08,npc:null,shake:0,mission:null,replay:false,beats:[],bi:0,chests:[],pal:'day',paused:false,pro:{x:60},rew:null,tm:[],m:{},ilvl:1,boost:0};
 const P={x:30,face:1,hp:100,max:100,mp:30,mmax:30,w:0,cd:0,atk:0,atkMax:.2,inv:0,hurt:0,vx:0,mv:false,ab:0,abMax:6,shield:0,lastHeal:0};
 const FOL=[{x:0,face:1,mv:false,k:'halv'},{x:0,face:1,mv:false,k:'lysa'}];
