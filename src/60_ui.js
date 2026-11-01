@@ -91,6 +91,8 @@ function mcard(m){
   return '<div class="card k'+(st==='lock'?' lock':'')+'" '+(st!=='lock'?'data-a="brief" data-v="'+m.id+'"':'')+'><h4>'+(st==='done'?'&#10003; ':'')+m.title+'<span class="pill" style="color:'+col+';border-color:'+col+'">'+nm+'</span><span class="pill" style="color:#aaa;border-color:#555">Lv '+m.lvl+'</span></h4><p>'+(st==='lock'?'Locked. Finish an earlier mission first.':m.desc)+'</p></div>';
 }
 function mstate(m){
+  // Legacy saves from v0.4/v0.5 already progressed beyond the new prologue.
+  if(m.id==='m0'&&G.done.m1&&!G.done.m0)return 'done';
   if(m.type==='main'){if(!m.req||G.done[m.req])return G.done[m.id]?'done':'open';return 'lock';}
   return G.done[m.after]?(G.done[m.id]?'done':'open'):'lock';
 }
