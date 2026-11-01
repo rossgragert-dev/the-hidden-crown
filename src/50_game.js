@@ -50,6 +50,16 @@ function loadMissionArea(idx){
 }
 function endMissionArea(){
   const m=S.mission;
+  if(m.type==='travel'){
+    if(S.areaIndex>=m.areas.length-1){
+      G.loc=m.endLoc;G.day=(G.day||1)+m.travelDays;save();
+      toast('ARRIVED AT '+NODES[m.endLoc].n.toUpperCase());
+      fade(()=>openBoard());return;
+    }
+    const next=S.areaIndex+1;
+    fade(()=>{if(S.mission===m&&S.mode==='play')loadMissionArea(next);});
+    return;
+  }
   if(!m.areas||S.areaIndex>=m.areas.length-1){completeMission();return;}
   const idx=S.areaIndex+1;
   G.checkpoint={id:m.id,area:idx};save();
