@@ -15,21 +15,24 @@ const MISSIONS=[
 {id:'m0',type:'main',act:1,title:"The Knight's Squire",reg:'hearth',lvl:1,
  desc:"Before the crown, a boy's life: fetch Halvard's armor, groom his horse, and serve lances at the tournament.",
  areas:[
-  {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'castle',seed:3,
+  {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'armory',seed:3,
     platforms:[{x:320,w:112,y:-26},{x:600,w:165,y:-54},{x:780,w:78,y:-28}],
     objects:[
      {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'armor',rarity:1},
      {kind:'key',label:'IRON KEY',x:368,y:-26,flag:'squireArmoryKey'},
      {kind:'shield',label:'PRACTICE SHIELD',x:500,y:0,flag:'squireShield',tier:0},
-     {kind:'gear',label:'HALVARD ARMOR',x:667,y:-54,flag:'squireArmor'},
+     {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
+     {kind:'gear',label:'TOURNAMENT HELM',x:742,y:-54,flag:'squireHelmet'},
+     {kind:'gear',label:'POLISHING OIL',x:813,y:-28,flag:'squireOil'},
+     {kind:'gear',label:'LANCE BUNDLE',x:897,y:0,flag:'squireLancesReady'},
      {kind:'exit',label:'STABLES DOOR',x:994,y:0,need:'squireArmoryKey',
-      needFlags:['squireArmor','squireShield'],locked:'FIND THE ARMORY KEY'}
+      needFlags:['squireArmor','squireHelmet','squireOil','squireLancesReady','squireShield'],locked:'FIND THE ARMORY KEY'}
     ]
-   },steps:[{t:'explore',goal:'Recover the armor, find a key and collect your shield',intro:[
+   },steps:[{t:'explore',goal:'Prepare Halvard\'s tournament armor, helm, polish and lances',intro:[
      N('Sixteen years after the Night of Ash, an unknown prince lives as an ordinary squire at Castle Hearthmoor.'),
-     L('Ser Halvard','Corin! My armor is in the upper armory. Find the iron key, fetch my harness, and bring yourself a training shield.'),
-     L('Corin','Aye, Father. The tournament will not wait.'),
-     N('Move with LEFT and RIGHT. Tap JUMP to reach the upper platforms. Stand by an object and tap USE.')
+     L('Ser Halvard','Corin! I need my breastplate, tournament helm, polishing oil, and a bundle of sound lances before I ride. The upper racks are locked; find the iron key.'),
+     L('Corin','Aye, Father. I will have every buckle shining before the trumpets sound.'),
+     N('Move with your left thumb and tap JUMP with your right. Search the armor racks, leap to the upper loft, and tap USE near supplies.')
    ]}]},
   {id:'stables',title:'The Castle Stables',reg:'hearth',explore:{length:995,scenery:'stable',seed:9,
     platforms:[{x:170,w:115,y:-23},{x:520,w:165,y:-36},{x:740,w:110,y:-26}],
@@ -44,7 +47,7 @@ const MISSIONS=[
      L('Stablemaster Tobren','A knight is only as ready as his horse. The saddle is stored above. Mind your footing, squire.'),
      L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
    ]}]},
-  {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'castle',seed:18,
+  {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,
     platforms:[{x:170,w:136,y:-34},{x:700,w:118,y:-45}],
     objects:[
      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
