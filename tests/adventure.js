@@ -68,7 +68,27 @@ const {pathToFileURL}=require('url'),path=require('path');
   }));
   assert.equal(result.done,1);assert.equal(result.shield,0);
   assert.ok(!result.hasFollowerRequirement);
-  assert.equal(result.keys,1);assert.deepEqual(errors,[]);
+  assert.equal(result.keys,1);
+  // World-map travel must be playable, not an instant marker animation.
+  await page.evaluate(()=>{const g=window.__G;g.G.done.m1=1;g.openBoard();g.ACT.go('green');});
+  await page.waitForTimeout(1100);await skip();
+  assert.equal(await page.evaluate(()=>window.__G.S.mission.type),'travel');
+  const journey=await page.evaluate(()=>({
+    areas:window.__G.S.mission.areas.length,
+    seeds:window.__G.S.mission.areas.map(a=>a.explore.seed),
+    enemies:window.__G.S.mission.areas.map(a=>a.explore.combatAt.length)
+  }));
+  assert.equal(journey.areas,2);
+  assert.notEqual(journey.seeds[0],journey.seeds[1]);
+  assert.ok(journey.enemies.every(n=>n>=2));
+  await page.evaluate(()=>{window.__G.S.adv.combatAt.forEach(w=>w.done=true);});
+  await obj('exit');await page.waitForTimeout(1100);await skip();
+  assert.equal(await page.evaluate(()=>window.__G.S.mission.areas[window.__G.S.areaIndex].id),'travel-1');
+  await page.evaluate(()=>{window.__G.S.adv.combatAt.forEach(w=>w.done=true);});
+  await obj('exit');await page.waitForTimeout(1200);
+  assert.equal(await page.evaluate(()=>window.__G.G.loc),'green');
+  assert.ok(await page.evaluate(()=>window.__G.G.day)>=3);
+  assert.deepEqual(errors,[]);
   console.log('Solo squire campaign: platforms, locked exit, shield, jousting, road and completion PASS');
  }finally{await browser.close();}
 })().catch(err=>{console.error(err);process.exitCode=1;});
