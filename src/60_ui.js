@@ -287,15 +287,10 @@ function showTitle(){
   if(hasSave())h+='<button class="bt go" id="bcont">CONTINUE</button>';h+='<button class="bt" id="bnew">NEW GAME</button>';
   $('tbtns').innerHTML=h;let armed=false;
   const c=$('bcont');if(c)c.onclick=()=>{initAudio();if(load()){calc();$('title').style.display='none';openBoard();}};
-  $('bnew').onclick=function(){if(hasSave()&&!armed){armed=true;this.textContent='TAP AGAIN TO ERASE SAVE';return;}initAudio();newG();startGear();calc();save();$('title').style.display='none';startPrologue();};
+  $('bnew').onclick=function(){if(hasSave()&&!armed){armed=true;this.textContent='TAP AGAIN TO ERASE SAVE';return;}initAudio();newG();startGear();calc();save();$('title').style.display='none';fade(()=>startMission('m0'));};
 }
-function startPrologue(){
-  S.mode='prologue';document.body.dataset.mode='prologue';S.pro.x=W*.55+40;S.cam=40;resetField();
-  say([N('Auremark. Sixteen years ago. The *Night* of *Ash*.'),
-       N('King Roderan lay *poisoned* by the very man sworn to guard his throne.'),
-       N('Regent *Maldric* Vane burned the royal nursery. The kingdom was told the infant prince had *perished*.'),
-       N('He had not. Ser *Halvard* carried the last *Aldaris* through the flames.')],()=>fade(()=>startMission('m0')));
-}
+// New games begin in the Hearthmoor armory, inside Corin's lived experience.
+// The former narrated Night of Ash prologue is intentionally not played.
 
 /* ================= iOS ZOOM GUARD ================= */
 /* Safari can ignore user-scalable=no and interpret fast repeated taps as page zoom.
