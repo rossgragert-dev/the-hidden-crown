@@ -1,0 +1,30 @@
+name: Squire Platformer Regression
+on:
+  push:
+    branches:
+      - feature/squire-adventure
+  pull_request:
+    branches:
+      - main
+concurrency:
+  group: squire-platformer-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  adventure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: mkdir -p /tmp/shots
+      - run: npm run build
+      - run: git diff --exit-code -- index.html
+      - run: npm run test:smoke
+      - run: npm run test:boot
+      - run: npm run test:adventure
+      - run: npm run test:quest
+      - run: npm run test:zoom
