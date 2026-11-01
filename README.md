@@ -5,7 +5,7 @@ A medieval fantasy mobile action RPG in a single HTML file. A squire becomes a k
 ## Play it
 
 - **Open `index.html`** in a browser (best on a phone; works in portrait and landscape).
-- **StackBlitz:** `https://stackblitz.com/github/<owner>/<repo>` (replace with this repo's path), or create a new StackBlitz/CodeSandbox HTML project and paste the contents of `index.html`.
+- **StackBlitz:** https://stackblitz.com/github/rossgragert-dev/the-hidden-crown, or create a new StackBlitz/CodeSandbox HTML project and paste the contents of `index.html`.
 - **GitHub Pages:** if this repo is public, enable Pages (Settings > Pages > deploy from `main`, root) and open the page URL.
 
 Progress saves in the browser (localStorage). If a viewer blocks storage, the game still runs but will not save.

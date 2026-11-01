@@ -196,4 +196,4 @@ Paste that block into the next session and into `CHANGELOG.md`.
 
 - Hosted copy of the game: the claude.ai artifact published from `index.html` (ask the owner for the current link; republish after each release).
 - Story bible (claude.ai doc, same content as `docs/STORY_BIBLE.md`): https://claude.ai/artifact/1j8tzvdqXUggP3kD6tBDvM
-- StackBlitz (after the repo exists on GitHub): `https://stackblitz.com/github/<owner>/<repo>` opens the repo directly.
+- Repo: https://github.com/rossgragert-dev/the-hidden-crown (public). StackBlitz: https://stackblitz.com/github/rossgragert-dev/the-hidden-crown
