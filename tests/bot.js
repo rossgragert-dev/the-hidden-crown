@@ -15,7 +15,7 @@ require('fs').mkdirSync('/tmp/shots',{recursive:true});
     await page.evaluate(id => window.__G.startMission(id), id);
     let res = 'timeout', ch = 0;
     for (let i = 0; i < 1500; i++) {
-      const st = await page.evaluate(() => { const g = window.__G; g.P.hp = g.P.max; g.P.mp = g.P.mmax; const nb = g.S.beats.length; return { mode: g.S.mode, talk: g.S.talk, ch: g.S.choosing, en: g.enemies.length, arena: g.S.arena, interact: !!g.S.activeInteract, area:g.S.areaIndex, bi: g.S.bi, nb, bx: g.S.beats[g.S.bi] ? g.S.beats[g.S.bi].x : -1 }; });
+      const st = await page.evaluate(() => { const g = window.__G; g.P.hp = g.P.max; g.P.mp = g.P.mmax; if (g.S.guard) g.S.guard.hp=g.S.guard.max; const nb = g.S.beats.length; return { mode: g.S.mode, talk: g.S.talk, ch: g.S.choosing, en: g.enemies.length, arena: g.S.arena, interact: !!g.S.activeInteract, area:g.S.areaIndex, bi: g.S.bi, nb, bx: g.S.beats[g.S.bi] ? g.S.beats[g.S.bi].x : -1 }; });
       if (st.mode === 'hub') { res = 'done'; break; }
       if (st.ch) { const o = await page.$$('.opt'); if (o.length) { await o[ch++ % o.length].click(); } }
       else if (st.talk) { await page.evaluate(() => window.__G.adv()); }
