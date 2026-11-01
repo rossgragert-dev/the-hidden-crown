@@ -157,7 +157,10 @@ function completeMission(){
   gainXP(Math.round((60+35*m.lvl)*(m.type==='side'?.6:1)*mul));
   const gd=Math.round((20+12*m.lvl)*(first?1:.5));G.gold+=gd;S.rew.gold+=gd;
   addItem(genItem(m.lvl+1,rollRar(S.boost+(m.type==='main'?1.5:.8))),true);
-  G.done[m.id]=1;if(G.checkpoint&&G.checkpoint.id===m.id)G.checkpoint=null;G.loc=m.endLoc||m.loc||G.loc;save();missionHud(true);
+  G.done[m.id]=1;
+  if(m.id==='m8'){G.shieldTier=Math.max(G.shieldTier||0,1);toast('KNIGHT SHIELD UNLOCKED');}
+  if(m.id==='m12'){G.shieldTier=Math.max(G.shieldTier||0,2);toast('DUSKWARD MIRROR UNLOCKED');}
+  if(G.checkpoint&&G.checkpoint.id===m.id)G.checkpoint=null;G.loc=m.endLoc||m.loc||G.loc;save();missionHud(true);
   toast('MISSION COMPLETE');sfx(520,.5,'triangle',.06);
   later(1.4,()=>openResults(m,first));
 }
