@@ -17,10 +17,15 @@ require('fs').mkdirSync('/tmp/shots',{recursive:true});
     for (let i = 0; i < 1500; i++) {
       const st = await page.evaluate(() => { const g = window.__G; g.P.hp = g.P.max; g.P.mp = g.P.mmax; if (g.S.guard) g.S.guard.hp=g.S.guard.max; const nb = g.S.beats.length; return { mode: g.S.mode, talk: g.S.talk, ch: g.S.choosing, en: g.enemies.length, arena: g.S.arena, interact: !!g.S.activeInteract, area:g.S.areaIndex, bi: g.S.bi, nb, bx: g.S.beats[g.S.bi] ? g.S.beats[g.S.bi].x : -1 }; });
       if (st.mode === 'hub') { res = 'done'; break; }
-      if (st.ch) { const o = await page.$$('.opt'); if (o.length) { await o[ch++ % o.length].click(); } }
-      else if (st.talk) { await page.evaluate(() => window.__G.adv()); }
+      if (st.ch) { const o = await page.$('.opt'); if (o.length) { await o[ch++ % o.length].click(); } }
+      else if (st.talk) { await page.evaluate(() => {window.__G.adv();window.__G.adv();}); }
       else if (st.interact) { await page.evaluate(() => { const g=window.__G;g.P.x=g.S.activeInteract.x;g.useMissionObject(); }); }
-      else if (st.en) { await page.evaluate(() => { const g = window.__G, e = g.enemies[0]; if (e) { g.P.x = Math.max(g.S.arenaL + 14, Math.min(g.S.arenaR - 14, e.x - 16)); g.keys.atk = 1; } }); await page.waitForTimeout(40); await page.evaluate(()=>{window.__G.keys.atk=0;}); }
+      else if (st.arena) {
+        // The dedicated quest test exercises gameplay interactions. This flow bot
+        // verifies mission transitions and story logic without spending minutes
+        // performing repeated combat encounters.
+        await page.evaluate(() => { const g=window.__G;g.S.spawnQ=[];g.enemies.forEach(e => {e.dead=true;});g.keys.atk=0; });
+      }
       else if (st.bx >= 0) { await page.evaluate(x => { window.__G.P.x = x + 1; }, st.bx); await page.waitForTimeout(40); }
       else await page.waitForTimeout(80);
       await page.waitForTimeout(15);
@@ -28,7 +33,11 @@ require('fs').mkdirSync('/tmp/shots',{recursive:true});
     const info = await page.evaluate(() => ({ lvl: window.__G.G.lvl, c: Math.round(window.__G.G.c), inv: window.__G.G.inv.length, gold: window.__G.G.gold }));
     console.log(id, res, JSON.stringify(info));
     if (id === 'm7') await page.screenshot({ path: '/tmp/shots/B-m7-results.png' });
-    if (res !== 'done') { errs.push('Mission '+id+' failed to finish: '+res); break; }
+    if (res !== 'done') {
+      const debug=await page.evaluate(()=>{const g=window.__G;return {area:g.S.areaIndex,mode:g.S.mode,bi:g.S.bi,steps:g.S.beats.length,arena:g.S.arena,spawn:g.S.spawnQ.length,interact:!!g.S.activeInteract,paused:g.S.paused,guard:!!g.S.guard};});
+      errs.push('Mission '+id+' failed to finish: '+res+' '+JSON.stringify(debug));
+      break;
+    }
     await page.evaluate(() => window.__G.openBoard());
   }
   console.log(errs.join('\n') || 'no errors');
