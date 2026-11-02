@@ -16,17 +16,24 @@ function renderLine(){
 }
 function adv(){if(S.choosing||!line||S.paused)return;if(!line.done){line.idx=line.words.length;line.done=true;renderLine();}else nextLine();}
 function choose(prompt,opts){
+  // Choices belong to the encounter just finished. Keep its actor and
+  // the current camera position visible until the player decides.
+  S.choiceCam=S.cam;S.choiceX=P.x;
+  if(S.choiceActor&&!S.npc){
+    const actor=S.choiceActor;
+    S.npc={k:actor.k,x:P.x+27,face:-1,style:actor.style||null};
+  }
   S.talk=true;S.choosing=true;line=null;cap.classList.add('show');cap.classList.remove('nar');cap.innerHTML=prompt;chb.innerHTML='';
   opts.forEach(o=>{const b=document.createElement('button');b.className='opt';b.innerHTML='<b>'+o.label+'</b><small>'+o.desc+'</small>';
     b.addEventListener('pointerdown',e=>e.stopPropagation());
-    b.addEventListener('click',()=>{chb.innerHTML='';S.choosing=false;S.talk=false;cap.classList.remove('show');o.fn();});chb.appendChild(b);});
+    b.addEventListener('click',()=>{chb.innerHTML='';S.choosing=false;S.talk=false;S.choiceActor=null;S.choiceCam=null;cap.classList.remove('show');o.fn();});chb.appendChild(b);});
 }
 function typeTick(dt){if(!line||line.done)return;line.t+=dt;let c=false;while(line.t>.055){line.t-=.055;line.idx++;c=true;if(line.idx>=line.words.length){line.done=true;break;}}if(c)renderLine();}
 function shift(d,label){G.c=clamp(G.c+d,-100,100);if(label)toast(label+'  '+(d>0?'+':'')+Math.round(d));}
 function fade(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),250);},850);}
 
 /* ================= MISSION FLOW ================= */
-function resetField(){adventureEnd();enemies=[];proj=[];drops=[];fxs=[];parts=[];S.chests=[];S.npc=null;S.arena=false;S.activeInteract=null;S.guard=null;keys.use=0;S.talk=false;S.choosing=false;S.q=[];line=null;S.tm=[];cap.classList.remove('show');chb.innerHTML='';}
+function resetField(){adventureEnd();enemies=[];proj=[];drops=[];fxs=[];parts=[];S.chests=[];S.npc=null;S.arena=false;S.activeInteract=null;S.guard=null;S.choiceCam=null;S.choiceActor=null;keys.use=0;S.talk=false;S.choosing=false;S.q=[];line=null;S.tm=[];cap.classList.remove('show');chb.innerHTML='';}
 function startMission(id,resume){
   const m=MBY[id];if(!m)return;
   S.mission=m;S.replay=!!G.done[id];S.ilvl=m.lvl;S.boost=0;
@@ -108,7 +115,14 @@ function runStep(b){
   const st=b.st,last=b.i===S.beats.length-1,fin=()=>{
     if(st.flag)G.flags[st.flag]=1;
     if(st.goal)S.goalsDone[b.i]=true;
-    missionHud(true);if(last)endMissionArea();
+    missionHud(true);
+    if(last){endMissionArea();return;}
+    // Story choices should appear while the speaker/defeated opponent is still
+    // on screen. Older quests put them 270 world units after the previous event.
+    if(S.beats[S.bi]&&S.beats[S.bi].st.t==='choice'&&!S.arena&&!S.talk){
+      const next=S.beats[S.bi++];
+      runStep(next);
+    }
   };
   switch(st.t){
    case 'explore':{if(st.intro)say(LN(st.intro),()=>missionHud(true));else missionHud(true);break;}
@@ -155,6 +169,10 @@ function openChest(b,boost,out){
   const gd=8+Math.floor(rnd()*12)+S.ilvl*3;G.gold+=gd;if(S.rew)S.rew.gold+=gd;floatTxt(cx,GY-40,'+'+gd+' gold','#ffd34a');
 }
 function wave(list,cb){
+  // Remember the defeated boss for a following mercy / judgment choice.
+  // It can be drawn kneeling instead of disappearing before the decision.
+  const boss=list.find(o=>o.boss&&EN[o.k]&&EN[o.k].h);
+  S.choiceActor=boss?{k:boss.k,style:boss.sp||EN[boss.k].sp}:null;
   S.npc=null;S.arena=true;S.arenaL=Math.max(0,P.x-W*.5);S.arenaR=S.arenaL+W;S.curList=list;S.spawnQ=list.map(o=>({...o}));S.spawnT=0;S.waveCb=cb;S.blight=Math.min(.3,S.blight+.03);
 }
 function spawn(o){
@@ -318,7 +336,11 @@ function update(dt){
   if(S.mode==='prologue'){S.pro.x+=dt*16;S.cam=S.pro.x-W*.55;return;}
   if(S.mode==='done'){S.cam=lerp(S.cam,S.cam,0);return;}
   if(S.mode!=='play')return;
-  if(S.talk){P.mv=false;FOL.forEach(f=>f.mv=false);return;}
+  if(S.talk){
+    P.mv=false;FOL.forEach(f=>f.mv=false);
+    if(S.choosing&&S.choiceCam!=null)S.cam=S.choiceCam;
+    return;
+  }
   const dir=S.joust?0:(keys.r?1:0)-(keys.l?1:0);P.mv=dir!==0;if(dir)P.face=dir;
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
@@ -395,7 +417,10 @@ function drawScene(cam){
     R(x-4,y-8,8,8,'#17101a');R(x-3,y-7,6,6,col);R(x-3,y-7,6,2,sh(col,.45));R(x-1,y-5,2,2,'#fff');
     if(d.it.rar>=2&&Math.sin(S.t*8+d.x)>.6)R(x+4,y-12,1,3,'#fff');}
   if(S.areaData&&S.areaData.id==='magegarden')drawPerson(170-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.2});
-  if(S.npc){const o={...NPCS[S.npc.k],w:-1,ph:0};drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);}
+  if(S.npc){
+    const o=S.npc.style?{...S.npc.style,w:-1,ph:0,mv:false}: {...NPCS[S.npc.k],w:-1,ph:0};
+    if(o.col)drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);
+  }
   if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
   if(!(S.joust&&S.joust.role==='rider'))drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
