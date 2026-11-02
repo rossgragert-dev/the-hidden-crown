@@ -45,7 +45,7 @@ function loadMissionArea(idx){
   P.x=30;P.face=1;P.vx=0;P.inv=1;S.cam=0;P.guard=100;
   S.beats=(area?area.steps:m.steps).map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
   S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
-  FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});buildLayers(S.pal);hud(true);missionHud(true);
+  FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});const jump=$('jumpbtn');if(jump)jump.style.display='flex';buildLayers(S.pal);hud(true);missionHud(true);
   if(area)toast('CHAPTER '+(idx+1)+' / '+m.areas.length+': '+area.title);
 }
 function endMissionArea(){
@@ -328,6 +328,11 @@ function update(dt){
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
   if(keys.atk)attack();if(keys.abl)useAbility();if(keys.use)useMissionObject();
   if(S.adv){adventureUpdate(dt);P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);}
+  else if(!P.grounded){
+    P.vy=Math.min(460,(P.vy||0)+620*dt);
+    P.py+=P.vy*dt;
+    if(P.py>=0){P.py=0;P.vy=0;P.grounded=true;}
+  }
   if(!S.adv)FOL.forEach((f,i)=>{const tx=P.x-(i?46:28),d=tx-f.x;f.mv=Math.abs(d)>3;f.x+=d*Math.min(1,dt*2.6);f.face=P.face;});
   if(S.arena){S.spawnT+=dt;S.spawnQ=S.spawnQ.filter(o=>{if(S.spawnT>=o.d){spawn(o);return false;}return true;});}
   updateCombat(dt);
