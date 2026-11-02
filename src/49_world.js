@@ -297,15 +297,16 @@ function worldForeground(cam,cfg){
     return;
   }
   if(mode==='ruins'){for(let k=-1;k<7;k++){const x=k*155-cam*.52;worldRect(x,GY-82,14,82,'#77717a');worldRect(x+38,GY-49,46,49,'#5a555d');worldRect(x-6,GY-89,88,8,'#a39c8f');}return;}
-  if(mode==='mountain'){
-    for(let k=-1;k<9;k++){const x=k*95-cam*.47;worldRect(x,GY-72,75,71,'#737c7c');worldRect(x+20,GY-94,32,25,'#a9b7b1');worldRect(x+28,GY-102,13,17,'#e2e3d9');}return;
-  }
+  if(mode==='mountain')return; // Snow ridges and rock shelves are painted by the new scenic layer.
+  // The landscape painter now composes different landmarks per route.
+  if(['farmroad','forest','frontier'].includes(mode))return;
   worldFields(cam,cfg);
 }
 function storyWorldBackdrop(cam){
   const cfg=worldConfig();if(!cfg)return false;
-  worldSky(cfg,cam);
+  if(!pixelLandscapeBackdrop(cam,cfg))worldSky(cfg,cam);
   worldForeground(cam,cfg);
+  pixelLandscapeDetail(cam,cfg);
   return true;
 }
 function storyWeatherOverlay(cam){
