@@ -187,6 +187,10 @@ function pixWoodFence(ctx,x,base,width){
     pixRect(ctx,x+j+5,base-32,5,32,'#80634a');
     pixRect(ctx,x+j+6,base-36,3,5,'#bfa076');
     pixRect(ctx,x+j+6,base-27,1,16,'#be9b64');
+    pixRect(ctx,x+j+7,base-18,1,8,'#4b3b32');
+    pixRect(ctx,x+j+4,base-24,8,2,'#c0a77b');
+    pixRect(ctx,x+j+3,base-2,10,3,'#51493d');
+    for(let t=0;t<3;t++)pixRect(ctx,x+j+10+t*3,base-23+t*4,3,1,t===0?'#d9bf91':'#574b3c');
   }
 }
 function pixRoadHouse(ctx,x,base,rnd){
@@ -233,17 +237,48 @@ function pixRoadBridge(ctx,x,base){
   pixRect(ctx,x+19,base-35,80,2,'#846d55');
 }
 function pixRoadWagon(ctx,x,base){
-  pixRect(ctx,x+6,base-29,68,21,'#665348');
-  pixRect(ctx,x+8,base-37,64,10,'#ae875c');
-  pixRect(ctx,x+15,base-44,48,9,'#7b6b5a');
-  pixPoly(ctx,[[x+14,base-45],[x+26,base-55],[x+61,base-55],[x+71,base-45]],'#b6a17a');
-  for(const wx of [x+23,x+62]){
-    for(const rad of [11,8]){ctx.strokeStyle=rad===11?'#50413b':'#9d825c';ctx.lineWidth=2;ctx.beginPath();ctx.arc(wx,base-6,rad,0,Math.PI*2);ctx.stroke();}
-    pixRect(ctx,wx-1,base-14,2,16,'#b9a77e');
-    pixRect(ctx,wx-8,base-7,16,2,'#b9a77e');
+  // The wagon is an object with recognizable wheels, axles, curved canvas,
+  // joinery and cast shadows — not a dark rectangle parked on a flat road.
+  pixRect(ctx,x+4,base-3,98,4,'rgba(35,38,35,.25)');
+  pixRect(ctx,x+7,base-29,69,20,'#675044');
+  pixRect(ctx,x+10,base-37,63,11,'#b08b62');
+  pixRect(ctx,x+14,base-33,56,4,'#d1ad7d');
+  for(let i=0;i<7;i++){
+    const bx=x+12+i*9;
+    pixRect(ctx,bx,base-27,2,17,'#49372f');
+    pixRect(ctx,bx+2,base-26,2,12,'#916f51');
+    pixRect(ctx,bx+3,base-23,5,1,'#c7a27b');
   }
-  pixRect(ctx,x+73,base-16,28,3,'#8f775b');
+  pixRect(ctx,x+8,base-13,68,5,'#4c3833');
+  pixRect(ctx,x+7,base-16,69,3,'#9f805d');
+  // Arched canvas and dark support hoops.
+  pixPoly(ctx,[[x+11,base-37],[x+15,base-45],[x+28,base-53],[x+57,base-55],
+    [x+70,base-46],[x+74,base-37]],'#a48f72');
+  pixPoly(ctx,[[x+15,base-38],[x+22,base-45],[x+31,base-49],[x+56,base-50],
+    [x+66,base-44],[x+70,base-38]],'#ceb998');
+  for(let i=0;i<5;i++){
+    const xx=x+21+i*10,yy=base-47-(i===2?3:i===1||i===3?2:0);
+    pixRect(ctx,xx,yy,2,10,'#897960');
+    pixRect(ctx,xx+1,yy,1,6,'#e7cfa3');
+  }
+  pixRect(ctx,x+7,base-40,70,3,'#6d5544');
+  for(const wx of [x+24,x+63]){
+    // Outer rim and eight individually readable spokes.
+    ctx.strokeStyle='#342a27';ctx.lineWidth=3;ctx.beginPath();ctx.arc(wx,base-8,11,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='#b18c60';ctx.lineWidth=2;ctx.beginPath();ctx.arc(wx,base-8,9,0,Math.PI*2);ctx.stroke();
+    for(let k=0;k<8;k++){
+      const a=k*Math.PI/4;
+      ctx.strokeStyle='#8d7255';ctx.lineWidth=1;ctx.beginPath();
+      ctx.moveTo(wx,base-8);ctx.lineTo(wx+Math.cos(a)*8,base-8+Math.sin(a)*8);ctx.stroke();
+    }
+    pixRect(ctx,wx-3,base-11,6,6,'#b7a188');
+    pixRect(ctx,wx-1,base-9,2,2,'#54483d');
+  }
+  pixRect(ctx,x+72,base-18,35,4,'#816348');
+  pixRect(ctx,x+72,base-17,35,1,'#d4b18a');
+  pixRect(ctx,x+99,base-17,6,3,'#ab9270');
 }
+
 function pixRoadShrine(ctx,x,base){
   pixRect(ctx,x+30,base-55,26,55,'#7b8584');
   pixRect(ctx,x+24,base-57,39,6,'#b4b9af');
