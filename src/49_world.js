@@ -49,7 +49,9 @@ const WORLD_PALETTE={
  night:['#111b38','#273556','#46526c']
 };
 function worldConfig(){
-  if(S.mode!=='play'||!S.mission)return null;
+  // Keep the authored mission scene under the mission-complete overlay until
+  // results actually open. 'done' is still the same physical location.
+  if((S.mode!=='play'&&S.mode!=='done')||!S.mission)return null;
   if(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0)return null;
   const area=S.areaData;
   if(area&&WORLD_AREAS[area.id])return {...WORLD_AREAS[area.id],seed:S.adv?S.adv.seed:13};
@@ -248,23 +250,81 @@ function worldTraining(cam){
 }
 function worldGarden(cam){
   const base=GY;
-  worldRect(0,base-3,W,8,'#a39b89');
-  for(let i=-1;i<6;i++){
-    const seed=worldHash(i,17),x=i*180-cam*.55;
-    worldRect(x+10,base-165,8,162,'#727481');worldRect(x+151,base-165,8,162,'#727481');
-    worldRect(x+3,base-175,165,13,'#a2a5a9');
-    worldRect(x+25,base-130,124,90,'#5b6c69');
-    worldRect(x+31,base-125,112,83,'#879f96');
-    for(let k=0;k<5;k++){worldRect(x+35+k*22,base-117,5,65,'#566958');}
-    worldRect(x+40,base-30,22,29,'#6d7b50');
-    worldRect(x+52,base-43,9,13,'#c4b470');
-    worldRect(x+115,base-32,19,31,'#657e61');
-    worldRect(x+123,base-45,8,14,'#d3d4b4');
-    worldRect(x+80,base-23,25,5,'#a4a8b5');
-    worldGlow(x+92,base-42,24,'rgba(123,207,241,.18)');
-    if(seed%2){worldRect(x+67,base-158,26,3,'#cdb47d');worldRect(x+78,base-172,4,16,'#d8d2bc');}
+  // Hand-dressed arcade rather than the old flat green barred panels.
+  worldRect(0,base-6,W,11,'#9e9787');
+  const first=Math.floor(cam*.55/176)-1,last=Math.ceil((cam*.55+W)/176)+1;
+  for(let i=first;i<=last;i++){
+    const seed=worldHash(i,17),x=i*176-cam*.55;
+    // Stone pilasters, corbels and arched masonry frame the garden.
+    worldRect(x+9,base-177,15,172,'#626c71');
+    worldRect(x+11,base-176,4,168,'#a9aea6');
+    worldRect(x+151,base-177,15,172,'#5d686b');
+    worldRect(x+152,base-175,5,167,'#9eaaa4');
+    worldRect(x+5,base-183,166,9,'#7d8586');
+    worldRect(x+8,base-182,160,2,'#ced3c4');
+    for(let t=0;t<5;t++){
+      const bx=x+21+t*26,yy=base-169+(t%2)*2;
+      worldRect(bx,yy,23,12,(t+i)%3===0?'#aaa9a2':'#949c98');
+      worldRect(bx+3,yy+3,13,1,'#c5c7b5');
+      worldRect(bx+18,yy+2,2,6,'#787f80');
+    }
+    // Rounded arch in dark recess with smaller panes and a vine-covered trellis.
+    worldRect(x+29,base-145,119,101,'#485c5d');
+    worldRect(x+31,base-145,115,9,'#8fa7a0');
+    worldRect(x+34,base-134,109,86,'#607b77');
+    for(let t=0;t<9;t++){
+      const xx=x+32+t*13;
+      worldRect(xx,base-137,3,97,'#8e9990');
+      worldRect(xx+2,base-118,1,80,'#b3b8a4');
+      if(t%3===0)worldRect(xx+6,base-109,5,3,'#8aada0');
+    }
+    // Horizontal trellis rails and natural leaf clusters break up the
+    // massive flat rectangular surface from the previous build.
+    for(let t=0;t<4;t++)worldRect(x+31,base-125+t*22,113,3,t%2?'#586d69':'#a5a999');
+    for(let v=0;v<42;v++){
+      const hash=worldHash(i*47+v,113),xx=x+30+(hash%116),yy=base-142+((hash>>>7)%90);
+      if((hash&7)>4){
+        worldRect(xx,yy,5+(hash%4),3,(hash&4)?'#315f56':'#467a62');
+        worldRect(xx+2,yy-2,3,2,'#8fac7f');
+        if(v%6===0)worldRect(xx+1,yy+3,3,6,'#b7c18b');
+      }
+    }
+    // A recessed upper sill, carved arch shoulders, small finials.
+    for(let k=0;k<8;k++){
+      const x1=x+32+k*14;
+      const offset=Math.abs(k-3.5);
+      worldRect(x1,base-153+(3.5-offset)*-3,13,7,'#b3b6ad');
+      worldRect(x1+2,base-152+(3.5-offset)*-3,7,2,'#d7d4bf');
+    }
+    worldRect(x+74,base-161,30,5,'#867e75');
+    worldRect(x+85,base-174,6,14,'#c8b782');
+    worldRect(x+86,base-183,4,8,'#e6dbad');
+    // Flower planters, pots, curved herb stems and creeping flower beds.
+    for(const shift of [22,123]){
+      worldRect(x+shift,base-25,25,17,'#706d60');
+      worldRect(x+shift+2,base-23,21,5,'#b9ac88');
+      worldRect(x+shift+5,base-34,5,13,'#4e8366');
+      worldRect(x+shift+11,base-42,3,22,'#4e8366');
+      worldRect(x+shift+17,base-33,5,12,'#457057');
+      worldRect(x+shift+4,base-38,8,5,'#adc47c');
+      worldRect(x+shift+12,base-46,8,5,(seed&1)?'#b7a1cf':'#e1cf8c');
+    }
+    // Carved plinth bearing a glowing training rune.
+    worldRect(x+71,base-19,38,13,'#737b80');
+    worldRect(x+72,base-20,36,3,'#c6c9b8');
+    worldRect(x+82,base-39,16,17,'#7e8796');
+    worldRect(x+86,base-36,8,11,'#9cc9d8');
+    worldRect(x+89,base-35,2,10,'#eef8e7');
+    worldGlow(x+90,base-35,25,'rgba(137,228,239,.14)');
+    // Weathered inset flagstones create depth at the actor's feet.
+    for(let k=0;k<7;k++){
+      const xx=x+k*26;
+      worldRect(xx,base-7,25,4,k%2?'#817f72':'#aaa797');
+      worldRect(xx+2,base-5,13,1,'#c0bc9e');
+    }
   }
 }
+
 function worldFields(cam,cfg){
   const base=GY;
   worldRect(0,base-2,W,7,'#847851');

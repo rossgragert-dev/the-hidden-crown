@@ -293,6 +293,13 @@ function personParts(o){
     Au(0,-T-12,2,12,trim,'n');Au(-6,-T-1,12,2,'#3a2a1a');Au(-1,-T-1,3,2,trim,'n');
     if(o.tab){Au(-3,-T+1,6,8,o.tab);Au(-1,-T+3,2,4,'#f0f0f8','n');}
   }
+  // A slim relaxed off-hand for Corin replaces the oversized always-visible
+  // shield slab. The real equipped shield is drawn only while actively guarding.
+  if(o.hero&&!o.mounted){
+    Au(-8,-T-9,3,9,o.cloth?col:metal);
+    Au(-8,-T-2,3,3,skin);
+    Au(-9,-T-9,1,6,sh(o.cloth?col:metal,.28),'n');
+  }
   // shoulders
   if(!o.cloth){const big=look>=1?9:7,pc=look>=1?sh(metal,.1):cL;
     Au(-11,-T-15,big,look>=2?9:8,pc);Au(-11,-T-15,big,2,mL,'n');Au(-11,-T-8,big,1,cD,'n');if(look>=1)Au(-9,-T-13,3,2,trim,'n');

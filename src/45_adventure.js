@@ -160,26 +160,82 @@ function adventureBackdrop(cam){
     }
     sceneArmory(cam,backCam,y);
   }else if(kind==='stable'){
-    R(0,0,W,H,'#22201f');
-    R(0,0,W,y,'#5d4939');
-    for(let row=0;row<y;row+=22)R(0,row,W,2,'#352d2b');
-    R(0,y-19,W,19,'#776044');R(0,y,W,H-y,'#64513a');
-    for(let i=Math.floor(backCam/145)-1;i<Math.ceil((backCam+W)/145)+1;i++){
-      const x=i*145-backCam;
-      R(x,0,13,y,'#3d2b24');R(x+3,0,7,y,'#806043');
-      R(x+140,0,8,y,'#3d2b24');
-      R(x+21,35,110,9,'#b19263');
-      R(x+25,48,100,y-65,'#45352b');
-      for(let k=0;k<7;k++)R(x+30+k*14,57,3,y-79,'#78543b');
-      R(x+38,y-45,88,8,'#b28e5b');
-      R(x+60,y-37,52,9,'#7b583c');
-      if(i%2===0){
-        R(x+69,y-64,32,12,'#b1976f');
-        for(let h=0;h<6;h++)R(x+58+h*9,y-21,6,3,'#c9a15b');
-      }else{
-        R(x+37,y-79,31,23,'#77543d');R(x+39,y-82,27,6,'#a37d4b');
-        R(x+80,y-86,32,38,'#655040');
+    R(0,0,W,H,'#231f21');
+    R(0,0,W,y,'#554535');
+    const wall=g.createLinearGradient(0,0,0,y);
+    wall.addColorStop(0,'rgba(12,10,12,.33)');
+    wall.addColorStop(.7,'rgba(145,101,55,.07)');
+    wall.addColorStop(1,'rgba(234,194,119,.11)');
+    g.fillStyle=wall;g.fillRect(0,0,W,y);
+    // Shaded wooden boards with individual grain, pegs and support joints.
+    for(let row=0;row<y;row+=18){
+      R(0,row,W,2,'#392f2d');
+      for(let i=-1;i<W/47+2;i++){
+        const x=i*47-(backCam%47),shade=(i+row/18)%4;
+        R(x+1,row+3,43,1,shade===0?'#806145':'#6e5541');
+        R(x+5,row+6,1,5,'#8e7353');
+        R(x+28,row+11,11,1,'#876747');
       }
+    }
+    R(0,y-22,W,22,'#7b6245');R(0,y,W,H-y,'#6d593e');
+    for(let i=Math.floor(backCam/152)-1;i<Math.ceil((backCam+W)/152)+1;i++){
+      const x=i*152-backCam;
+      // Roof truss, angled timber, structural supports all reach the floor.
+      R(x,0,15,y,'#392b26');R(x+3,0,6,y,'#94704f');
+      R(x+146,0,7,y,'#302723');R(x+147,0,3,y,'#7b6045');
+      R(x+18,31,127,9,'#9f784f');R(x+21,32,118,2,'#d0a06b');
+      g.strokeStyle='#725138';g.lineWidth=5;g.beginPath();
+      g.moveTo(x+14,36);g.lineTo(x+73,3);
+      g.moveTo(x+140,36);g.lineTo(x+73,3);g.stroke();
+      // Recessed stable stall with layered boards and slatted railing.
+      R(x+25,51,113,Math.max(0,y-83),'#41332c');
+      R(x+29,54,104,Math.max(0,y-90),'#63503d');
+      for(let j=0;j<9;j++){
+        const bx=x+31+j*12;
+        R(bx,59,3,Math.max(0,y-93),'#795b41');
+        R(bx+1,59,1,Math.max(0,y-93),'#af8660');
+      }
+      R(x+24,y-52,114,10,'#b5905c');
+      R(x+25,y-49,110,2,'#e0b879');
+      R(x+26,y-31,112,6,'#554033');
+      for(let j=0;j<6;j++)R(x+33+j*18,y-30,4,12,'#9f8057');
+      // Near stall: hanging reins, saddle, hay and feed trough.
+      if(i%2===0){
+        R(x+92,y-103,3,47,'#c2a376');R(x+94,y-103,2,43,'#584337');
+        R(x+83,y-81,31,11,'#705039');R(x+87,y-85,23,5,'#bc9563');
+        R(x+93,y-70,3,21,'#c19f6b');R(x+104,y-69,3,20,'#c19f6b');
+        for(let h=0;h<14;h++){
+          const xx=x+41+(h*11)%84,yy=y-14-(h%3)*5;
+          R(xx,yy,8,3,h%2?'#d5b06f':'#ab894d');
+          R(xx+2,yy-3,2,6,'#e6ca87');
+        }
+      }else{
+        R(x+39,y-103,48,32,'#302925');
+        R(x+42,y-100,42,27,'#7f6044');
+        for(let h=0;h<5;h++)R(x+44+h*8,y-91,3,17,'#b08c61');
+        R(x+96,y-115,24,42,'#674d3a');
+        R(x+99,y-116,18,5,'#bd9668');
+        R(x+104,y-111,2,25,'#a37f56');
+        R(x+53,y-29,35,12,'#987a52');
+        R(x+56,y-33,29,5,'#d1b476');
+        R(x+61,y-22,25,3,'#5a4738');
+      }
+      // Warm light from the high window reaches the straw-strewn floor.
+      if(i%3===0){
+        R(x+65,41,25,41,'#37444b');
+        R(x+67,43,21,37,'#a9b3a6');
+        R(x+77,43,3,37,'#514e48');
+        R(x+67,60,21,3,'#514e48');
+        const glow=g.createRadialGradient(x+79,66,1,x+79,66,82);
+        glow.addColorStop(0,'rgba(238,199,128,.13)');
+        glow.addColorStop(1,'rgba(238,199,128,0)');
+        g.fillStyle=glow;g.fillRect(x-5,15,170,145);
+      }
+      for(let j=0;j<14;j++){
+        const xx=x+(worldHash(i*31+j,17)%150);
+        R(xx,y-1-(j%4)*3,3+(j%4),1,j%3?'#d9b576':'#a58b57');
+      }
+      R(x+14,y-4,125,4,'rgba(20,15,14,.25)');
     }
   }else{ // the tournament is open-air, not a castle room
     sceneLists(cam,backCam,y);
