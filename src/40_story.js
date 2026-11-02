@@ -1,6 +1,15 @@
 /* ================= ENEMIES ================= */
 const KNIGHT_MISSION='m11'; // Halvard knights Corin as Act I's story peaks; change here to move the knighting
 const EN={
+ scout:{n:'Greenmarch Scout',hp:25,dmg:8,spd:52,rng:115,xp:13,g:[2,6],drop:.17,h:1,w:2,ranged:1,sp:{col:'#547052',trim:'#9bbf82',metal:'#51645b',hair:'#47392d',crest:'hood',leg:'#596c55',quiver:1,w:2,look:0}},
+ spearman:{n:'Regency Spearman',hp:42,dmg:12,spd:34,rng:33,xp:21,g:[5,10],drop:.22,h:1,w:0,weapon:'spear',sp:{col:'#6a4d58',trim:'#b9a7a7',metal:'#85878e',leg:'#453b4b',helm:'#92959d',look:1,w:0}},
+ torchraider:{n:'Torch Raider',hp:29,dmg:10,spd:48,rng:17,xp:18,g:[3,7],drop:.16,h:1,w:4,dash:1,weapon:'torch',sp:{col:'#783e2d',trim:'#de8a42',metal:'#5a4641',leg:'#5b3a2d',crest:'hood',look:0,w:4}},
+ crossbow:{n:'Regency Crossbowman',hp:32,dmg:13,spd:19,rng:170,xp:24,g:[6,13],drop:.22,h:1,w:2,ranged:1,weapon:'crossbow',sp:{col:'#494e62',trim:'#b49b78',metal:'#8c90a0',leg:'#444853',helm:'#858b9b',look:1,quiver:1,w:2}},
+ sapper:{n:'Gate Sapper',hp:48,dmg:14,spd:35,rng:16,xp:27,g:[6,14],drop:.22,h:1,w:4,weapon:'sapper',sp:{col:'#715f42',trim:'#d3b371',metal:'#75736c',leg:'#5b4e3f',crest:'hood',look:1,w:4}},
+ wisp:{n:'Fen Wisp',hp:19,dmg:8,spd:28,rng:140,xp:16,g:[2,7],drop:.08,creature:'wisp',ranged:1},
+ boglurker:{n:'Bog Lurker',hp:72,dmg:17,spd:26,rng:25,xp:37,g:[6,12],drop:.35,creature:'bog',k:1.3,big:1},
+ acolyte:{n:'Ashen Acolyte',hp:31,dmg:12,spd:37,rng:145,xp:23,g:[4,11],drop:.21,h:1,w:1,ranged:1,weapon:'staff',sp:{col:'#382e4b',trim:'#9c67ad',metal:'#655272',leg:'#2c283d',crest:'hood',mask:1,w:1,look:0}},
+ sentry:{n:'Regency Shield Guard',hp:64,dmg:14,spd:19,rng:22,xp:28,g:[5,13],drop:.25,h:1,w:0,weapon:'shield',sp:{col:'#454c60',trim:'#c9b38b',metal:'#a3a6b5',leg:'#444653',helm:'#aeb6c0',look:2,w:0}},
  rat:{n:'Cellar Rat',hp:8,dmg:3,spd:62,rng:11,xp:3,g:[0,1],drop:.04,rat:1},
  blight:{n:'Blightling',hp:22,dmg:8,spd:40,rng:15,xp:10,g:[1,4],drop:.14},
  hound:{n:'Blight Hound',hp:90,dmg:16,spd:28,rng:30,xp:55,g:[12,22],drop:.7,k:1.7,big:1},
@@ -88,7 +97,7 @@ const MISSIONS=[
     platforms:[{x:270,w:115,y:-28,kind:'outcrop'},{x:800,w:160,y:-34,kind:'outcrop'}],
     combatAt:[
       {x:320,list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6}]},
-      {x:680,list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
+      {x:680,list:[{k:'bandit',s:1,d:0},{k:'scout',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
       {x:970,list:[{k:'hound',s:1,d:0,boss:1,name:'Greenmarch Ravager',hpm:1.1}]}
     ],
     objects:[
@@ -111,7 +120,7 @@ const MISSIONS=[
     L('Corin','I saw the same markings on the road. They are moving toward the village.'),
     L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
   ]},
-  {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'blight',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
+  {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'scout',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
     L('Corin','They came all this way. There must be more of them on the Greenmarch.')
   ]},
   {t:'chest',boost:0,lines:[L('Ser Halvard','Take the supplies left beside the gate. You earned them.')]},
@@ -122,7 +131,7 @@ const MISSIONS=[
 ]},
 {id:'m2',type:'main',act:1,title:'The Greenmarch Road',reg:'green',lvl:1,req:'m1',desc:'A Regency guard crawls out of the blight with a warning.',steps:[
  {t:'say',lines:[N('The Greenmarch. Fields that should be golden are grey with rot.'),L('Lysa','Tracks. Dozens. Heading for the village.')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:1,d:.9},{k:'blight',s:-1,d:1.8},{k:'blight',s:-1,d:2.7}],outro:[L('Corin','Wolves, hares, even crows. All of it *twisted*.')]},
+ {t:'wave',list:[{k:'blight',s:1,d:0},{k:'spearman',s:1,d:.9},{k:'scout',s:-1,d:1.8},{k:'blight',s:-1,d:2.7}],outro:[L('Corin','Wolves, hares, even crows. All of it *twisted*.')]},
  {t:'say',npc:{k:'guard',face:-1},lines:[N('A Regency guard staggers from the reeds. Blight-sick, unarmed, terrified.'),L('Guard','*Mercy!* I only collected the tax! Lord Vane said the Greenmarch pays or *burns*!'),L('Corin','Where is the rest of your patrol?'),L('Guard','Dead. Or worse. Please, *Ser*...')]},
  {t:'choice',prompt:'What does Corin do?',opts:[
   {label:'Spare him',desc:'Bind his wounds and send him home.',c:12,cl:'Mercy',flag:'spared',heal:.3,xp:30,lines:[L('Guard','Bless you... Listen. The Regent\'s hounds are searching every keep for a *boy* of sixteen. They mean to bury him.'),L('Ser Halvard','...We are leaving. *Now*.')]},
@@ -137,13 +146,13 @@ const MISSIONS=[
   {label:'Ration it fairly',desc:'Half for the village, half for the road.',c:5,cl:'Fairness',xp:25,lines:[L('Villager','A fair man. That is *rarer* than grain.')]},
   {label:'Requisition it for the war',desc:'Take it all. The cause needs it more.',c:-15,cl:'Tyranny',flag:'seized',maxmp:12,shake:1,lines:[N('The doors splinter. Stolen grain, stolen strength... and the relic *burns* warm.'),L('Ser Halvard','Careful, boy. I have seen where that road ends. I served *Vane\'s* road.')]}]},
  {t:'say',lines:[L('Lysa','Corin... that is no wolf. *Behind* you!')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6},{k:'hound',s:1,d:1.8,boss:1,name:'Blight Hound'},{k:'blight',s:-1,d:3.2}],outro:[L('Ser Halvard','Well fought. Better than I deserve.')]},
+ {t:'wave',list:[{k:'torchraider',s:1,d:0},{k:'torchraider',s:-1,d:.6},{k:'hound',s:1,d:1.8,boss:1,name:'Blight Hound'},{k:'blight',s:-1,d:3.2}],outro:[L('Ser Halvard','Well fought. Better than I deserve.')]},
  {t:'chest',boost:.5}
 ]},
 {id:'m4',type:'main',act:1,title:'The Whispering Reeds',reg:'fen',lvl:3,req:'m3',desc:'The Veilfen. A Marshkin witch knows more than she should.',steps:[
  {t:'say',lines:[N('Veilfen. Mist coils between the reeds, and something old watches from the water.'),L('Lysa','I do not like this place.')]},
  {t:'say',npc:{k:'wren',face:-1},lines:[L('Mother Wren','Then you are *wise*, little archer. But the marsh likes the *brave* more.'),L('Mother Wren','Pretty blades, boy. Let us see if they cut the *rot*.')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.8},{k:'blight',s:1,d:1.6},{k:'blight',s:-1,d:2.4},{k:'blight',s:1,d:3.2}],outro:[L('Mother Wren','Hm. You hold the bow like a *king* who learned archery in secret.'),L('Corin','Kings do not learn archery from squires.'),L('Mother Wren','No. They learn it from *mothers*. Mind your feet.')]},
+ {t:'wave',list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.8},{k:'boglurker',s:1,d:1.6},{k:'blight',s:-1,d:2.4},{k:'blight',s:1,d:3.2}],outro:[L('Mother Wren','Hm. You hold the bow like a *king* who learned archery in secret.'),L('Corin','Kings do not learn archery from squires.'),L('Mother Wren','No. They learn it from *mothers*. Mind your feet.')]},
  {t:'choice',prompt:'Mother Wren offers a Marshkin bargain.',opts:[
   {label:'Accept her charm',desc:'Wild magic. It will want something back.',c:-4,cl:'Bargain',flag:'wrenPact',loot:{slot:'trinket',rar:2},lines:[L('Mother Wren','Good. The marsh *remembers* a debt.')]},
   {label:'Decline politely',desc:'Honor the gift with thanks, not promises.',c:4,cl:'Honor',flag:'wrenRespect',gold:40,xp:30,lines:[L('Mother Wren','Hah! The old king said no to me, too. *Same* chin.')]},
@@ -152,7 +161,7 @@ const MISSIONS=[
 ]},
 {id:'m5',type:'main',act:1,title:'A Rival\'s Debt',reg:'hearth',lvl:3,req:'m4',desc:'Brannoch Vale wants his pride back, and he has hired help.',steps:[
  {t:'say',npc:{k:'brannoch',face:-1},lines:[L('Brannoch','Well, if it is not the *orphan* squire.'),L('Brannoch','Father says the Order wastes its time on strays. Let me show you what a *real* knight does.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'bandit',s:-1,d:.6},{k:'archer',s:1,d:1.8},{k:'bandit',s:1,d:3}],outro:[N('The hired Reavers fall. Brannoch is alone, sword shaking, face pale.')]},
+ {t:'wave',list:[{k:'spearman',s:1,d:0},{k:'bandit',s:-1,d:.6},{k:'archer',s:1,d:1.8},{k:'bandit',s:1,d:3}],outro:[N('The hired Reavers fall. Brannoch is alone, sword shaking, face pale.')]},
  {t:'choice',prompt:'Brannoch lies at Corin\'s feet.',opts:[
   {label:'Offer him a hand',desc:'Help him up. Let him choose what he becomes.',c:10,cl:'Grace',flag:'brannochAlly',xp:40,lines:[L('Brannoch','...Why? I would not have.'),L('Corin','That is the difference between us.')]},
   {label:'Humiliate him publicly',desc:'Let the whole yard see what he is.',c:-8,cl:'Spite',flag:'brannochFoe',lines:[L('Brannoch','You will regret this, *orphan*.')]},
@@ -161,7 +170,7 @@ const MISSIONS=[
 ]},
 {id:'m6',type:'main',act:1,title:'The Relic Hums',reg:'night',lvl:4,req:'m5',desc:'A mage in the library knows what Corin carries.',steps:[
  {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. In the library, Magister Ione has been waiting.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6},{k:'blight',s:1,d:1.4},{k:'blight',s:-1,d:2.2},{k:'blight',s:1,d:3}],outro:[L('Magister Ione','Dawn heals. Dusk hits hard. Both answer to *you*. That is what troubles me.')]},
+ {t:'wave',list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.6},{k:'wisp',s:1,d:1.4},{k:'blight',s:-1,d:2.2},{k:'blight',s:1,d:3}],outro:[L('Magister Ione','Dawn heals. Dusk hits hard. Both answer to *you*. That is what troubles me.')]},
  {t:'choice',prompt:'Which tide does Corin trust first?',opts:[
   {label:'Dawn',desc:'Light, healing, and the long road.',c:6,cl:'Dawn',flag:'dawnFirst',xp:40,lines:[L('Magister Ione','A healer\'s instinct. It will serve you, and cost you *speed*.')]},
   {label:'Dusk',desc:'Fear and power. Win now, answer later.',c:-6,cl:'Dusk',flag:'duskFirst',xp:40,lines:[L('Magister Ione','Hmm. The power is *real*. So is the price.')]},
@@ -170,7 +179,7 @@ const MISSIONS=[
 ]},
 {id:'m7',type:'main',act:1,title:'The Ashen Hand',reg:'night',lvl:5,req:'m6',desc:'Assassins drop over the walls. Someone sent them for a reason.',steps:[
  {t:'say',lines:[N('Alarm bells. Black-clad figures drop from the walls.'),L('Ser Halvard','The *Ashen* *Hand*. They have found us.'),L('Lysa','Found *us*? Or found *him*?'),L('Ser Halvard','Fight now. Talk later.')]},
- {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.7},{k:'ashen',s:1,d:1.5}],outro:[N('A heavy tread behind them. The Regency\'s own blade has come in person.')]},
+ {t:'wave',list:[{k:'acolyte',s:1,d:0},{k:'acolyte',s:-1,d:.7},{k:'ashen',s:1,d:1.5}],outro:[N('A heavy tread behind them. The Regency\'s own blade has come in person.')]},
  {t:'say',npc:{k:'cmdr',face:-1},lines:[L('Captain Sorrel','The Regent was right. The fire did not take *everything*.'),L('Corin','What is he talking about?'),L('Ser Halvard','Nothing. *Fight*.')]},
  {t:'wave',list:[{k:'bandit',s:1,d:0,boss:1,name:'Captain Sorrel Dunmoor',hpm:6,dmgm:1.35,sp:{col:'#6a6e7a',metal:'#8a8f9a',trim:'#c9a24a',hair:'#222',look:2,helm:'#8a8f9a',crest:'plume',crestC:'#a02030',cape:'#6a1a2a',iris:'#4a2a2a',scar:1,nosh:1,w:0}},{k:'ashen',s:-1,d:2.5},{k:'ashen',s:1,d:4}],outro:[N('Sorrel falls to one knee, blade clattering away.')]},
  {t:'choice',prompt:'Captain Sorrel is at Corin\'s mercy.',opts:[
@@ -181,7 +190,7 @@ const MISSIONS=[
 ]},
 {id:'m8',type:'main',act:1,title:'Trial of Steel',reg:'hearth',lvl:6,req:'m7',desc:'Three trials make a knight: blade, bow and mind.',steps:[
  {t:'say',npc:{k:'cmdr',face:-1},lines:[L('Commander Brandt','Three trials make a knight: the *blade*, the *bow*, and the *mind*. Fail one, and you remain a squire.'),L('Corin','Then I will not fail.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'bandit',s:-1,d:.8},{k:'bandit',s:1,d:3}],outro:[L('Commander Brandt','The blade is yours. Now, the *bow*.')]},
+ {t:'wave',list:[{k:'spearman',s:1,d:0},{k:'spearman',s:-1,d:.8},{k:'bandit',s:1,d:3}],outro:[L('Commander Brandt','The blade is yours. Now, the *bow*.')]},
  {t:'wave',list:[{k:'archer',s:1,d:0},{k:'archer',s:-1,d:.6},{k:'archer',s:1,d:1.2},{k:'archer',s:-1,d:2}],outro:[L('Commander Brandt','Good eye. Now the hardest: the *mind*. The blight does not tire. Neither may you.')]},
  {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.4},{k:'blight',s:1,d:.8},{k:'blight',s:-1,d:1.6},{k:'hound',s:1,d:3,boss:1,name:'Trial Hound'},{k:'blight',s:-1,d:4}],outro:[L('Commander Brandt','You pass. The vigil is tonight. Tomorrow you are a *knight*... if you survive tonight.')]},
  {t:'chest',boost:2},
@@ -238,14 +247,14 @@ const MISSIONS=[
  areas:[
  {id:'outskirts',title:'The Outer Fields',reg:'green',steps:[
   {t:'say',lines:[N('Smoke darkens the eastern sky. Regency banners fill the valley below Hearthmoor.'),L('Lysa','Scouts on the farm road. If they reach the walls first, the castle will be taken *unaware*.'),L('Corin','Then we get to the watchtower. Sound the alarm.')]},
-  {t:'wave',goal:'Break through the Regency scouts',list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.4},{k:'archer',s:-1,d:2.2}]},
+  {t:'wave',goal:'Break through the Regency scouts',list:[{k:'spearman',s:1,d:0},{k:'crossbow',s:-1,d:.7},{k:'spearman',s:1,d:1.4},{k:'crossbow',s:-1,d:2.2}]},
   {t:'interact',goal:'Reach the watchtower and ring the alarm',name:'ALARM BELL',flag:'m10warned',lines:[L('Corin','Hearthmoor! To *arms*!'),N('The warning bell cuts through the smoke. Soldiers rush to their posts.')]},
   {t:'say',lines:[L('Ser Halvard','You bought us a few precious minutes. Ride to the *gatehouse*. We shall need every one.')]}
  ]},
  {id:'gatehouse',title:'The Broken Gate',reg:'hearth',steps:[
   {t:'say',lines:[N('The gatehouse shudders under the Regent\'s battering rams.'),L('Commander Brandt','*Hold* the portcullis! They must not reach the village.')]},
   {t:'defend',goal:'Keep the gate standing through the assault',target:'Gate',hp:145,list:[
-    {k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3},{k:'ashen',s:-1,d:2.1},{k:'archer',s:1,d:3.0}
+    {k:'spearman',s:1,d:0},{k:'crossbow',s:-1,d:.7},{k:'bandit',s:1,d:1.3},{k:'sapper',s:-1,d:2.1},{k:'archer',s:1,d:3.0}
    ],outro:[L('Commander Brandt','The first assault is broken. Now seal the mechanism!')]},
   {t:'interact',goal:'Reach the winch and secure the portcullis',name:'GATE WINCH',flag:'m10gateSecured',lines:[N('Iron chains grind. The portcullis slams shut behind the final defenders.')]},
   {t:'say',lines:[L('Lysa','Smoke in the lower streets. The villagers are still inside.'),L('Corin','Then the battle is not finished.')]}
@@ -265,7 +274,7 @@ const MISSIONS=[
  {id:'chapel',title:'The Chapel Ward',reg:'chapel',steps:[
   {t:'say',lines:[N('Under the chapel, the Oathcrown shard burns brighter than the candles.'),L('Magister Ione','The blight feels the shard. If I can raise the old *ward*, the wounded can escape.'),L('Corin','Tell me what you need.')]},
   {t:'wave',goal:'Clear the chapel approach',list:[
-    {k:'blight',s:1,d:0},{k:'blight',s:-1,d:.5},{k:'hound',s:1,d:1.4},{k:'ashen',s:-1,d:2.3}
+    {k:'boglurker',s:1,d:0},{k:'blight',s:-1,d:.5},{k:'hound',s:1,d:1.4},{k:'ashen',s:-1,d:2.3}
    ]},
   {t:'interact',goal:'Activate the Dawnroot focus',name:'WARD FOCUS',flag:'m10focus',lines:[L('Magister Ione','Now! The ward is awake. Hold it while I bind the runes.')]},
   {t:'defend',goal:'Protect Ione\'s ward from the blight',target:'Chapel Ward',hp:160,list:[
@@ -299,7 +308,7 @@ const MISSIONS=[
   {label:'Carry him',desc:'No one is left behind.',c:10,cl:'Loyalty',flag:'halvardCarried',lines:[L('Ser Halvard','...Stubborn. Just like your... *just like you*.')]},
   {label:'Let him hold the bridge',desc:'His choice. His sacrifice.',c:-8,cl:'Sacrifice',flag:'halvardStands',lines:[L('Ser Halvard','Tell Ione... tell her it was *worth* it.')]},
   {label:'Bind his wound and move on',desc:'Fast and careful. Risky.',c:2,cl:'Prudence',flag:'halvardBound',lines:[L('Magister Ione','That will hold. For *now*.')]}]},
- {t:'wave',list:[{k:'hound',s:1,d:0},{k:'ashen',s:-1,d:.8},{k:'ashen',s:1,d:1.6},{k:'ashen',s:-1,d:2.4}],outro:[N('The pursuit thins. Not gone. Only *waiting*.')]},
+ {t:'wave',list:[{k:'hound',s:1,d:0},{k:'acolyte',s:-1,d:.8},{k:'ashen',s:1,d:1.6},{k:'ashen',s:-1,d:2.4}],outro:[N('The pursuit thins. Not gone. Only *waiting*.')]},
  {t:'say',npc:{k:'ione',face:-1},lines:[L('Magister Ione','There you are. Quickly. I have wards on the old causeway. They will not hold long.')]},
  {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.4},{k:'blight',s:1,d:.8},{k:'blight',s:-1,d:1.2},{k:'blight',s:1,d:1.6},{k:'hound',s:-1,d:3,boss:1,name:'Blightwolf Alpha'}]},
  {t:'chest',boost:2.2,out:.3},
