@@ -304,8 +304,9 @@ function worldForeground(cam,cfg){
 }
 function storyWorldBackdrop(cam){
   const cfg=worldConfig();if(!cfg)return false;
-  worldSky(cfg,cam);
+  if(!pixelLandscapeBackdrop(cam,cfg))worldSky(cfg,cam);
   worldForeground(cam,cfg);
+  pixelLandscapeDetail(cam,cfg);
   return true;
 }
 function storyWeatherOverlay(cam){
