@@ -176,7 +176,143 @@ function pixelLandscapeBackdrop(cam,cfg){
   g.drawImage(cv,off,0,W,cv.height,0,0,W,H);
   return true;
 }
+/* Authored near-landmark progression. These aren't wallpaper tiles: each
+   segment has a different landmark and visual story, selected by route seed.
+   Parallax is slower than the player, so roadside forms stay spatially stable.
+*/
+function pixWoodFence(ctx,x,base,width){
+  pixRect(ctx,x,base-24,width,4,'#9e805a');
+  pixRect(ctx,x,base-13,width,3,'#6c553f');
+  for(let j=0;j<width;j+=22){
+    pixRect(ctx,x+j+5,base-32,5,32,'#80634a');
+    pixRect(ctx,x+j+6,base-36,3,5,'#bfa076');
+    pixRect(ctx,x+j+6,base-27,1,16,'#be9b64');
+  }
+}
+function pixRoadHouse(ctx,x,base,rnd){
+  const w=79,h=67;
+  pixRect(ctx,x+5,base-h,w,h,'#837b6d');
+  pixRect(ctx,x+8,base-h+7,w-7,h-7,'#aca08b');
+  for(let j=0;j<7;j++){
+    pixRect(ctx,x+9+j*11,base-h+10,2,h-11,'#756c5e');
+    pixRect(ctx,x+15+j*11,base-h+17,2,h-23,'#baa78b');
+  }
+  pixPoly(ctx,[[x-12,base-h+5],[x+24,base-h-26],[x+70,base-h-30],
+    [x+103,base-h+6],[x+94,base-h+12],[x+12,base-h+13]],'#5b5455');
+  pixPoly(ctx,[[x-8,base-h+4],[x+22,base-h-20],[x+64,base-h-22],
+    [x+90,base-h+4]],'#81746c');
+  for(let j=0;j<10;j++)pixRect(ctx,x+9+j*8,base-h-2-j%3*3,6,2,'#ae9280');
+  pixRect(ctx,x+23,base-42,18,26,'#39434b');
+  pixRect(ctx,x+24,base-41,16,4,'#c0ab8a');
+  pixRect(ctx,x+31,base-39,2,23,'#aaa89b');
+  pixRect(ctx,x+51,base-30,22,30,'#514438');
+  pixRect(ctx,x+53,base-28,17,28,'#6e5743');
+  pixRect(ctx,x+63,base-16,3,3,'#e0d3b5');
+  pixRect(ctx,x+75,base-15,22,14,'#997b4b');
+  pixRect(ctx,x+74,base-21,22,7,'#c7ad72');
+  pixRect(ctx,x+76,base-20,18,2,'#f3d39c');
+  for(let j=0;j<4;j++){
+    pixRect(ctx,x+76+j*5,base-12,3,8,'#a98756');
+  }
+  const smoke=x+55+rnd()*5;
+  pixRect(ctx,smoke,base-h-40,9,2,'rgba(214,205,193,.27)');
+}
+function pixRoadBridge(ctx,x,base){
+  pixRect(ctx,x-8,base-4,120,9,'#526e70');
+  pixRect(ctx,x,base-9,113,3,'#8aa7a4');
+  pixRect(ctx,x+8,base-21,100,8,'#7e624b');
+  for(let j=0;j<10;j++){
+    pixRect(ctx,x+10+j*10,base-21,8,3,'#c3a178');
+    pixRect(ctx,x+15+j*10,base-14,3,7,'#4a3a32');
+  }
+  for(const px of [x+12,x+95]){
+    pixRect(ctx,px,base-45,5,29,'#785b48');
+    pixRect(ctx,px+2,base-46,2,10,'#d0ae7e');
+  }
+  pixRect(ctx,x+16,base-41,80,3,'#b49670');
+  pixRect(ctx,x+19,base-35,80,2,'#846d55');
+}
+function pixRoadWagon(ctx,x,base){
+  pixRect(ctx,x+6,base-29,68,21,'#665348');
+  pixRect(ctx,x+8,base-37,64,10,'#ae875c');
+  pixRect(ctx,x+15,base-44,48,9,'#7b6b5a');
+  pixPoly(ctx,[[x+14,base-45],[x+26,base-55],[x+61,base-55],[x+71,base-45]],'#b6a17a');
+  for(const wx of [x+23,x+62]){
+    for(const rad of [11,8]){ctx.strokeStyle=rad===11?'#50413b':'#9d825c';ctx.lineWidth=2;ctx.beginPath();ctx.arc(wx,base-6,rad,0,Math.PI*2);ctx.stroke();}
+    pixRect(ctx,wx-1,base-14,2,16,'#b9a77e');
+    pixRect(ctx,wx-8,base-7,16,2,'#b9a77e');
+  }
+  pixRect(ctx,x+73,base-16,28,3,'#8f775b');
+}
+function pixRoadShrine(ctx,x,base){
+  pixRect(ctx,x+30,base-55,26,55,'#7b8584');
+  pixRect(ctx,x+24,base-57,39,6,'#b4b9af');
+  pixPoly(ctx,[[x+18,base-58],[x+44,base-84],[x+69,base-58]],'#6d7778');
+  pixPoly(ctx,[[x+25,base-58],[x+44,base-77],[x+62,base-58]],'#a5aca4');
+  pixRect(ctx,x+38,base-43,10,35,'#4c5d61');
+  pixRect(ctx,x+40,base-35,6,12,'#d3bf8b');
+  pixRect(ctx,x+42,base-31,2,8,'#e9d9ab');
+  pixRect(ctx,x+24,base-7,40,7,'#596b66');
+  pixRect(ctx,x+20,base-2,49,3,'#bcc5bb');
+}
+function pixRoadDetail(cam,cfg){
+  const type=cfg.style;
+  if(!['farmroad','forest','frontier','granary','fen'].includes(type))return;
+  const rng=pixRandom((cfg.seed||17)+400),cols=PIXEL_SCENES[type],base=GY-3;
+  const layouts=type==='farmroad'||type==='granary'?
+     ['fence','house','bridge','cart','shrine','orchard','house','cart','bridge','fence','house']:
+     type==='forest'?['pines','log','pines','shrine','fallen','pines','rocks','pines','log']:
+     type==='fen'?['reeds','bridge','pines','lantern','reeds','shrine','reeds','bridge']:
+     ['rocks','pines','shrine','rocks','pines','fallen','rocks','pines'];
+  for(let k=0;k<layouts.length;k++){
+    const worldX=80+k*167+(rng()-.5)*67;
+    const x=worldX-cam*.65;
+    if(x<-180||x>W+180)continue;
+    const name=layouts[k];
+    if(name==='fence'){pixWoodFence(g,x,base,114);continue;}
+    if(name==='house'){pixRoadHouse(g,x,base,rng);continue;}
+    if(name==='bridge'){pixRoadBridge(g,x,base);continue;}
+    if(name==='cart'){pixRoadWagon(g,x,base);continue;}
+    if(name==='shrine'){pixRoadShrine(g,x,base);continue;}
+    if(name==='orchard'||name==='pines'){
+      for(let j=0;j<4;j++)pixFir(g,x+j*25,base,35+rng()*54,cols.tree,cols.mid,rng);
+      continue;
+    }
+    if(name==='reeds'||name==='lantern'){
+      pixRect(g,x-7,base-13,93,11,'#467870');
+      for(let j=0;j<19;j++){
+        const xx=x+j*5,ht=11+rng()*26;
+        pixRect(g,xx,base-ht,2,ht,cols.tree);
+        if(j%3===0)pixRect(g,xx-1,base-ht-5,4,8,'#84745a');
+      }
+      if(name==='lantern'){
+        pixRect(g,x+42,base-72,5,71,'#635948');
+        pixRect(g,x+36,base-78,18,9,'#e8cb8a');
+        pixRect(g,x+40,base-75,10,6,'#f4e9ab');
+      }
+      continue;
+    }
+    if(name==='log'||name==='fallen'){
+      pixRect(g,x-5,base-15,112,14,'#685246');
+      pixRect(g,x-4,base-12,110,4,'#917763');
+      pixRect(g,x+96,base-14,10,11,'#af9373');
+      pixRect(g,x+99,base-11,4,5,'#73604d');
+      continue;
+    }
+    if(name==='rocks'){
+      for(let j=0;j<7;j++){
+        const xx=x+j*19,ht=12+rng()*20,ww=13+rng()*22;
+        pixPoly(g,[[xx,base],[xx+4,base-ht*.75],[xx+ww*.35,base-ht],
+          [xx+ww*.8,base-ht*.65],[xx+ww,base]],cols.rock);
+        pixPoly(g,[[xx+4,base-ht*.75],[xx+ww*.35,base-ht],
+          [xx+ww*.51,base-ht*.57],[xx+4,base-ht*.5]],cols.mid);
+      }
+    }
+  }
+}
+
 function pixelLandscapeDetail(cam,cfg){
+  pixRoadDetail(cam,cfg);
   if(!PIXEL_SCENES[cfg.style])return;
   const colors=PIXEL_SCENES[cfg.style],rnd=pixRandom((cfg.seed||7)+1441);
   pixRect(g,0,GY-6,W,7,colors.marsh?'#49786f':colors.snow?'#9caaab':colors.fire?'#625357':'#788b65');
