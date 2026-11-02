@@ -169,7 +169,7 @@ const MISSIONS=[
  {t:'chest',boost:.4}
 ]},
 {id:'m6',type:'main',act:1,title:'The Relic Hums',reg:'night',lvl:4,req:'m5',desc:'A mage in the library knows what Corin carries.',steps:[
- {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. In the library, Magister Ione has been waiting.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
+ {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. Corin returns to Magister Ione, who first taught him to wield his rowan staff in the rune garden.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
  {t:'wave',list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.6},{k:'wisp',s:1,d:1.4},{k:'blight',s:-1,d:2.2},{k:'blight',s:1,d:3}],outro:[L('Magister Ione','Dawn heals. Dusk hits hard. Both answer to *you*. That is what troubles me.')]},
  {t:'choice',prompt:'Which tide does Corin trust first?',opts:[
   {label:'Dawn',desc:'Light, healing, and the long road.',c:6,cl:'Dawn',flag:'dawnFirst',xp:40,lines:[L('Magister Ione','A healer\'s instinct. It will serve you, and cost you *speed*.')]},
