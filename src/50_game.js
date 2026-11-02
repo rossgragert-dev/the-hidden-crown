@@ -394,6 +394,7 @@ function drawScene(cam){
     if(d.g){g.fillStyle=rgba(col,.22+.1*pul);g.fillRect(x-2,y-34,5,34);g.fillStyle=rgba(col,.5);g.fillRect(x,y-34,1,34);}
     R(x-4,y-8,8,8,'#17101a');R(x-3,y-7,6,6,col);R(x-3,y-7,6,2,sh(col,.45));R(x-1,y-5,2,2,'#fff');
     if(d.it.rar>=2&&Math.sin(S.t*8+d.x)>.6)R(x+4,y-12,1,3,'#fff');}
+  if(S.areaData&&S.areaData.id==='magegarden')drawPerson(170-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.2});
   if(S.npc){const o={...NPCS[S.npc.k],w:-1,ph:0};drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);}
   if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
