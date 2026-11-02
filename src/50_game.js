@@ -415,7 +415,7 @@ function draw(){
   const pk=S.mode==='prologue'?'ash':S.pal;buildLayers(pk);if(!LAY)return;
   const sx=S.shake>0?Math.round((rnd()-.5)*4):0,sy=S.shake>0?Math.round((rnd()-.5)*3):0,cam=Math.floor(S.cam);
   g.save();g.translate(sx,sy);
-  if(!adventureBackdrop(cam))drawBackdrop(cam,S.t,pk);
+  if(!adventureBackdrop(cam)&&!storyWorldBackdrop(cam))drawBackdrop(cam,S.t,pk);
   for(const p of parts)if(p.k==='m'){const a=(p.life/p.max)*.42,s=3+(1-p.life/p.max)*9;g.fillStyle='rgba('+PALS[pk].smk+','+a.toFixed(2)+')';g.fillRect(Math.round(p.x-cam*.72-s/2),Math.round(p.y-s/2),Math.round(s),Math.round(s));}
   if(S.mode==='prologue')drawPerson(S.pro.x-cam,GY,1,{...NPCS.halv,mv:true,w:-1,carry:1,ph:0});
   else if(S.mode==='title'||S.mode==='hub'){const hx=cam+W*.5;drawPerson(hx-30,GY,1,{...NPCS.halv,w:-1});drawPerson(hx-14,GY,1,{...NPCS.lysa,w:-1,ph:1});drawPerson(hx,GY,1,{...heroOpts(),mv:false,w:-1});}
@@ -423,7 +423,7 @@ function draw(){
   for(const p of parts)if(p.k==='s'||p.k==='e'){g.globalAlpha=Math.min(1,p.life/p.max*1.5);R(p.x-cam,p.y,2,2,p.c);g.globalAlpha=1;}
   // These hand-authored locations have their own indoor and arena foreground;
   // do not paint exterior trees or landscape tint over castle walls.
-  const isUniqueRoom=!!(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0);
+  const isUniqueRoom=!!(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0)||!!worldConfig();
   if(!isUniqueRoom){
     if(LAY.fg)lyr(LAY.fg,1.25,cam);
     const p0=PALS[pk];
@@ -432,6 +432,7 @@ function draw(){
     else if(pk!=='night'){g.fillStyle='rgba(120,150,30,'+S.blight.toFixed(3)+')';g.fillRect(0,0,W,H);}
     else{g.fillStyle='rgba(20,30,80,.12)';g.fillRect(0,0,W,H);}
   }
+  storyWeatherOverlay(cam);
   for(const f of fxs){
     if(f.k==='t'){g.font=(f.big?'bold 10px':'bold 8px')+' "Courier New",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='#000';g.globalAlpha=Math.min(1,f.life*2);{const tx=clamp(Math.round(f.x-cam),34,W-34);g.strokeText(f.txt,tx,Math.round(f.y));g.fillStyle=f.col;g.fillText(f.txt,tx,Math.round(f.y));}g.globalAlpha=1;}
     else{g.strokeStyle=f.col;g.globalAlpha=Math.min(1,f.life*2.5);g.lineWidth=2;g.beginPath();g.ellipse(Math.round(f.x-cam),Math.round(f.y),f.r,f.r*.45,0,0,7);g.stroke();g.globalAlpha=1;}
