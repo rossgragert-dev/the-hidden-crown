@@ -144,6 +144,7 @@ function travel(pth,dest){
         id:'travel-'+roadAreas.length,title:e.n+' — day '+(n+1),reg,
         explore:{
           length:len,seed:seed%997,scenery:terrain,
+          weather:terrain==='marsh'?'fog':terrain==='mountain'?'snow':terrain==='forest'?(seed%3?'breeze':'rain'):terrain==='ruins'?'wind':seed%7===0?'storm':seed%3===0?'rain':'breeze',
           platforms:[{x:260,w:120,y:-26,kind:'outcrop'},{x:610,w:135,y:-36,kind:'outcrop'}],
           objects:[
             {kind:'chest',label:'ROADSIDE CACHE',x:315,y:-26,slot:'trinket',rarity:1},
