@@ -97,6 +97,7 @@ function mstate(m){
   return G.done[m.after]?(G.done[m.id]?'done':'open'):'lock';
 }
 function openBoard(){
+  S.resultsBackdrop=null;
   $('title').style.display='none';S.mode='hub';S.mission=null;S.pal='day';document.body.dataset.mode='hub';resetField();buildLayers('day');S.cam=0;
   calc();P.hp=P.max;P.mp=P.mmax;hud(true);UI.node=G.loc||'hearth';UI.msg='';renderBoard();
 }
@@ -232,6 +233,12 @@ function renderSkills(){
 }
 /* ---- results / menu ---- */
 function openResults(m,first){
+  // Hold the exact last frame of the completed mission behind its rewards,
+  // rather than switching to the generic title landscape during the results.
+  const lastFrame=document.createElement('canvas');
+  lastFrame.width=cv.width;lastFrame.height=cv.height;
+  lastFrame.getContext('2d').drawImage(cv,0,0);
+  S.resultsBackdrop=lastFrame;
   const r=S.rew;S.mode='hub';resetField();document.body.dataset.mode='hub';
   let h='<div class="mh"><h2>'+(first?'MISSION COMPLETE':'MISSION REPLAYED')+'</h2></div><div class="card"><h4>'+m.title+'</h4>';
   h+='<div class="stat">+'+r.xp+' XP &middot; +'+r.gold+' gold'+(r.lv?' &middot; <b style="color:#ffd34a">LEVEL UP x'+r.lv+'</b>':'')+'</div>';
@@ -283,6 +290,7 @@ document.querySelectorAll('#hb [data-m]').forEach(b=>b.addEventListener('pointer
 
 /* ================= TITLE / NEW GAME ================= */
 function showTitle(){
+  S.resultsBackdrop=null;
   S.mode='title';document.body.dataset.mode='title';S.pal='day';buildLayers('day');$('boot').style.display='none';
   $('title').style.display='flex';let h='';
   if(hasSave())h+='<button class="bt go" id="bcont">CONTINUE</button>';h+='<button class="bt" id="bnew">NEW GAME</button>';
