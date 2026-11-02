@@ -385,7 +385,7 @@ function update(dt){
 /* ================= DRAW ================= */
 function heroOpts(){
   const kn=!!G.flags.knighted,a=G.eq.armor,wi=G.eq[TN[P.w]],rc=wi?itemCol(wi):'#e9eef5',hi=wi&&wi.rar>=2,lk=kn&&a?a.look||0:0;
-  const o={...NPCS.corin,col:a&&a.col?a.col:'#2f5fd0',look:lk,mv:P.mv,w:P.w,atk:P.atk>0?P.atk/P.atkMax:0,hurt:P.hurt,orb:S.dusk?'#c070ff':'#fff3a0',
+  const o={...NPCS.corin,hero:true,nosh:true,col:a&&a.col?a.col:'#2f5fd0',look:lk,mv:P.mv,w:P.w,atk:P.atk>0?P.atk/P.atkMax:0,hurt:P.hurt,orb:S.dusk?'#c070ff':'#fff3a0',
     wcol:P.w===2?(hi?mix('#9a6a32',rc,.5):'#9a6a32'):(hi?mix('#eef2fa',rc,.5):'#eef2fa'),wglow:wi&&wi.rar>=3?rgba(rc,.4):null,ph:0,quiver:P.w===2?1:0};
   if(lk>=2){o.helm=o.metal;o.crest='plume';o.crestC='#b02a3a';}
   const of=G.eq.outfit&&OBY[G.eq.outfit.oid];
