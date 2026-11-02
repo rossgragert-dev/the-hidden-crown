@@ -49,7 +49,9 @@ const WORLD_PALETTE={
  night:['#111b38','#273556','#46526c']
 };
 function worldConfig(){
-  if(S.mode!=='play'||!S.mission)return null;
+  // Keep the authored mission scene under the mission-complete overlay until
+  // results actually open. 'done' is still the same physical location.
+  if((S.mode!=='play'&&S.mode!=='done')||!S.mission)return null;
   if(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0)return null;
   const area=S.areaData;
   if(area&&WORLD_AREAS[area.id])return {...WORLD_AREAS[area.id],seed:S.adv?S.adv.seed:13};
