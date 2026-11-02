@@ -67,6 +67,23 @@ const MISSIONS=[
      L('Ser Halvard','When you have learned to stand on your own feet. The lance handoff is the first lesson.'),
      N('Get the spare lances on the raised platform. At the lists, tap USE when the moving marker reaches the green band.')
    ]}]},
+  {id:'magegarden',title:"Ione's Garden of Runes",reg:'hearth',explore:{
+    length:965,scenery:'magegarden',seed:41,weather:'breeze',time:'late-afternoon',
+    platforms:[{x:244,w:114,y:-28,kind:'stone'},{x:540,w:146,y:-42,kind:'stone'},{x:746,w:88,y:-24,kind:'stone'}],
+    objects:[
+      {kind:'staff',label:"IONE'S TRAINING STAFF",x:308,y:-28,flag:'ioneFirstStaff'},
+      {kind:'gear',label:'LIGHT RUNE',x:612,y:-42,need:'ioneFirstStaff',flag:'ioneLightRune'},
+      {kind:'exit',label:'SOUTH PATROL GATE',x:912,y:0,needFlags:['ioneFirstStaff','ioneLightRune']}
+    ],
+    combatAt:[{x:700,list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.8}]}]
+  },steps:[{t:'explore',goal:'Learn Dawn magic from Magister Ione and retrieve the light rune',intro:[
+    N("Beyond the tournament stands Ione's garden: a quiet courtyard of living vines and carved runes."),
+    L('Magister Ione','Corin! Halvard says you can carry a lance, but have you ever held a little light in your hands?'),
+    L('Corin','Only the sort that comes from a torch, Magister.'),
+    L('Magister Ione','Good. I prefer students who know how much they have to learn. Find the training staff on the upper terrace.'),
+    L('Magister Ione','Choose STAFF when you have it. Your first light is Dawn. Use ATK to release it toward the wandering wisps; then bring me the rune from the far platform.'),
+    N('Move with your left thumb, JUMP with your right. Use STAFF and ATK after receiving Ione\'s gift.')
+  ]}]},
   {id:'greenroad',title:'The South Patrol Road',reg:'green',explore:{length:1260,scenery:'road',seed:27,
     platforms:[{x:270,w:115,y:-28,kind:'outcrop'},{x:800,w:160,y:-34,kind:'outcrop'}],
     combatAt:[
@@ -80,7 +97,7 @@ const MISSIONS=[
      {kind:'exit',label:'RETURN TO HEARTHMOOR',x:1205,y:0,need:'squirePatrolSeal'}
     ]
    },steps:[{t:'explore',goal:'Travel the patrol road, defeat threats and recover the seal',intro:[
-     L('Ser Halvard','You served well. Now I send you along the southern road. Travel on foot; learn every turning of the kingdom.'),
+     L('Ser Halvard','Ione tells me she has put a staff in your hands. Good. Now I send you along the southern road, to learn every turning of the kingdom.'),
      L('Corin','Alone?'),
      L('Ser Halvard','A knight must know when to walk without a shadow at his heel. Keep your shield to hand.'),
      N('Travel the road yourself. Blight creatures, reavers and archers may be lying in wait; recover the patrol seal on the upper ledge.')
