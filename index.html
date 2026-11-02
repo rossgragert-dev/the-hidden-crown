@@ -562,11 +562,49 @@ function drawRat(e,px,py,hit){
   Q(8,-7,1,1,e.wind>0?'#ff3a2a':'#2a1a1a');Q(11,-4,3,1,'#ddd');Q(11,-6,4,1,'rgba(255,255,255,.5)'); // eye, whiskers
   Q(-5,-2+(st?-1:0),2,3,'#3a2e28');Q(-1,-2+(st?0:-1),2,3,'#3a2e28');Q(3,-2+(st?-1:0),2,3,'#3a2e28');Q(7,-2+(st?0:-1),2,3,'#3a2e28');
 }
+function drawRegionCreature(e,px,py,def){
+  px=Math.round(px);py=Math.round(py);
+  if(def.creature==='wisp'){
+    const b=Math.sin(S.t*5+e.t*2)*3,cy=py-34+b;
+    const gr=g.createRadialGradient(px,cy,1,px,cy,24);
+    gr.addColorStop(0,'rgba(178,245,213,.65)');gr.addColorStop(1,'rgba(61,196,185,0)');
+    g.fillStyle=gr;g.fillRect(px-25,cy-25,50,50);
+    R(px-8,cy-11,16,21,'#5db1aa');R(px-5,cy-16,10,24,'#a1e6d1');
+    R(px-3,cy-15,6,13,'#e3fcdb');R(px-10,cy+9,5,5,'#6c998d');
+    R(px+4,cy+11,3,6,'#90c7ad');R(px-3,cy+13,2,8,'#d4f7db');
+    for(let i=0;i<3;i++){const dx=Math.sin(S.t*3+i*2+e.t)*18,dy=Math.cos(S.t*4+i*3)*12;R(px+dx,cy+dy,2,2,'#d5f9dd');}
+  }else{
+    // The bog lurker has a broad squat body, low stalking legs and reeds on
+    // its moss-covered shell: visually unlike a wolf, rat or soldier.
+    const bob=e.mv?(Math.floor(S.t*9+e.t)%2):0;
+    const face=e.face>=0?1:-1;
+    const Q=(dx,dy,w,h,col)=>R(face>0?px+dx:px-dx-w,py+dy-bob,w,h,col);
+    shadowAt(px,py,24);
+    Q(-22,-24,42,18,'#36534c');Q(-19,-27,38,8,'#608067');
+    Q(-16,-35,25,11,'#4c6758');Q(-4,-38,13,7,'#526f5b');
+    Q(10,-22,17,15,'#405b57');Q(23,-18,10,6,'#658974');
+    Q(23,-16,3,2,'#f4d47e');Q(26,-12,4,2,'#dfd8b8');
+    Q(-20,-10,9,12,'#344b41');Q(11,-10,9,12,'#344b41');
+    Q(-16,-2,6,3,'#7e8268');Q(14,-2,6,3,'#7e8268');
+    for(let i=0;i<5;i++){const sx=-16+i*8;Q(sx,-33-i%2*7,2,10+i%3*5,'#749b67');}
+    if(e.wind>0)Q(20,-22,5,3,'#f3b14f');
+  }
+}
 function drawEnemy(e,cam,def){
   const px=e.x-cam,py=GY,k=def.k||1,hit=e.hurt>0&&Math.floor(S.t*30)%2;
   if(def.rat){drawRat(e,px,py,hit);return;}
+  if(def.creature){drawRegionCreature(e,px,py,def);return;}
   if(def.h){const o={...def.sp,mv:e.mv,ph:e.t,w:def.w,atk:e.atkA>0?e.atkA:0};shadowAt(Math.round(px),py,14);
     drawBevel(personParts(o),px,py,e.face,{bevel:true,white:hit});
+    // Faction equipment gives the new humanoid archetypes readable silhouettes.
+    const f=e.face>=0?1:-1;
+    if(def.weapon==='spear'){R(px+f*14-1,py-66,3,62,'#b2a08b');R(px+f*14-3,py-72,7,9,'#d1dae1');}
+    else if(def.weapon==='crossbow'){R(px+f*11-8,py-27,26,5,'#7d6243');R(px+f*13-3,py-30,11,10,'#b4a28a');R(px+f*14,py-28,3,18,'#d0d4ce');}
+    else if(def.weapon==='torch'){R(px+f*12,py-43,3,23,'#a58a61');R(px+f*11-3,py-48,10,8,'#e47f32');R(px+f*12,py-52-Math.sin(S.t*9)*3,6,8,'#f3bd55');}
+    else if(def.weapon==='sapper'){R(px-15,py-30,13,16,'#7e7157');R(px-13,py-27,9,4,'#d7aa6b');R(px+f*12,py-36,12,4,'#9e9c9c');}
+    else if(def.weapon==='shield'){R(px+f*12-8,py-33,15,25,'#a0a4b2');R(px+f*12-5,py-29,9,17,'#4b5267');R(px+f*12-2,py-24,4,7,'#ddc18b');}
+    else if(def.weapon==='staff'){R(px+f*14,py-50,3,40,'#69618d');R(px+f*11,py-59,9,12,'#ae87cc');R(px+f*13,py-55,5,6,'#e9d4fd');}
+
     if(e.wind>0)R(px-3,py-52,6,2,'#ff3a2a');
     return;}
   shadowAt(Math.round(px),py,Math.round(22*k));
@@ -732,6 +770,15 @@ function gainXP(n){
 /* ================= ENEMIES ================= */
 const KNIGHT_MISSION='m11'; // Halvard knights Corin as Act I's story peaks; change here to move the knighting
 const EN={
+ scout:{n:'Greenmarch Scout',hp:25,dmg:8,spd:52,rng:115,xp:13,g:[2,6],drop:.17,h:1,w:2,ranged:1,sp:{col:'#547052',trim:'#9bbf82',metal:'#51645b',hair:'#47392d',crest:'hood',leg:'#596c55',quiver:1,w:2,look:0}},
+ spearman:{n:'Regency Spearman',hp:42,dmg:12,spd:34,rng:33,xp:21,g:[5,10],drop:.22,h:1,w:0,weapon:'spear',sp:{col:'#6a4d58',trim:'#b9a7a7',metal:'#85878e',leg:'#453b4b',helm:'#92959d',look:1,w:0}},
+ torchraider:{n:'Torch Raider',hp:29,dmg:10,spd:48,rng:17,xp:18,g:[3,7],drop:.16,h:1,w:4,dash:1,weapon:'torch',sp:{col:'#783e2d',trim:'#de8a42',metal:'#5a4641',leg:'#5b3a2d',crest:'hood',look:0,w:4}},
+ crossbow:{n:'Regency Crossbowman',hp:32,dmg:13,spd:19,rng:170,xp:24,g:[6,13],drop:.22,h:1,w:2,ranged:1,weapon:'crossbow',sp:{col:'#494e62',trim:'#b49b78',metal:'#8c90a0',leg:'#444853',helm:'#858b9b',look:1,quiver:1,w:2}},
+ sapper:{n:'Gate Sapper',hp:48,dmg:14,spd:35,rng:16,xp:27,g:[6,14],drop:.22,h:1,w:4,weapon:'sapper',sp:{col:'#715f42',trim:'#d3b371',metal:'#75736c',leg:'#5b4e3f',crest:'hood',look:1,w:4}},
+ wisp:{n:'Fen Wisp',hp:19,dmg:8,spd:28,rng:140,xp:16,g:[2,7],drop:.08,creature:'wisp',ranged:1},
+ boglurker:{n:'Bog Lurker',hp:72,dmg:17,spd:26,rng:25,xp:37,g:[6,12],drop:.35,creature:'bog',k:1.3,big:1},
+ acolyte:{n:'Ashen Acolyte',hp:31,dmg:12,spd:37,rng:145,xp:23,g:[4,11],drop:.21,h:1,w:1,ranged:1,weapon:'staff',sp:{col:'#382e4b',trim:'#9c67ad',metal:'#655272',leg:'#2c283d',crest:'hood',mask:1,w:1,look:0}},
+ sentry:{n:'Regency Shield Guard',hp:64,dmg:14,spd:19,rng:22,xp:28,g:[5,13],drop:.25,h:1,w:0,weapon:'shield',sp:{col:'#454c60',trim:'#c9b38b',metal:'#a3a6b5',leg:'#444653',helm:'#aeb6c0',look:2,w:0}},
  rat:{n:'Cellar Rat',hp:8,dmg:3,spd:62,rng:11,xp:3,g:[0,1],drop:.04,rat:1},
  blight:{n:'Blightling',hp:22,dmg:8,spd:40,rng:15,xp:10,g:[1,4],drop:.14},
  hound:{n:'Blight Hound',hp:90,dmg:16,spd:28,rng:30,xp:55,g:[12,22],drop:.7,k:1.7,big:1},
@@ -789,7 +836,7 @@ const MISSIONS=[
      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
      {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
      {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
-     {kind:'exit',label:'PATROL GATE',x:956,y:0,needFlags:['squireJoust']}
+     {kind:'exit',label:'TO IONE\'S GARDEN',x:956,y:0,needFlags:['squireJoust']}
     ]
    },steps:[{t:'explore',goal:'Collect spare lances and assist Halvard during the joust',intro:[
      N('Bright pennants ripple over the lists. Horns sound as mounted knights take their places.'),
@@ -798,11 +845,28 @@ const MISSIONS=[
      L('Ser Halvard','When you have learned to stand on your own feet. The lance handoff is the first lesson.'),
      N('Get the spare lances on the raised platform. At the lists, tap USE when the moving marker reaches the green band.')
    ]}]},
+  {id:'magegarden',title:"Ione's Garden of Runes",reg:'hearth',explore:{
+    length:965,scenery:'magegarden',seed:41,weather:'breeze',time:'late-afternoon',
+    platforms:[{x:244,w:114,y:-28,kind:'stone'},{x:540,w:146,y:-42,kind:'stone'},{x:746,w:88,y:-24,kind:'stone'}],
+    objects:[
+      {kind:'staff',label:"IONE'S TRAINING STAFF",x:308,y:-28,flag:'ioneFirstStaff'},
+      {kind:'gear',label:'LIGHT RUNE',x:612,y:-42,need:'ioneFirstStaff',flag:'ioneLightRune'},
+      {kind:'exit',label:'SOUTH PATROL GATE',x:912,y:0,needFlags:['ioneFirstStaff','ioneLightRune']}
+    ],
+    combatAt:[{x:700,list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.8}]}]
+  },steps:[{t:'explore',goal:'Learn Dawn magic from Magister Ione and retrieve the light rune',intro:[
+    N("Beyond the tournament stands Ione's garden: a quiet courtyard of living vines and carved runes."),
+    L('Magister Ione','Corin! Halvard says you can carry a lance, but have you ever held a little light in your hands?'),
+    L('Corin','Only the sort that comes from a torch, Magister.'),
+    L('Magister Ione','Good. I prefer students who know how much they have to learn. Find the training staff on the upper terrace.'),
+    L('Magister Ione','Choose STAFF when you have it. Your first light is Dawn. Use ATK to release it toward the wandering wisps; then bring me the rune from the far platform.'),
+    N('Move with your left thumb, JUMP with your right. Use STAFF and ATK after receiving Ione\'s gift.')
+  ]}]},
   {id:'greenroad',title:'The South Patrol Road',reg:'green',explore:{length:1260,scenery:'road',seed:27,
     platforms:[{x:270,w:115,y:-28,kind:'outcrop'},{x:800,w:160,y:-34,kind:'outcrop'}],
     combatAt:[
       {x:320,list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6}]},
-      {x:680,list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
+      {x:680,list:[{k:'bandit',s:1,d:0},{k:'scout',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
       {x:970,list:[{k:'hound',s:1,d:0,boss:1,name:'Greenmarch Ravager',hpm:1.1}]}
     ],
     objects:[
@@ -811,7 +875,7 @@ const MISSIONS=[
      {kind:'exit',label:'RETURN TO HEARTHMOOR',x:1205,y:0,need:'squirePatrolSeal'}
     ]
    },steps:[{t:'explore',goal:'Travel the patrol road, defeat threats and recover the seal',intro:[
-     L('Ser Halvard','You served well. Now I send you along the southern road. Travel on foot; learn every turning of the kingdom.'),
+     L('Ser Halvard','Ione tells me she has put a staff in your hands. Good. Now I send you along the southern road, to learn every turning of the kingdom.'),
      L('Corin','Alone?'),
      L('Ser Halvard','A knight must know when to walk without a shadow at his heel. Keep your shield to hand.'),
      N('Travel the road yourself. Blight creatures, reavers and archers may be lying in wait; recover the patrol seal on the upper ledge.')
@@ -825,7 +889,7 @@ const MISSIONS=[
     L('Corin','I saw the same markings on the road. They are moving toward the village.'),
     L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
   ]},
-  {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'blight',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
+  {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'scout',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
     L('Corin','They came all this way. There must be more of them on the Greenmarch.')
   ]},
   {t:'chest',boost:0,lines:[L('Ser Halvard','Take the supplies left beside the gate. You earned them.')]},
@@ -836,7 +900,7 @@ const MISSIONS=[
 ]},
 {id:'m2',type:'main',act:1,title:'The Greenmarch Road',reg:'green',lvl:1,req:'m1',desc:'A Regency guard crawls out of the blight with a warning.',steps:[
  {t:'say',lines:[N('The Greenmarch. Fields that should be golden are grey with rot.'),L('Lysa','Tracks. Dozens. Heading for the village.')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:1,d:.9},{k:'blight',s:-1,d:1.8},{k:'blight',s:-1,d:2.7}],outro:[L('Corin','Wolves, hares, even crows. All of it *twisted*.')]},
+ {t:'wave',list:[{k:'blight',s:1,d:0},{k:'spearman',s:1,d:.9},{k:'scout',s:-1,d:1.8},{k:'blight',s:-1,d:2.7}],outro:[L('Corin','Wolves, hares, even crows. All of it *twisted*.')]},
  {t:'say',npc:{k:'guard',face:-1},lines:[N('A Regency guard staggers from the reeds. Blight-sick, unarmed, terrified.'),L('Guard','*Mercy!* I only collected the tax! Lord Vane said the Greenmarch pays or *burns*!'),L('Corin','Where is the rest of your patrol?'),L('Guard','Dead. Or worse. Please, *Ser*...')]},
  {t:'choice',prompt:'What does Corin do?',opts:[
   {label:'Spare him',desc:'Bind his wounds and send him home.',c:12,cl:'Mercy',flag:'spared',heal:.3,xp:30,lines:[L('Guard','Bless you... Listen. The Regent\'s hounds are searching every keep for a *boy* of sixteen. They mean to bury him.'),L('Ser Halvard','...We are leaving. *Now*.')]},
@@ -851,13 +915,13 @@ const MISSIONS=[
   {label:'Ration it fairly',desc:'Half for the village, half for the road.',c:5,cl:'Fairness',xp:25,lines:[L('Villager','A fair man. That is *rarer* than grain.')]},
   {label:'Requisition it for the war',desc:'Take it all. The cause needs it more.',c:-15,cl:'Tyranny',flag:'seized',maxmp:12,shake:1,lines:[N('The doors splinter. Stolen grain, stolen strength... and the relic *burns* warm.'),L('Ser Halvard','Careful, boy. I have seen where that road ends. I served *Vane\'s* road.')]}]},
  {t:'say',lines:[L('Lysa','Corin... that is no wolf. *Behind* you!')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6},{k:'hound',s:1,d:1.8,boss:1,name:'Blight Hound'},{k:'blight',s:-1,d:3.2}],outro:[L('Ser Halvard','Well fought. Better than I deserve.')]},
+ {t:'wave',list:[{k:'torchraider',s:1,d:0},{k:'torchraider',s:-1,d:.6},{k:'hound',s:1,d:1.8,boss:1,name:'Blight Hound'},{k:'blight',s:-1,d:3.2}],outro:[L('Ser Halvard','Well fought. Better than I deserve.')]},
  {t:'chest',boost:.5}
 ]},
 {id:'m4',type:'main',act:1,title:'The Whispering Reeds',reg:'fen',lvl:3,req:'m3',desc:'The Veilfen. A Marshkin witch knows more than she should.',steps:[
  {t:'say',lines:[N('Veilfen. Mist coils between the reeds, and something old watches from the water.'),L('Lysa','I do not like this place.')]},
  {t:'say',npc:{k:'wren',face:-1},lines:[L('Mother Wren','Then you are *wise*, little archer. But the marsh likes the *brave* more.'),L('Mother Wren','Pretty blades, boy. Let us see if they cut the *rot*.')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.8},{k:'blight',s:1,d:1.6},{k:'blight',s:-1,d:2.4},{k:'blight',s:1,d:3.2}],outro:[L('Mother Wren','Hm. You hold the bow like a *king* who learned archery in secret.'),L('Corin','Kings do not learn archery from squires.'),L('Mother Wren','No. They learn it from *mothers*. Mind your feet.')]},
+ {t:'wave',list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.8},{k:'boglurker',s:1,d:1.6},{k:'blight',s:-1,d:2.4},{k:'blight',s:1,d:3.2}],outro:[L('Mother Wren','Hm. You hold the bow like a *king* who learned archery in secret.'),L('Corin','Kings do not learn archery from squires.'),L('Mother Wren','No. They learn it from *mothers*. Mind your feet.')]},
  {t:'choice',prompt:'Mother Wren offers a Marshkin bargain.',opts:[
   {label:'Accept her charm',desc:'Wild magic. It will want something back.',c:-4,cl:'Bargain',flag:'wrenPact',loot:{slot:'trinket',rar:2},lines:[L('Mother Wren','Good. The marsh *remembers* a debt.')]},
   {label:'Decline politely',desc:'Honor the gift with thanks, not promises.',c:4,cl:'Honor',flag:'wrenRespect',gold:40,xp:30,lines:[L('Mother Wren','Hah! The old king said no to me, too. *Same* chin.')]},
@@ -866,7 +930,7 @@ const MISSIONS=[
 ]},
 {id:'m5',type:'main',act:1,title:'A Rival\'s Debt',reg:'hearth',lvl:3,req:'m4',desc:'Brannoch Vale wants his pride back, and he has hired help.',steps:[
  {t:'say',npc:{k:'brannoch',face:-1},lines:[L('Brannoch','Well, if it is not the *orphan* squire.'),L('Brannoch','Father says the Order wastes its time on strays. Let me show you what a *real* knight does.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'bandit',s:-1,d:.6},{k:'archer',s:1,d:1.8},{k:'bandit',s:1,d:3}],outro:[N('The hired Reavers fall. Brannoch is alone, sword shaking, face pale.')]},
+ {t:'wave',list:[{k:'spearman',s:1,d:0},{k:'bandit',s:-1,d:.6},{k:'archer',s:1,d:1.8},{k:'bandit',s:1,d:3}],outro:[N('The hired Reavers fall. Brannoch is alone, sword shaking, face pale.')]},
  {t:'choice',prompt:'Brannoch lies at Corin\'s feet.',opts:[
   {label:'Offer him a hand',desc:'Help him up. Let him choose what he becomes.',c:10,cl:'Grace',flag:'brannochAlly',xp:40,lines:[L('Brannoch','...Why? I would not have.'),L('Corin','That is the difference between us.')]},
   {label:'Humiliate him publicly',desc:'Let the whole yard see what he is.',c:-8,cl:'Spite',flag:'brannochFoe',lines:[L('Brannoch','You will regret this, *orphan*.')]},
@@ -874,8 +938,8 @@ const MISSIONS=[
  {t:'chest',boost:.4}
 ]},
 {id:'m6',type:'main',act:1,title:'The Relic Hums',reg:'night',lvl:4,req:'m5',desc:'A mage in the library knows what Corin carries.',steps:[
- {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. In the library, Magister Ione has been waiting.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
- {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6},{k:'blight',s:1,d:1.4},{k:'blight',s:-1,d:2.2},{k:'blight',s:1,d:3}],outro:[L('Magister Ione','Dawn heals. Dusk hits hard. Both answer to *you*. That is what troubles me.')]},
+ {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. Corin returns to Magister Ione, who first taught him to wield his rowan staff in the rune garden.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
+ {t:'wave',list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.6},{k:'wisp',s:1,d:1.4},{k:'blight',s:-1,d:2.2},{k:'blight',s:1,d:3}],outro:[L('Magister Ione','Dawn heals. Dusk hits hard. Both answer to *you*. That is what troubles me.')]},
  {t:'choice',prompt:'Which tide does Corin trust first?',opts:[
   {label:'Dawn',desc:'Light, healing, and the long road.',c:6,cl:'Dawn',flag:'dawnFirst',xp:40,lines:[L('Magister Ione','A healer\'s instinct. It will serve you, and cost you *speed*.')]},
   {label:'Dusk',desc:'Fear and power. Win now, answer later.',c:-6,cl:'Dusk',flag:'duskFirst',xp:40,lines:[L('Magister Ione','Hmm. The power is *real*. So is the price.')]},
@@ -884,7 +948,7 @@ const MISSIONS=[
 ]},
 {id:'m7',type:'main',act:1,title:'The Ashen Hand',reg:'night',lvl:5,req:'m6',desc:'Assassins drop over the walls. Someone sent them for a reason.',steps:[
  {t:'say',lines:[N('Alarm bells. Black-clad figures drop from the walls.'),L('Ser Halvard','The *Ashen* *Hand*. They have found us.'),L('Lysa','Found *us*? Or found *him*?'),L('Ser Halvard','Fight now. Talk later.')]},
- {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.7},{k:'ashen',s:1,d:1.5}],outro:[N('A heavy tread behind them. The Regency\'s own blade has come in person.')]},
+ {t:'wave',list:[{k:'acolyte',s:1,d:0},{k:'acolyte',s:-1,d:.7},{k:'ashen',s:1,d:1.5}],outro:[N('A heavy tread behind them. The Regency\'s own blade has come in person.')]},
  {t:'say',npc:{k:'cmdr',face:-1},lines:[L('Captain Sorrel','The Regent was right. The fire did not take *everything*.'),L('Corin','What is he talking about?'),L('Ser Halvard','Nothing. *Fight*.')]},
  {t:'wave',list:[{k:'bandit',s:1,d:0,boss:1,name:'Captain Sorrel Dunmoor',hpm:6,dmgm:1.35,sp:{col:'#6a6e7a',metal:'#8a8f9a',trim:'#c9a24a',hair:'#222',look:2,helm:'#8a8f9a',crest:'plume',crestC:'#a02030',cape:'#6a1a2a',iris:'#4a2a2a',scar:1,nosh:1,w:0}},{k:'ashen',s:-1,d:2.5},{k:'ashen',s:1,d:4}],outro:[N('Sorrel falls to one knee, blade clattering away.')]},
  {t:'choice',prompt:'Captain Sorrel is at Corin\'s mercy.',opts:[
@@ -895,7 +959,7 @@ const MISSIONS=[
 ]},
 {id:'m8',type:'main',act:1,title:'Trial of Steel',reg:'hearth',lvl:6,req:'m7',desc:'Three trials make a knight: blade, bow and mind.',steps:[
  {t:'say',npc:{k:'cmdr',face:-1},lines:[L('Commander Brandt','Three trials make a knight: the *blade*, the *bow*, and the *mind*. Fail one, and you remain a squire.'),L('Corin','Then I will not fail.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'bandit',s:-1,d:.8},{k:'bandit',s:1,d:3}],outro:[L('Commander Brandt','The blade is yours. Now, the *bow*.')]},
+ {t:'wave',list:[{k:'spearman',s:1,d:0},{k:'spearman',s:-1,d:.8},{k:'bandit',s:1,d:3}],outro:[L('Commander Brandt','The blade is yours. Now, the *bow*.')]},
  {t:'wave',list:[{k:'archer',s:1,d:0},{k:'archer',s:-1,d:.6},{k:'archer',s:1,d:1.2},{k:'archer',s:-1,d:2}],outro:[L('Commander Brandt','Good eye. Now the hardest: the *mind*. The blight does not tire. Neither may you.')]},
  {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.4},{k:'blight',s:1,d:.8},{k:'blight',s:-1,d:1.6},{k:'hound',s:1,d:3,boss:1,name:'Trial Hound'},{k:'blight',s:-1,d:4}],outro:[L('Commander Brandt','You pass. The vigil is tonight. Tomorrow you are a *knight*... if you survive tonight.')]},
  {t:'chest',boost:2},
@@ -952,14 +1016,14 @@ const MISSIONS=[
  areas:[
  {id:'outskirts',title:'The Outer Fields',reg:'green',steps:[
   {t:'say',lines:[N('Smoke darkens the eastern sky. Regency banners fill the valley below Hearthmoor.'),L('Lysa','Scouts on the farm road. If they reach the walls first, the castle will be taken *unaware*.'),L('Corin','Then we get to the watchtower. Sound the alarm.')]},
-  {t:'wave',goal:'Break through the Regency scouts',list:[{k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.4},{k:'archer',s:-1,d:2.2}]},
+  {t:'wave',goal:'Break through the Regency scouts',list:[{k:'spearman',s:1,d:0},{k:'crossbow',s:-1,d:.7},{k:'spearman',s:1,d:1.4},{k:'crossbow',s:-1,d:2.2}]},
   {t:'interact',goal:'Reach the watchtower and ring the alarm',name:'ALARM BELL',flag:'m10warned',lines:[L('Corin','Hearthmoor! To *arms*!'),N('The warning bell cuts through the smoke. Soldiers rush to their posts.')]},
   {t:'say',lines:[L('Ser Halvard','You bought us a few precious minutes. Ride to the *gatehouse*. We shall need every one.')]}
  ]},
  {id:'gatehouse',title:'The Broken Gate',reg:'hearth',steps:[
   {t:'say',lines:[N('The gatehouse shudders under the Regent\'s battering rams.'),L('Commander Brandt','*Hold* the portcullis! They must not reach the village.')]},
   {t:'defend',goal:'Keep the gate standing through the assault',target:'Gate',hp:145,list:[
-    {k:'bandit',s:1,d:0},{k:'archer',s:-1,d:.7},{k:'bandit',s:1,d:1.3},{k:'ashen',s:-1,d:2.1},{k:'archer',s:1,d:3.0}
+    {k:'spearman',s:1,d:0},{k:'crossbow',s:-1,d:.7},{k:'bandit',s:1,d:1.3},{k:'sapper',s:-1,d:2.1},{k:'archer',s:1,d:3.0}
    ],outro:[L('Commander Brandt','The first assault is broken. Now seal the mechanism!')]},
   {t:'interact',goal:'Reach the winch and secure the portcullis',name:'GATE WINCH',flag:'m10gateSecured',lines:[N('Iron chains grind. The portcullis slams shut behind the final defenders.')]},
   {t:'say',lines:[L('Lysa','Smoke in the lower streets. The villagers are still inside.'),L('Corin','Then the battle is not finished.')]}
@@ -979,7 +1043,7 @@ const MISSIONS=[
  {id:'chapel',title:'The Chapel Ward',reg:'chapel',steps:[
   {t:'say',lines:[N('Under the chapel, the Oathcrown shard burns brighter than the candles.'),L('Magister Ione','The blight feels the shard. If I can raise the old *ward*, the wounded can escape.'),L('Corin','Tell me what you need.')]},
   {t:'wave',goal:'Clear the chapel approach',list:[
-    {k:'blight',s:1,d:0},{k:'blight',s:-1,d:.5},{k:'hound',s:1,d:1.4},{k:'ashen',s:-1,d:2.3}
+    {k:'boglurker',s:1,d:0},{k:'blight',s:-1,d:.5},{k:'hound',s:1,d:1.4},{k:'ashen',s:-1,d:2.3}
    ]},
   {t:'interact',goal:'Activate the Dawnroot focus',name:'WARD FOCUS',flag:'m10focus',lines:[L('Magister Ione','Now! The ward is awake. Hold it while I bind the runes.')]},
   {t:'defend',goal:'Protect Ione\'s ward from the blight',target:'Chapel Ward',hp:160,list:[
@@ -1013,7 +1077,7 @@ const MISSIONS=[
   {label:'Carry him',desc:'No one is left behind.',c:10,cl:'Loyalty',flag:'halvardCarried',lines:[L('Ser Halvard','...Stubborn. Just like your... *just like you*.')]},
   {label:'Let him hold the bridge',desc:'His choice. His sacrifice.',c:-8,cl:'Sacrifice',flag:'halvardStands',lines:[L('Ser Halvard','Tell Ione... tell her it was *worth* it.')]},
   {label:'Bind his wound and move on',desc:'Fast and careful. Risky.',c:2,cl:'Prudence',flag:'halvardBound',lines:[L('Magister Ione','That will hold. For *now*.')]}]},
- {t:'wave',list:[{k:'hound',s:1,d:0},{k:'ashen',s:-1,d:.8},{k:'ashen',s:1,d:1.6},{k:'ashen',s:-1,d:2.4}],outro:[N('The pursuit thins. Not gone. Only *waiting*.')]},
+ {t:'wave',list:[{k:'hound',s:1,d:0},{k:'acolyte',s:-1,d:.8},{k:'ashen',s:1,d:1.6},{k:'ashen',s:-1,d:2.4}],outro:[N('The pursuit thins. Not gone. Only *waiting*.')]},
  {t:'say',npc:{k:'ione',face:-1},lines:[L('Magister Ione','There you are. Quickly. I have wards on the old causeway. They will not hold long.')]},
  {t:'wave',list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.4},{k:'blight',s:1,d:.8},{k:'blight',s:-1,d:1.2},{k:'blight',s:1,d:1.6},{k:'hound',s:-1,d:3,boss:1,name:'Blightwolf Alpha'}]},
  {t:'chest',boost:2.2,out:.3},
@@ -1083,7 +1147,7 @@ MBY.joustlab={id:'joustlab',type:'lab',act:0,title:'Joust Lab',reg:'hearth',lvl:
 */
 function adventureBegin(area){
   const d=area.explore;
-  if(!d){S.adv=null;P.py=0;P.vy=0;P.grounded=true;S.camY=0;return;}
+  if(!d){S.adv=null;P.py=0;P.vy=0;P.grounded=true;S.camY=0;const j=$('jumpbtn');if(j)j.style.display='flex';return;}
   S.adv={
     length:d.length||1000,
     platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y,kind:p.kind||null})),
@@ -1102,7 +1166,7 @@ function adventureEnd(){
   const b=$('jumpbtn');if(b)b.style.display='none';
 }
 function adventureJump(){
-  if(!S.adv||S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
+  if(S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
   P.vy=-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
 }
 function adventureNear(){
@@ -1134,12 +1198,21 @@ function adventureUse(){
   }
   o.done=true;
   if(o.flag){G.flags[o.flag]=1;save();}
-  if(o.kind==='shield'){
+  if(o.kind==='staff'){
+    if(!G.eq.staff){G.eq.staff=fixedItem('staff',"Ione's Rowan Staff",12,0,{gift:'ione'});}
+    P.w=1;G.flags.ioneTaught=1;calc();hud(true);save();
+    toast('ROWAN STAFF RECEIVED — SELECT STAFF AND CAST WITH ATK');
+    say([L('Magister Ione','The staff listens to intention, not strength. Breathe, focus, then let the Dawn tide carry your light.'),L('Corin','Then this is not a weapon of force. It is a promise to aim well.')],()=>{});
+  }else if(o.kind==='shield'){
     G.shieldTier=Math.max(G.shieldTier||0,o.tier||0);
     toast('WOODEN SHIELD ACQUIRED — HOLD GUARD');
   }else if(o.kind==='key'){
     toast('KEY FOUND: '+(o.label||'IRON KEY'));
-  }else if(o.kind==='chest'){
+  }else if(o.kind==='staff'){
+      R(x-2,py-34,4,30,'#8e6a45');R(x-3,py-35,6,4,'#e5ca80');
+      R(x-7,py-43,14,9,'rgba(175,235,255,.24)');
+      R(x-2,py-42,5,6,'#c9eaff');
+    }else if(o.kind==='chest'){
     const item=genItem(S.ilvl+1,Math.max(1,o.rarity||1),o.slot||'armor');
     addItem(item,true);toast('CHEST OPENED: '+item.name);
   }else if(o.kind==='gear'){
@@ -1355,7 +1428,7 @@ function adventureWorldDraw(cam){
   // Deterministic scenery per world segment, not a repeated painted strip.
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
-    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists')continue;
+    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists'||a.scenery==='magegarden')continue;
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;
@@ -1953,6 +2026,362 @@ function sceneLists(cam,backCam,y){
   for(let k=bx-24;k<W+24;k+=24){R(k,y-26,12,4,'#b7463e');R(k+12,y-16,12,4,'#2c567e');R(k+2,y-30,5,30,'#654733');R(k+2,y-30,2,30,'#8a6a48');R(k+1,y-34,7,4,'#7a5a3a');}
   R(0,y-1,W,2,'rgba(60,40,20,.28)');
 }
+/* ================= LIVING WORLD / STORY-BOUND SCENERY =================
+ * Every story chapter has a distinct geographical identity. No shared
+ * castle/tower/moon-window tile is drawn in these scenes. The same authored
+ * landmarks can be repeated only where it is narratively appropriate.
+ * Weather and time are separate layers, preserving deterministic saves.
+ */
+const WORLD_ID={
+ m0:{style:'farmroad',period:'morning',weather:'breeze',accent:'#d7a95b'},
+ m1:{style:'gate',period:'dawn',weather:'breeze',accent:'#b5b6aa'},
+ m2:{style:'farmroad',period:'noon',weather:'clouds',accent:'#9d8f65'},
+ m3:{style:'granary',period:'late-afternoon',weather:'haze',accent:'#c8a164'},
+ m4:{style:'fen',period:'dusk',weather:'fog',accent:'#78ab95'},
+ m5:{style:'courtyard',period:'noon',weather:'breeze',accent:'#a9aa98'},
+ m6:{style:'library',period:'night',weather:'storm',accent:'#8c79c5'},
+ m7:{style:'rampart',period:'night',weather:'wind',accent:'#a4b0ca'},
+ m8:{style:'training',period:'noon',weather:'clear',accent:'#cbb778'},
+ m9:{style:'chapel',period:'night',weather:'clear',accent:'#b6a077'},
+ m10:{style:'siege',period:'dusk',weather:'embers',accent:'#d96739'},
+ m11:{style:'forest',period:'night',weather:'rain',accent:'#6f90a6'},
+ m12:{style:'frontier',period:'sunset',weather:'wind',accent:'#d8b075'},
+ s1:{style:'training',period:'morning',weather:'clear'},
+ s2:{style:'forest',period:'noon',weather:'breeze'},
+ s3:{style:'farmroad',period:'cloudy',weather:'rain'},
+ s4:{style:'fen',period:'night',weather:'fog'},
+ s5:{style:'forge',period:'dusk',weather:'haze'},
+ d1:{style:'forest',period:'dusk',weather:'fog'},
+ d2:{style:'cave',period:'night',weather:'drips'},
+ d3:{style:'mine',period:'night',weather:'drips'},
+ d4:{style:'ruins',period:'dusk',weather:'embers'}
+};
+const WORLD_AREAS={
+ outskirts:{style:'fieldsiege',period:'dusk',weather:'breeze'},
+ gatehouse:{style:'drawbridge',period:'dusk',weather:'embers'},
+ village:{style:'cityfire',period:'night',weather:'embers'},
+ chapel:{style:'chapelfire',period:'night',weather:'embers'},
+ keep:{style:'burningkeep',period:'night',weather:'embers'},
+ cellar:{style:'cellar',period:'night',weather:'drips'},
+ magegarden:{style:'magegarden',period:'late-afternoon',weather:'breeze'},
+ greenroad:{style:'farmroad',period:'sunset',weather:'breeze'}
+};
+const WORLD_PALETTE={
+ morning:['#809cb5','#c9c4ab','#e4bc87'],
+ dawn:['#5e82ad','#b3abc2','#edb77e'],
+ noon:['#5787b3','#8cb5d0','#e2d5a8'],
+ 'late-afternoon':['#7193aa','#c2ac9b','#eac29b'],
+ cloudy:['#607c8f','#879b9d','#b6ada0'],
+ dusk:['#384965','#a26f67','#d69765'],
+ sunset:['#3d496d','#b16a5c','#e5a55d'],
+ night:['#111b38','#273556','#46526c']
+};
+function worldConfig(){
+  if(S.mode!=='play'||!S.mission)return null;
+  if(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0)return null;
+  const area=S.areaData;
+  if(area&&WORLD_AREAS[area.id])return {...WORLD_AREAS[area.id],seed:S.adv?S.adv.seed:13};
+  if(S.mission.type==='travel'){
+    const a=S.adv||{},i=S.areaIndex||0,total=S.mission.areas.length;
+    const prog=(i+Math.min(1,P.x/(a.length||900)))/Math.max(1,total);
+    const phase=prog<.14?'dawn':prog<.56?'noon':prog<.8?'sunset':'night';
+    return {style:a.scenery==='marsh'?'fen':a.scenery==='forest'?'forest':
+      a.scenery==='mountain'?'mountain':a.scenery==='ruins'?'ruins':'farmroad',
+      period:phase,weather:a.weather||'breeze',seed:a.seed||1,timeProgress:prog,travel:true};
+  }
+  return {...(WORLD_ID[S.mission.id]||{style:'forest',period:'noon',weather:'clear'}),seed:S.adv?S.adv.seed:S.mission.id.length*71};
+}
+function worldHash(a,b){let v=(Math.imul((a|0)+9,2654435761)^Math.imul((b|0)+17,2246822519))>>>0;v^=v>>>15;return v>>>0;}
+function worldRect(x,y,w,h,c){if(w>0&&h>0&&x+w>=0&&x<W&&y+h>=0&&y<H)R(Math.round(x),Math.round(y),Math.round(w),Math.round(h),c);}
+function worldGlow(x,y,r,color){
+  const gr=g.createRadialGradient(x,y,2,x,y,r);gr.addColorStop(0,color);gr.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=gr;g.fillRect(x-r,y-r,2*r,2*r);
+}
+function worldSky(cfg,cam){
+  const p=WORLD_PALETTE[cfg.period]||WORLD_PALETTE.noon;
+  const gr=g.createLinearGradient(0,0,0,GY);
+  gr.addColorStop(0,p[0]);gr.addColorStop(.65,p[1]);gr.addColorStop(1,p[2]);
+  g.fillStyle=gr;g.fillRect(0,0,W,H);
+  const t=cfg.travel?(cfg.timeProgress||0):cfg.period==='night'?.9:cfg.period==='dusk'?.72:cfg.period==='sunset'?.76:cfg.period==='dawn'?.12:cfg.period==='morning'?.25:.48;
+  const moon=t>=.86;
+  const cx=Math.round(26+(W-52)*Math.min(1,Math.max(0,t)));
+  const cy=Math.round(25+Math.sin(Math.PI*t)*-24+HZ*.28);
+  if(moon){worldGlow(cx,cy,34,'rgba(219,221,235,.16)');worldRect(cx-7,cy-7,14,14,'#dde5f0');worldRect(cx-3,cy-10,6,20,'#dde5f0');}
+  else{worldGlow(cx,cy,52,'rgba(255,204,129,.24)');worldRect(cx-9,cy-9,18,18,'#f6db99');worldRect(cx-5,cy-13,10,26,'#f6db99');}
+  // Clouds move with time and wind; positions depend on each chapter's seed.
+  for(let i=0;i<6;i++){
+    const x=((worldHash(i,cfg.seed)%700)/700*W+S.t*(cfg.weather==='wind'||cfg.weather==='storm'?13:3)-cam*.03)%(W+140);
+    const xx=(x+W+140)%(W+140)-85,y=14+i*17+(worldHash(cfg.seed,i)%9);
+    const col=cfg.weather==='storm'?'rgba(40,48,61,.65)':cfg.weather==='rain'?'rgba(75,83,95,.55)':'rgba(244,241,218,.31)';
+    worldRect(xx,y,52,7,col);worldRect(xx+8,y-5,30,6,col);worldRect(xx-8,y+4,71,5,col);
+  }
+  // Far silhouette is unique to the region: no repeating distant castle.
+  if(['fen','forest','mountain','farmroad','fieldsiege','frontier','ruins'].indexOf(cfg.style)>=0){
+    const color=cfg.period==='night'?'#28344a':cfg.style==='fen'?'#587b76':'#718581';
+    for(let x=-10;x<W+10;x+=4){
+      const h=25+Math.abs(Math.sin((x+cam*.09+cfg.seed*17)/79)*35+Math.cos(x/31)*15);
+      worldRect(x,GY-87-h,4,85+h,color);
+    }
+  }
+}
+function worldTree(x,ground,kind,seed){
+  const h=38+(seed%34),dark=kind==='fen'?'#2c4547':kind==='forest'?'#293f37':'#465b40';
+  worldRect(x-4,ground-h,9,h,'#4c392d');worldRect(x-1,ground-h,2,h,'#78644a');
+  if(kind==='fen'){
+    worldRect(x-28,ground-h+9,58,6,'#465647');worldRect(x-23,ground-h,46,8,'#355449');
+    for(let v=0;v<5;v++)worldRect(x-23+v*12,ground-h+8,2,14+((v*9)%14),'#667766');
+  }else{
+    for(const [dx,dy,w] of [[-27,-6,43],[-16,-19,48],[0,-25,28]]){
+      worldRect(x+dx,ground-h+dy,w,12,dark);
+      worldRect(x+dx+5,ground-h+dy+2,w-11,4,kind==='forest'?'#41654c':'#647b4d');
+    }
+  }
+}
+function worldHouse(x,ground,w,h,burning,seed){
+  worldRect(x,ground-h,w,h,seed%2?'#685956':'#7a6250');
+  worldRect(x+4,ground-h+7,w-8,4,'#968279');
+  worldRect(x+6,ground-h+15,w-12,h-18,'#5d514d');
+  for(let k=0;k<2;k++){
+    worldRect(x+8+k*(w-25),ground-h+20,9,12,burning?'#ec994e':'#536f82');
+    worldRect(x+12+k*(w-25),ground-h+19,2,14,'#b8aa8b');
+  }
+  worldRect(x-7,ground-h-9,w+14,10,'#47333e');
+  worldRect(x,ground-h-14,w,5,seed%2?'#664342':'#704a3b');
+  worldRect(x+w*.39,ground-20,w*.22,20,'#332c32');
+  if(burning){
+    for(let j=0;j<4;j++){
+      const fx=x+9+j*(w-12)/4,fl=9+Math.sin(S.t*7+j+seed)*5;
+      worldRect(fx,ground-h-12-fl,6,fl+8,'#d94a26');
+      worldRect(fx+2,ground-h-10-fl,3,fl,'#ffd475');
+      worldGlow(fx,ground-h-6,28,'rgba(255,106,42,.18)');
+      worldRect(fx-4-S.t%18,ground-h-42-(S.t*4+j*7)%24,15,9,'rgba(51,42,47,.4)');
+    }
+  }
+}
+function worldCastle(x,y,w,mode){
+  const dark=mode==='siege'?'#4c3c43':'#666574';
+  worldRect(x,y,w,GY-y,dark);worldRect(x+6,y+8,w-12,8,'#9795a0');
+  for(let i=0;i<w;i+=18){worldRect(x+i,y-9,11,10,'#878391');worldRect(x+i+2,y-12,7,3,'#b0a9a0');}
+  for(let i=0;i<w-8;i+=34){worldRect(x+i+13,y+22,5,17,'#272b3a');worldRect(x+i+15,y+22,1,17,'#96929d');}
+  worldRect(x+w*.35,y+Math.min(48,GY-y-24),w*.3,GY-y,'#30313b');
+}
+function worldDrawbridge(cam,cfg){
+  const by=GY,gateX=350-cam*.58;
+  worldRect(0,by-28,W,31,'#536765');
+  worldRect(0,by-17,W,17,'#394e5c');
+  for(let k=0;k<W;k+=23)worldRect(k,by-24+(k%3),17,2,'#8d9a88');
+  // A defensible stone gate, moat and hinged wooden drawbridge are actual visible landmarks.
+  worldCastle(gateX-115,by-155,230,cfg.style==='drawbridge'?'siege':'castle');
+  worldRect(gateX-29,by-74,58,74,'#272631');
+  for(let k=0;k<8;k++)worldRect(gateX-27+k*7,by-72,3,67,'#b6a38e');
+  worldRect(gateX-88,by-19,160,9,'#7b5139');
+  for(let k=0;k<10;k++)worldRect(gateX-86+k*16,by-17,12,5,'#b58b5a');
+  g.strokeStyle='#d1b68b';g.lineWidth=2;g.beginPath();
+  g.moveTo(gateX-86,by-19);g.lineTo(gateX-103,by-111);
+  g.moveTo(gateX+73,by-19);g.lineTo(gateX+102,by-111);g.stroke();
+  // Defenders and siege engines on the walls.
+  for(let k=0;k<5;k++){
+    const x=gateX-98+k*48,y=by-156;
+    worldRect(x,y-15,8,14,'#a5a5b1');worldRect(x+2,y-20,4,6,'#d0bc9c');
+    worldRect(x+5,y-24,17,2,'#bca07a');
+  }
+  if(cfg.style==='drawbridge'||cfg.style==='fieldsiege'){
+    for(let k=0;k<3;k++){
+      const bx=40+k*115-cam*.28;
+      worldRect(bx,by-47,8,47,'#57483d');
+      worldRect(bx-12,by-40,50,8,'#8c6041');
+      worldRect(bx+26,by-41,18,2,'#e9cb84');
+      worldRect(bx-14,by-53,13,12,'#615767');
+    }
+  }
+}
+function worldGranary(cam){
+  const base=GY,xx=248-cam*.48;
+  worldRect(0,base-3,W,7,'#74654e');
+  for(let i=-1;i<4;i++){const x=i*220-cam*.35;worldHouse(x,base,57,45,false,i);worldRect(x+55,base-43,68,43,'#6f6651');}
+  // Oversized granary and sacks: the story objective is visibly located here.
+  worldRect(xx-100,base-114,205,115,'#7d6546');
+  for(let k=0;k<7;k++)worldRect(xx-94+k*28,base-108,5,108,'#b89562');
+  worldRect(xx-109,base-131,220,19,'#55443b');
+  worldRect(xx-43,base-66,81,66,'#43362f');
+  worldRect(xx-47,base-68,89,7,'#b59a70');
+  for(let k=0;k<8;k++){
+    const x=xx-105+(k%4)*24,yy=base-14-Math.floor(k/4)*13;
+    worldRect(x,yy,23,12,'#c9b184');worldRect(x+3,yy+2,14,2,'#e7d3aa');
+  }
+  worldRect(xx+118,base-20,44,16,'#74533c');worldRect(xx+123,base-26,34,8,'#a7804e');
+  for(let k=0;k<2;k++)worldRect(xx+124+k*27,base-8,8,8,'#343134');
+}
+function worldFen(cam){
+  worldRect(0,GY-19,W,26,'#486f66');worldRect(0,GY-9,W,12,'#34666b');
+  for(let i=-1;i<8;i++){
+    const seed=worldHash(i,77),x=i*104-cam*.45+(seed%23);
+    worldTree(x,GY-20,'fen',seed);worldRect(x+24,GY-23,36,3,'#648c85');
+    for(let j=0;j<7;j++)worldRect(x+j*9,GY-26-(j%3)*9,2,20,'#77917b');
+    const lantern=seed%3===0;
+    if(lantern){worldRect(x+31,GY-71,2,34,'#8b896c');worldRect(x+26,GY-78,13,8,'#c2e9ad');worldGlow(x+32,GY-75,25,'rgba(178,254,169,.24)');}
+  }
+}
+function worldCave(cam,mine){
+  const base=GY;worldRect(0,0,W,H,mine?'#292b35':'#24273a');
+  for(let i=-1;i<12;i++){
+    const seed=worldHash(i,49),x=i*72-cam*.34;
+    worldRect(x,0,44,32+seed%30,'#4b4a54');
+    worldRect(x+7,0,7,52+seed%18,'#62606b');
+    worldRect(x+3,base-39-seed%11,61,50,'#45414a');
+    if(mine){
+      worldRect(x+20,base-120,7,110,'#75634b');worldRect(x+12,base-116,60,6,'#9a815c');
+      worldRect(x+45,base-35,38,20,'#56443c');worldRect(x+48,base-39,32,5,'#938779');
+      worldRect(x+50,base-11,7,8,'#272b32');worldRect(x+74,base-11,7,8,'#272b32');
+    }else{
+      worldRect(x+24,base-51,11,19,'#4b90a6');worldRect(x+26,base-67,7,19,'#75bfd7');
+      worldGlow(x+30,base-46,26,'rgba(96,183,220,.1)');
+    }
+  }
+}
+function worldLibrary(cam){
+  const base=GY;worldRect(0,0,W,base,'#29273c');
+  for(let i=-1;i<5;i++){
+    const x=i*164-cam*.54;
+    worldRect(x,30,148,base-36,'#4e3d3d');
+    for(let row=0;row<4;row++){
+      const yy=base-46-row*31;
+      worldRect(x+4,yy,138,5,'#c1a073');
+      for(let j=0;j<18;j++){
+        const col=['#8f5d61','#4f6983','#78916b','#b68c62','#755d8e'][(j+row+i+35)%5];
+        worldRect(x+6+j*7.3,yy-22,5,21-(j%4)*2,col);
+        worldRect(x+6+j*7.3,yy-21,5,2,'#ccb58f');
+      }
+    }
+    worldRect(x+145,0,12,base,'#7f7186');
+    worldRect(x+147,10,7,20,'#b8a5a3');
+    worldRect(x+54,base-132,30,47,'#665887');
+    worldRect(x+60,base-126,18,33,'#e4bf82');
+    worldGlow(x+70,base-115,42,'rgba(195,155,241,.18)');
+  }
+}
+function worldTraining(cam){
+  const base=GY;worldRect(0,base-5,W,8,'#af9a69');
+  for(let i=-1;i<6;i++){
+    const x=i*170-cam*.58;
+    worldRect(x+8,base-60,13,59,'#867864');
+    worldRect(x,base-69,31,9,'#bdb19a');
+    worldRect(x+26,base-61,22,59,'#605a52');
+    worldRect(x+110,base-47,4,47,'#66533b');
+    for(let r=0;r<3;r++)worldRect(x+94+r*4,base-39+r*2,28-r*8,4,r===0?'#d7b45e':r===1?'#9e403a':'#e3d29d');
+    worldRect(x+61,base-31,8,30,'#9a714b');
+    worldRect(x+53,base-35,23,5,'#dbc78b');
+    worldRect(x+61,base-49,9,13,'#b1b2b8');
+  }
+}
+function worldGarden(cam){
+  const base=GY;
+  worldRect(0,base-3,W,8,'#a39b89');
+  for(let i=-1;i<6;i++){
+    const seed=worldHash(i,17),x=i*180-cam*.55;
+    worldRect(x+10,base-165,8,162,'#727481');worldRect(x+151,base-165,8,162,'#727481');
+    worldRect(x+3,base-175,165,13,'#a2a5a9');
+    worldRect(x+25,base-130,124,90,'#5b6c69');
+    worldRect(x+31,base-125,112,83,'#879f96');
+    for(let k=0;k<5;k++){worldRect(x+35+k*22,base-117,5,65,'#566958');}
+    worldRect(x+40,base-30,22,29,'#6d7b50');
+    worldRect(x+52,base-43,9,13,'#c4b470');
+    worldRect(x+115,base-32,19,31,'#657e61');
+    worldRect(x+123,base-45,8,14,'#d3d4b4');
+    worldRect(x+80,base-23,25,5,'#a4a8b5');
+    worldGlow(x+92,base-42,24,'rgba(123,207,241,.18)');
+    if(seed%2){worldRect(x+67,base-158,26,3,'#cdb47d');worldRect(x+78,base-172,4,16,'#d8d2bc');}
+  }
+}
+function worldFields(cam,cfg){
+  const base=GY;
+  worldRect(0,base-2,W,7,'#847851');
+  for(let i=-1;i<9;i++){
+    const seed=worldHash(i,cfg.seed),x=i*122-cam*.62+(seed%26);
+    if(cfg.style==='forest'||cfg.style==='frontier'){worldTree(x+24,base,'forest',seed);}
+    else{
+      worldRect(x+13,base-48,4,46,'#776246');worldRect(x-3,base-48,49,5,'#a28a59');
+      for(let k=0;k<7;k++)worldRect(x+1+k*7,base-39,3,31,'#80694f');
+      if(i%3===0)worldHouse(x+44,base,53,36,false,seed);
+      else if(i%3===1){worldRect(x+60,base-32,28,26,'#a7a08a');worldRect(x+62,base-38,24,7,'#5e5550');}
+      else{worldRect(x+48,base-17,34,9,'#6f5238');worldRect(x+50,base-23,30,7,'#b79858');}
+    }
+  }
+}
+function worldForeground(cam,cfg){
+  const base=GY,mode=cfg.style;
+  if(mode==='magegarden'){worldGarden(cam);return;}
+  if(mode==='library'){worldLibrary(cam);return;}
+  if(mode==='cave'||mode==='cellar'||mode==='mine'){worldCave(cam,mode==='mine');return;}
+  if(mode==='fen'){worldFen(cam);return;}
+  if(['gate','drawbridge','fieldsiege','rampart'].indexOf(mode)>=0){worldDrawbridge(cam,cfg);return;}
+  if(mode==='granary'){worldGranary(cam);return;}
+  if(['training','courtyard','chapel'].indexOf(mode)>=0){worldTraining(cam);if(mode==='chapel')worldLibrary(cam);return;}
+  if(mode==='chapelfire'){worldLibrary(cam);worldHouse(W*.8,GY,66,56,true,3);return;}
+  if(mode==='forge'){worldTraining(cam);worldGlow(W*.58,GY-48,65,'rgba(251,144,63,.28)');return;}
+  if(mode==='burningkeep'){worldCastle(280-cam*.5,GY-152,220,'siege');worldHouse(30,GY,95,91,true,2);return;}
+  if(mode==='cityfire'||mode==='siege'){
+    for(let k=-1;k<6;k++)worldHouse(k*112-cam*.58,GY,84,55+(k%3)*21,true,k+16);
+    return;
+  }
+  if(mode==='ruins'){for(let k=-1;k<7;k++){const x=k*155-cam*.52;worldRect(x,GY-82,14,82,'#77717a');worldRect(x+38,GY-49,46,49,'#5a555d');worldRect(x-6,GY-89,88,8,'#a39c8f');}return;}
+  if(mode==='mountain'){
+    for(let k=-1;k<9;k++){const x=k*95-cam*.47;worldRect(x,GY-72,75,71,'#737c7c');worldRect(x+20,GY-94,32,25,'#a9b7b1');worldRect(x+28,GY-102,13,17,'#e2e3d9');}return;
+  }
+  worldFields(cam,cfg);
+}
+function storyWorldBackdrop(cam){
+  const cfg=worldConfig();if(!cfg)return false;
+  worldSky(cfg,cam);
+  worldForeground(cam,cfg);
+  return true;
+}
+function storyWeatherOverlay(cam){
+  const cfg=worldConfig();if(!cfg)return;
+  const type=cfg.weather;
+  if(type==='clear'||type==='clouds'||type==='breeze')return;
+  if(type==='haze'||type==='fog'){
+    for(let k=0;k<7;k++){
+      const x=((k*97+S.t*(type==='fog'?5:2)-cam*.08)%(W+160)+W+160)%(W+160)-130;
+      worldRect(x,GY-110+k*17,148,7,type==='fog'?'rgba(206,227,220,.16)':'rgba(193,178,153,.11)');
+    }
+    return;
+  }
+  if(type==='embers'){
+    worldRect(0,0,W,H,'rgba(74,20,10,.13)');
+    for(let k=0;k<55;k++){
+      const hash=worldHash(k,cfg.seed),x=(hash%W+S.t*(7+k%9))%W;
+      const y=((hash>>>9)%Math.max(1,GY)+S.t*(9+k%9))%Math.max(1,GY);
+      worldRect(x,GY-y,1+(k%3===0?1:0),2,k%3?'#ed7542':'#ffd98a');
+    }
+    return;
+  }
+  const storm=type==='storm',wind=type==='wind',snow=type==='snow',drips=type==='drips';
+  if(storm)worldRect(0,0,W,H,'rgba(27,33,56,.23)');
+  if(storm&&Math.sin(S.t*1.93+cfg.seed)*Math.sin(S.t*3.11)> .91){
+    worldRect(0,0,W,H,'rgba(222,228,246,.26)');
+    const x=worldHash(cfg.seed,5)%Math.max(1,W-20);
+    g.strokeStyle='#e8edf9';g.lineWidth=2;g.beginPath();g.moveTo(x,0);g.lineTo(x+7,HZ*.33);g.lineTo(x-8,HZ*.55);g.lineTo(x+9,GY-100);g.stroke();
+  }
+  for(let k=0;k<(storm?105:wind?36:drips?21:snow?65:76);k++){
+    const hash=worldHash(k,cfg.seed+73),x0=hash%Math.max(1,W);
+    const y0=(hash>>>10)%Math.max(1,GY);
+    if(snow){
+      const x=(x0+S.t*(6+k%7))%W,y=(y0+S.t*(17+k%12))%Math.max(1,GY);
+      worldRect(x,y,2,2,'rgba(244,248,255,.85)');
+    }else if(drips){
+      const x=x0,y=(y0+S.t*(48+k%21))%Math.max(1,GY);
+      worldRect(x,y,1,5,'rgba(126,189,214,.38)');
+    }else if(wind){
+      const x=(x0+S.t*(41+k%25))%W,y=y0;
+      worldRect(x,y,14+(k%11),1,'rgba(205,199,149,.28)');
+    }else{
+      const x=(x0-S.t*(storm?51:20))%W,y=(y0+S.t*(storm?141:100))%Math.max(1,GY);
+      g.strokeStyle=storm?'rgba(206,222,250,.57)':'rgba(198,215,227,.42)';g.lineWidth=1;
+      g.beginPath();g.moveTo((x+W)%W,y);g.lineTo((x+W)%W-(storm?7:3),y+9);g.stroke();
+    }
+  }
+}
 /* ================= FX / DIALOGUE ================= */
 function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>e.classList.remove('on'),2000);}
 function floatTxt(x,y,txt,col,big){fxs.push({k:'t',x,y,txt,col:col||'#fff',big,life:1,vy:-26});}
@@ -2000,7 +2429,7 @@ function loadMissionArea(idx){
   P.x=30;P.face=1;P.vx=0;P.inv=1;S.cam=0;P.guard=100;
   S.beats=(area?area.steps:m.steps).map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
   S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
-  FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});buildLayers(S.pal);hud(true);missionHud(true);
+  FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});const jump=$('jumpbtn');if(jump)jump.style.display='flex';buildLayers(S.pal);hud(true);missionHud(true);
   if(area)toast('CHAPTER '+(idx+1)+' / '+m.areas.length+': '+area.title);
 }
 function endMissionArea(){
@@ -2229,7 +2658,7 @@ function updateCombat(dt){
     if(e.stun>0)continue;
     if(e.wind>0){e.wind-=dt;if(e.wind<=0){
       if(e.dashPend){e.dashPend=false;e.vx=e.face*270;e.dashT=.22;e.cd=1.3;e.dashHit=0;e.dashGuard=targetGuard;}
-      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:'arrow',dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard,originGround:(e.py||0)>=-2});e.cd=1.8+rnd()*.6;e.atkA=1;}
+      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:(e.k==='wisp'||e.k==='acolyte'?'dusk':'arrow'),dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard,originGround:(e.py||0)>=-2});e.cd=1.8+rnd()*.6;e.atkA=1;}
       else{e.atkA=1;if(ad<def.rng+10){if(targetGuard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}e.cd=1.2+rnd()*.4;}}
       continue;}
     if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;if(e.dashGuard&&S.guard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}continue;}
@@ -2283,6 +2712,11 @@ function update(dt){
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
   if(keys.atk)attack();if(keys.abl)useAbility();if(keys.use)useMissionObject();
   if(S.adv){adventureUpdate(dt);P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);}
+  else if(!P.grounded){
+    P.vy=Math.min(460,(P.vy||0)+620*dt);
+    P.py+=P.vy*dt;
+    if(P.py>=0){P.py=0;P.vy=0;P.grounded=true;}
+  }
   if(!S.adv)FOL.forEach((f,i)=>{const tx=P.x-(i?46:28),d=tx-f.x;f.mv=Math.abs(d)>3;f.x+=d*Math.min(1,dt*2.6);f.face=P.face;});
   if(S.arena){S.spawnT+=dt;S.spawnQ=S.spawnQ.filter(o=>{if(S.spawnT>=o.d){spawn(o);return false;}return true;});}
   updateCombat(dt);
@@ -2344,6 +2778,7 @@ function drawScene(cam){
     if(d.g){g.fillStyle=rgba(col,.22+.1*pul);g.fillRect(x-2,y-34,5,34);g.fillStyle=rgba(col,.5);g.fillRect(x,y-34,1,34);}
     R(x-4,y-8,8,8,'#17101a');R(x-3,y-7,6,6,col);R(x-3,y-7,6,2,sh(col,.45));R(x-1,y-5,2,2,'#fff');
     if(d.it.rar>=2&&Math.sin(S.t*8+d.x)>.6)R(x+4,y-12,1,3,'#fff');}
+  if(S.areaData&&S.areaData.id==='magegarden')drawPerson(170-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.2});
   if(S.npc){const o={...NPCS[S.npc.k],w:-1,ph:0};drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);}
   if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
@@ -2365,7 +2800,7 @@ function draw(){
   const pk=S.mode==='prologue'?'ash':S.pal;buildLayers(pk);if(!LAY)return;
   const sx=S.shake>0?Math.round((rnd()-.5)*4):0,sy=S.shake>0?Math.round((rnd()-.5)*3):0,cam=Math.floor(S.cam);
   g.save();g.translate(sx,sy);
-  if(!adventureBackdrop(cam))drawBackdrop(cam,S.t,pk);
+  if(!adventureBackdrop(cam)&&!storyWorldBackdrop(cam))drawBackdrop(cam,S.t,pk);
   for(const p of parts)if(p.k==='m'){const a=(p.life/p.max)*.42,s=3+(1-p.life/p.max)*9;g.fillStyle='rgba('+PALS[pk].smk+','+a.toFixed(2)+')';g.fillRect(Math.round(p.x-cam*.72-s/2),Math.round(p.y-s/2),Math.round(s),Math.round(s));}
   if(S.mode==='prologue')drawPerson(S.pro.x-cam,GY,1,{...NPCS.halv,mv:true,w:-1,carry:1,ph:0});
   else if(S.mode==='title'||S.mode==='hub'){const hx=cam+W*.5;drawPerson(hx-30,GY,1,{...NPCS.halv,w:-1});drawPerson(hx-14,GY,1,{...NPCS.lysa,w:-1,ph:1});drawPerson(hx,GY,1,{...heroOpts(),mv:false,w:-1});}
@@ -2373,7 +2808,7 @@ function draw(){
   for(const p of parts)if(p.k==='s'||p.k==='e'){g.globalAlpha=Math.min(1,p.life/p.max*1.5);R(p.x-cam,p.y,2,2,p.c);g.globalAlpha=1;}
   // These hand-authored locations have their own indoor and arena foreground;
   // do not paint exterior trees or landscape tint over castle walls.
-  const isUniqueRoom=!!(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0);
+  const isUniqueRoom=!!(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0)||!!worldConfig();
   if(!isUniqueRoom){
     if(LAY.fg)lyr(LAY.fg,1.25,cam);
     const p0=PALS[pk];
@@ -2382,6 +2817,7 @@ function draw(){
     else if(pk!=='night'){g.fillStyle='rgba(120,150,30,'+S.blight.toFixed(3)+')';g.fillRect(0,0,W,H);}
     else{g.fillStyle='rgba(20,30,80,.12)';g.fillRect(0,0,W,H);}
   }
+  storyWeatherOverlay(cam);
   for(const f of fxs){
     if(f.k==='t'){g.font=(f.big?'bold 10px':'bold 8px')+' "Courier New",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='#000';g.globalAlpha=Math.min(1,f.life*2);{const tx=clamp(Math.round(f.x-cam),34,W-34);g.strokeText(f.txt,tx,Math.round(f.y));g.fillStyle=f.col;g.fillText(f.txt,tx,Math.round(f.y));}g.globalAlpha=1;}
     else{g.strokeStyle=f.col;g.globalAlpha=Math.min(1,f.life*2.5);g.lineWidth=2;g.beginPath();g.ellipse(Math.round(f.x-cam),Math.round(f.y),f.r,f.r*.45,0,0,7);g.stroke();g.globalAlpha=1;}
@@ -2553,6 +2989,7 @@ function travel(pth,dest){
         id:'travel-'+roadAreas.length,title:e.n+' — day '+(n+1),reg,
         explore:{
           length:len,seed:seed%997,scenery:terrain,
+          weather:terrain==='marsh'?'fog':terrain==='mountain'?'snow':terrain==='forest'?(seed%3?'breeze':'rain'):terrain==='ruins'?'wind':seed%7===0?'storm':seed%3===0?'rain':'breeze',
           platforms:[{x:260,w:120,y:-26,kind:'outcrop'},{x:610,w:135,y:-36,kind:'outcrop'}],
           objects:[
             {kind:'chest',label:'ROADSIDE CACHE',x:315,y:-26,slot:'trinket',rarity:1},
@@ -2753,7 +3190,7 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,genItem2:null,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,genItem2:null,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
 })();
 </script>
 </body>

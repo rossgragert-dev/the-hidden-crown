@@ -144,6 +144,7 @@ function travel(pth,dest){
         id:'travel-'+roadAreas.length,title:e.n+' — day '+(n+1),reg,
         explore:{
           length:len,seed:seed%997,scenery:terrain,
+          weather:terrain==='marsh'?'fog':terrain==='mountain'?'snow':terrain==='forest'?(seed%3?'breeze':'rain'):terrain==='ruins'?'wind':seed%7===0?'storm':seed%3===0?'rain':'breeze',
           platforms:[{x:260,w:120,y:-26,kind:'outcrop'},{x:610,w:135,y:-36,kind:'outcrop'}],
           objects:[
             {kind:'chest',label:'ROADSIDE CACHE',x:315,y:-26,slot:'trinket',rarity:1},
@@ -344,4 +345,4 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,genItem2:null,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,genItem2:null,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};

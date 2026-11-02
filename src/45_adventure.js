@@ -4,7 +4,7 @@
 */
 function adventureBegin(area){
   const d=area.explore;
-  if(!d){S.adv=null;P.py=0;P.vy=0;P.grounded=true;S.camY=0;return;}
+  if(!d){S.adv=null;P.py=0;P.vy=0;P.grounded=true;S.camY=0;const j=$('jumpbtn');if(j)j.style.display='flex';return;}
   S.adv={
     length:d.length||1000,
     platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y,kind:p.kind||null})),
@@ -23,7 +23,7 @@ function adventureEnd(){
   const b=$('jumpbtn');if(b)b.style.display='none';
 }
 function adventureJump(){
-  if(!S.adv||S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
+  if(S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
   P.vy=-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
 }
 function adventureNear(){
@@ -55,12 +55,21 @@ function adventureUse(){
   }
   o.done=true;
   if(o.flag){G.flags[o.flag]=1;save();}
-  if(o.kind==='shield'){
+  if(o.kind==='staff'){
+    if(!G.eq.staff){G.eq.staff=fixedItem('staff',"Ione's Rowan Staff",12,0,{gift:'ione'});}
+    P.w=1;G.flags.ioneTaught=1;calc();hud(true);save();
+    toast('ROWAN STAFF RECEIVED — SELECT STAFF AND CAST WITH ATK');
+    say([L('Magister Ione','The staff listens to intention, not strength. Breathe, focus, then let the Dawn tide carry your light.'),L('Corin','Then this is not a weapon of force. It is a promise to aim well.')],()=>{});
+  }else if(o.kind==='shield'){
     G.shieldTier=Math.max(G.shieldTier||0,o.tier||0);
     toast('WOODEN SHIELD ACQUIRED — HOLD GUARD');
   }else if(o.kind==='key'){
     toast('KEY FOUND: '+(o.label||'IRON KEY'));
-  }else if(o.kind==='chest'){
+  }else if(o.kind==='staff'){
+      R(x-2,py-34,4,30,'#8e6a45');R(x-3,py-35,6,4,'#e5ca80');
+      R(x-7,py-43,14,9,'rgba(175,235,255,.24)');
+      R(x-2,py-42,5,6,'#c9eaff');
+    }else if(o.kind==='chest'){
     const item=genItem(S.ilvl+1,Math.max(1,o.rarity||1),o.slot||'armor');
     addItem(item,true);toast('CHEST OPENED: '+item.name);
   }else if(o.kind==='gear'){
@@ -276,7 +285,7 @@ function adventureWorldDraw(cam){
   // Deterministic scenery per world segment, not a repeated painted strip.
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
-    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists')continue;
+    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists'||a.scenery==='magegarden')continue;
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;

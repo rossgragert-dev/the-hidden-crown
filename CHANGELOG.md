@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.6.3 — Living Roads and Magic (development, not merged)
+
+- Mission-aware backgrounds for Act I and the six Hearthmoor siege stages: visible drawbridge and defenders, burning village and keep, distinctive Greenmarch, Veilfen, library and mountain scenes.
+- Sun position and sky color change across playable travel. Seeded regional weather adds rain, wind, fog, storms, snow and siege embers.
+- Magister Ione now introduces magic after the tournament, in a new rune garden; Corin receives his first Rowan Staff through interaction, learns Dawn basics and confronts wisps.
+- JUMP is now available and works in legacy horizontal missions, in addition to the vertical platforming areas.
+- Nine new enemy archetypes and role-appropriate weapon/creature silhouettes, used by rebalanced early Act I and siege encounters.
+- Added `tests/world.js`, extended the adventure test, and validated all 10 GitHub Actions regression tasks. See `docs/V0_6_3_LIVING_WORLD.md` for limits and next steps.
+
 ## 0.6.1 (development branch — not merged)
 - New `src/46_horse.js`: vector horse rig baked to palette-true pixel frames (cached) with 2-bone IK legs and idle/walk/trot/canter/gallop/charge/halt/recoil/groom poses, coats, tack states (halter, stable blanket, saddled, tourney caparison), dirty/groomed look and rider anchors.
 - New `src/47_joust.js`: ONE deterministic fixed-step joust engine used by both roles. `squire` (Corin on foot hands Halvard a lance; positional reach test) and `rider` (mounted lance-vs-lance with seeded opponent). Easy mode via `G.opts.joustEasy`. Replaces the old timing bar; M0 flags, 3 passes and +35 gold on 2+ handoffs unchanged.

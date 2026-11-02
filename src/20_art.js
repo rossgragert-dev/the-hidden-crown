@@ -362,11 +362,49 @@ function drawRat(e,px,py,hit){
   Q(8,-7,1,1,e.wind>0?'#ff3a2a':'#2a1a1a');Q(11,-4,3,1,'#ddd');Q(11,-6,4,1,'rgba(255,255,255,.5)'); // eye, whiskers
   Q(-5,-2+(st?-1:0),2,3,'#3a2e28');Q(-1,-2+(st?0:-1),2,3,'#3a2e28');Q(3,-2+(st?-1:0),2,3,'#3a2e28');Q(7,-2+(st?0:-1),2,3,'#3a2e28');
 }
+function drawRegionCreature(e,px,py,def){
+  px=Math.round(px);py=Math.round(py);
+  if(def.creature==='wisp'){
+    const b=Math.sin(S.t*5+e.t*2)*3,cy=py-34+b;
+    const gr=g.createRadialGradient(px,cy,1,px,cy,24);
+    gr.addColorStop(0,'rgba(178,245,213,.65)');gr.addColorStop(1,'rgba(61,196,185,0)');
+    g.fillStyle=gr;g.fillRect(px-25,cy-25,50,50);
+    R(px-8,cy-11,16,21,'#5db1aa');R(px-5,cy-16,10,24,'#a1e6d1');
+    R(px-3,cy-15,6,13,'#e3fcdb');R(px-10,cy+9,5,5,'#6c998d');
+    R(px+4,cy+11,3,6,'#90c7ad');R(px-3,cy+13,2,8,'#d4f7db');
+    for(let i=0;i<3;i++){const dx=Math.sin(S.t*3+i*2+e.t)*18,dy=Math.cos(S.t*4+i*3)*12;R(px+dx,cy+dy,2,2,'#d5f9dd');}
+  }else{
+    // The bog lurker has a broad squat body, low stalking legs and reeds on
+    // its moss-covered shell: visually unlike a wolf, rat or soldier.
+    const bob=e.mv?(Math.floor(S.t*9+e.t)%2):0;
+    const face=e.face>=0?1:-1;
+    const Q=(dx,dy,w,h,col)=>R(face>0?px+dx:px-dx-w,py+dy-bob,w,h,col);
+    shadowAt(px,py,24);
+    Q(-22,-24,42,18,'#36534c');Q(-19,-27,38,8,'#608067');
+    Q(-16,-35,25,11,'#4c6758');Q(-4,-38,13,7,'#526f5b');
+    Q(10,-22,17,15,'#405b57');Q(23,-18,10,6,'#658974');
+    Q(23,-16,3,2,'#f4d47e');Q(26,-12,4,2,'#dfd8b8');
+    Q(-20,-10,9,12,'#344b41');Q(11,-10,9,12,'#344b41');
+    Q(-16,-2,6,3,'#7e8268');Q(14,-2,6,3,'#7e8268');
+    for(let i=0;i<5;i++){const sx=-16+i*8;Q(sx,-33-i%2*7,2,10+i%3*5,'#749b67');}
+    if(e.wind>0)Q(20,-22,5,3,'#f3b14f');
+  }
+}
 function drawEnemy(e,cam,def){
   const px=e.x-cam,py=GY,k=def.k||1,hit=e.hurt>0&&Math.floor(S.t*30)%2;
   if(def.rat){drawRat(e,px,py,hit);return;}
+  if(def.creature){drawRegionCreature(e,px,py,def);return;}
   if(def.h){const o={...def.sp,mv:e.mv,ph:e.t,w:def.w,atk:e.atkA>0?e.atkA:0};shadowAt(Math.round(px),py,14);
     drawBevel(personParts(o),px,py,e.face,{bevel:true,white:hit});
+    // Faction equipment gives the new humanoid archetypes readable silhouettes.
+    const f=e.face>=0?1:-1;
+    if(def.weapon==='spear'){R(px+f*14-1,py-66,3,62,'#b2a08b');R(px+f*14-3,py-72,7,9,'#d1dae1');}
+    else if(def.weapon==='crossbow'){R(px+f*11-8,py-27,26,5,'#7d6243');R(px+f*13-3,py-30,11,10,'#b4a28a');R(px+f*14,py-28,3,18,'#d0d4ce');}
+    else if(def.weapon==='torch'){R(px+f*12,py-43,3,23,'#a58a61');R(px+f*11-3,py-48,10,8,'#e47f32');R(px+f*12,py-52-Math.sin(S.t*9)*3,6,8,'#f3bd55');}
+    else if(def.weapon==='sapper'){R(px-15,py-30,13,16,'#7e7157');R(px-13,py-27,9,4,'#d7aa6b');R(px+f*12,py-36,12,4,'#9e9c9c');}
+    else if(def.weapon==='shield'){R(px+f*12-8,py-33,15,25,'#a0a4b2');R(px+f*12-5,py-29,9,17,'#4b5267');R(px+f*12-2,py-24,4,7,'#ddc18b');}
+    else if(def.weapon==='staff'){R(px+f*14,py-50,3,40,'#69618d');R(px+f*11,py-59,9,12,'#ae87cc');R(px+f*13,py-55,5,6,'#e9d4fd');}
+
     if(e.wind>0)R(px-3,py-52,6,2,'#ff3a2a');
     return;}
   shadowAt(Math.round(px),py,Math.round(22*k));

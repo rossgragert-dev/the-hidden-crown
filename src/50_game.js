@@ -45,7 +45,7 @@ function loadMissionArea(idx){
   P.x=30;P.face=1;P.vx=0;P.inv=1;S.cam=0;P.guard=100;
   S.beats=(area?area.steps:m.steps).map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
   S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
-  FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});buildLayers(S.pal);hud(true);missionHud(true);
+  FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});const jump=$('jumpbtn');if(jump)jump.style.display='flex';buildLayers(S.pal);hud(true);missionHud(true);
   if(area)toast('CHAPTER '+(idx+1)+' / '+m.areas.length+': '+area.title);
 }
 function endMissionArea(){
@@ -274,7 +274,7 @@ function updateCombat(dt){
     if(e.stun>0)continue;
     if(e.wind>0){e.wind-=dt;if(e.wind<=0){
       if(e.dashPend){e.dashPend=false;e.vx=e.face*270;e.dashT=.22;e.cd=1.3;e.dashHit=0;e.dashGuard=targetGuard;}
-      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:'arrow',dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard,originGround:(e.py||0)>=-2});e.cd=1.8+rnd()*.6;e.atkA=1;}
+      else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:(e.k==='wisp'||e.k==='acolyte'?'dusk':'arrow'),dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard,originGround:(e.py||0)>=-2});e.cd=1.8+rnd()*.6;e.atkA=1;}
       else{e.atkA=1;if(ad<def.rng+10){if(targetGuard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}e.cd=1.2+rnd()*.4;}}
       continue;}
     if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;if(e.dashGuard&&S.guard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}continue;}
@@ -328,6 +328,11 @@ function update(dt){
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
   if(keys.atk)attack();if(keys.abl)useAbility();if(keys.use)useMissionObject();
   if(S.adv){adventureUpdate(dt);P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);}
+  else if(!P.grounded){
+    P.vy=Math.min(460,(P.vy||0)+620*dt);
+    P.py+=P.vy*dt;
+    if(P.py>=0){P.py=0;P.vy=0;P.grounded=true;}
+  }
   if(!S.adv)FOL.forEach((f,i)=>{const tx=P.x-(i?46:28),d=tx-f.x;f.mv=Math.abs(d)>3;f.x+=d*Math.min(1,dt*2.6);f.face=P.face;});
   if(S.arena){S.spawnT+=dt;S.spawnQ=S.spawnQ.filter(o=>{if(S.spawnT>=o.d){spawn(o);return false;}return true;});}
   updateCombat(dt);
@@ -389,6 +394,7 @@ function drawScene(cam){
     if(d.g){g.fillStyle=rgba(col,.22+.1*pul);g.fillRect(x-2,y-34,5,34);g.fillStyle=rgba(col,.5);g.fillRect(x,y-34,1,34);}
     R(x-4,y-8,8,8,'#17101a');R(x-3,y-7,6,6,col);R(x-3,y-7,6,2,sh(col,.45));R(x-1,y-5,2,2,'#fff');
     if(d.it.rar>=2&&Math.sin(S.t*8+d.x)>.6)R(x+4,y-12,1,3,'#fff');}
+  if(S.areaData&&S.areaData.id==='magegarden')drawPerson(170-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.2});
   if(S.npc){const o={...NPCS[S.npc.k],w:-1,ph:0};drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);}
   if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
@@ -410,7 +416,7 @@ function draw(){
   const pk=S.mode==='prologue'?'ash':S.pal;buildLayers(pk);if(!LAY)return;
   const sx=S.shake>0?Math.round((rnd()-.5)*4):0,sy=S.shake>0?Math.round((rnd()-.5)*3):0,cam=Math.floor(S.cam);
   g.save();g.translate(sx,sy);
-  if(!adventureBackdrop(cam))drawBackdrop(cam,S.t,pk);
+  if(!adventureBackdrop(cam)&&!storyWorldBackdrop(cam))drawBackdrop(cam,S.t,pk);
   for(const p of parts)if(p.k==='m'){const a=(p.life/p.max)*.42,s=3+(1-p.life/p.max)*9;g.fillStyle='rgba('+PALS[pk].smk+','+a.toFixed(2)+')';g.fillRect(Math.round(p.x-cam*.72-s/2),Math.round(p.y-s/2),Math.round(s),Math.round(s));}
   if(S.mode==='prologue')drawPerson(S.pro.x-cam,GY,1,{...NPCS.halv,mv:true,w:-1,carry:1,ph:0});
   else if(S.mode==='title'||S.mode==='hub'){const hx=cam+W*.5;drawPerson(hx-30,GY,1,{...NPCS.halv,w:-1});drawPerson(hx-14,GY,1,{...NPCS.lysa,w:-1,ph:1});drawPerson(hx,GY,1,{...heroOpts(),mv:false,w:-1});}
@@ -418,7 +424,7 @@ function draw(){
   for(const p of parts)if(p.k==='s'||p.k==='e'){g.globalAlpha=Math.min(1,p.life/p.max*1.5);R(p.x-cam,p.y,2,2,p.c);g.globalAlpha=1;}
   // These hand-authored locations have their own indoor and arena foreground;
   // do not paint exterior trees or landscape tint over castle walls.
-  const isUniqueRoom=!!(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0);
+  const isUniqueRoom=!!(S.adv&&['armory','stable','lists'].indexOf(S.adv.scenery)>=0)||!!worldConfig();
   if(!isUniqueRoom){
     if(LAY.fg)lyr(LAY.fg,1.25,cam);
     const p0=PALS[pk];
@@ -427,6 +433,7 @@ function draw(){
     else if(pk!=='night'){g.fillStyle='rgba(120,150,30,'+S.blight.toFixed(3)+')';g.fillRect(0,0,W,H);}
     else{g.fillStyle='rgba(20,30,80,.12)';g.fillRect(0,0,W,H);}
   }
+  storyWeatherOverlay(cam);
   for(const f of fxs){
     if(f.k==='t'){g.font=(f.big?'bold 10px':'bold 8px')+' "Courier New",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='#000';g.globalAlpha=Math.min(1,f.life*2);{const tx=clamp(Math.round(f.x-cam),34,W-34);g.strokeText(f.txt,tx,Math.round(f.y));g.fillStyle=f.col;g.fillText(f.txt,tx,Math.round(f.y));}g.globalAlpha=1;}
     else{g.strokeStyle=f.col;g.globalAlpha=Math.min(1,f.life*2.5);g.lineWidth=2;g.beginPath();g.ellipse(Math.round(f.x-cam),Math.round(f.y),f.r,f.r*.45,0,0,7);g.stroke();g.globalAlpha=1;}
