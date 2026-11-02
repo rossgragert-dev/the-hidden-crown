@@ -285,7 +285,7 @@ function adventureWorldDraw(cam){
   // Deterministic scenery per world segment, not a repeated painted strip.
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
-    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists')continue;
+    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists'||a.scenery==='magegarden')continue;
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;
