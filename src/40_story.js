@@ -67,7 +67,7 @@ const MISSIONS=[
      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
      {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
      {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
-     {kind:'exit',label:'PATROL GATE',x:956,y:0,needFlags:['squireJoust']}
+     {kind:'exit',label:'TO IONE\'S GARDEN',x:956,y:0,needFlags:['squireJoust']}
     ]
    },steps:[{t:'explore',goal:'Collect spare lances and assist Halvard during the joust',intro:[
      N('Bright pennants ripple over the lists. Horns sound as mounted knights take their places.'),
