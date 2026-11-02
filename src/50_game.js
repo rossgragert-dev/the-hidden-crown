@@ -36,6 +36,7 @@ function fade(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();s
 function resetField(){adventureEnd();enemies=[];proj=[];drops=[];fxs=[];parts=[];S.chests=[];S.npc=null;S.arena=false;S.activeInteract=null;S.guard=null;S.choiceCam=null;S.choiceActor=null;keys.use=0;S.talk=false;S.choosing=false;S.q=[];line=null;S.tm=[];cap.classList.remove('show');chb.innerHTML='';}
 function startMission(id,resume){
   const m=MBY[id];if(!m)return;
+  S.resultsBackdrop=null;
   S.mission=m;S.replay=!!G.done[id];S.ilvl=m.lvl;S.boost=0;
   S.rew={xp:0,gold:0,items:[],lv:0,c0:G.c};
   $('title').style.display='none';hideModal();resetField();S.mode='play';document.body.dataset.mode='play';
@@ -438,6 +439,9 @@ function drawScene(cam){
   g.restore();
 }
 function draw(){
+  if(S.mode==='hub'&&S.resultsBackdrop){
+    g.clearRect(0,0,W,H);g.drawImage(S.resultsBackdrop,0,0,W,H);return;
+  }
   const pk=S.mode==='prologue'?'ash':S.pal;buildLayers(pk);if(!LAY)return;
   const sx=S.shake>0?Math.round((rnd()-.5)*4):0,sy=S.shake>0?Math.round((rnd()-.5)*3):0,cam=Math.floor(S.cam);
   g.save();g.translate(sx,sy);
