@@ -126,7 +126,7 @@ function runStep(b){
   };
   switch(st.t){
    case 'explore':{if(st.intro)say(LN(st.intro),()=>missionHud(true));else missionHud(true);break;}
-   case 'say':if(st.npc)S.npc={k:st.npc.k,x:P.x+90,face:-1};say(LN(st.lines),fin);break;
+   case 'say':if(st.npc)S.npc={k:st.npc.k,x:P.x+28,face:-1};say(LN(st.lines),fin);break;
    case 'toast':toast(st.text);fin();break;
    case 'wave':{S.npc=null;const go=()=>wave(st.list,()=>{if(st.outro)say(LN(st.outro),fin);else fin();});if(st.intro)say(LN(st.intro),go);else go();break;}
    case 'defend':{
