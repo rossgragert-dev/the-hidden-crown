@@ -1,5 +1,5 @@
 // Squire kit: new games start with a tunic + wooden sword, rats are beatable, blunt iron sword after the
-// tournament, knighting returns the stash, and legacy saves are untouched.
+// Halvard's sword lesson, knighting returns the stash, and legacy saves are untouched.
 const {chromium}=require('playwright');const {pathToFileURL}=require('url');const path=require('path'),assert=require('assert');
 (async()=>{
  const b=await chromium.launch();const errs=[];
@@ -18,8 +18,8 @@ const {chromium}=require('playwright');const {pathToFileURL}=require('url');cons
  await page.evaluate(()=>{const g=window.__G;for(let i=0;i<30&&g.S.talk;i++){g.adv();g.adv();}});
  const vis=await page.evaluate(()=>[...document.querySelectorAll('[data-w]')].map(b=>getComputedStyle(b).display!=='none').concat([getComputedStyle(document.getElementById('mode')).display!=='none']));
  assert.deepEqual(vis,[true,false,false,false]);
- // rats: armory wave, killed with the wooden sword
- await page.evaluate(()=>{const g=window.__G;g.P.x=570;g.P.py=0;g.P.vy=0;g.P.grounded=true;g.adventureUpdate(1/60);});
+ // stable grain rats: still beatable with Corin's wooden sword
+ await page.evaluate(()=>{const g=window.__G;g.loadMissionArea(2);g.S.talk=false;g.S.q=[];g.P.x=307;g.P.py=0;g.P.vy=0;g.P.grounded=true;g.adventureUpdate(1/60);});
  await page.waitForTimeout(1600);
  const rat=await page.evaluate(async()=>{
   const g=window.__G;
@@ -33,11 +33,10 @@ const {chromium}=require('playwright');const {pathToFileURL}=require('url');cons
   }
   return {spawned,type,left:g.enemies.filter(e=>!e.dead).length,swings,hp:g.P.hp>0};});
  console.log(JSON.stringify(rat));assert.equal(rat.spawned>=2,true);assert.equal(rat.type,'Cellar Rat');assert.equal(rat.left,0);assert.ok(rat.hp);assert.ok(rat.swings>=2&&rat.swings<=10,'rats should take a few hits: '+rat.swings);
- // blunt iron sword at the end of the tournament
+ // Blunt iron sword is earned at Halvard's chapter six training target.
  const bl=await page.evaluate(()=>{const g=window.__G;const before=g.G.eq.sword.name;
-  g.loadMissionArea(2);g.S.adv.combatAt.forEach(w=>w.done=true);
-  g.G.flags.squireLances=1;const o=g.S.adv.objects.find(x=>x.kind==='joust');g.P.x=o.x;g.adventureUse();
-  let n=0;const J=g.S.joust;while(g.S.joust&&n++<30000){if(J.phase==='approach'&&!J.used&&J.a.x+14>=J.anchor+5)g.adventureUse();g.adventureUpdate(1/60);}
+  g.loadMissionArea(5);g.S.talk=false;g.S.q=[];g.G.flags.squireSwordHit=1;
+  const o=g.S.adv.objects.find(x=>x.kind==='sword');g.P.x=o.x;g.P.py=0;g.adventureUse();
   return {before,after:g.G.eq.sword.name,dmg:g.G.eq.sword.dmg,flag:g.G.flags.bluntSword};});
  assert.equal(bl.before,'Wooden Practice Sword');assert.equal(bl.after,'Blunt Iron Sword');assert.ok(bl.dmg>6&&bl.dmg<=10);assert.equal(bl.flag,1);
  // tunic recolour with rarity, still a simple tunic before knighting
@@ -55,6 +54,6 @@ const {chromium}=require('playwright');const {pathToFileURL}=require('url');cons
  await page.evaluate(()=>{document.getElementById('bcont')&&document.getElementById('bcont').click();});await page.waitForTimeout(300);
  const leg=await page.evaluate(()=>{const G=window.__G.G;return {sw:G.eq.sword&&G.eq.sword.name,kn:G.flags.knighted,lvl:G.lvl};});
  assert.equal(leg.sw,'Old Sword');assert.equal(leg.kn,1);assert.equal(leg.lvl,5);
- assert.deepEqual(errs,[]);console.log('Squire kit: start gear, rats, blunt iron sword, tunics, knighting stash return, legacy saves PASS');
+ assert.deepEqual(errs,[]);console.log('Squire kit: start gear, stable rats, Halvard training sword, tunics, knighting stash return and legacy saves PASS');
  await b.close();
 })().catch(e=>{console.error(e);process.exit(1);});
