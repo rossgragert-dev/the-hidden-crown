@@ -29,6 +29,10 @@ const WORLD_ID={
  d4:{style:'ruins',period:'dusk',weather:'embers'}
 };
 const WORLD_AREAS={
+ rideout:{style:'farmroad',period:'morning',weather:'breeze'},
+ trainingyard:{style:'training',period:'noon',weather:'clear'},
+ returnroad:{style:'forest',period:'dusk',weather:'storm'},
+ practicelists:{style:'training',period:'noon',weather:'breeze'},
  outskirts:{style:'fieldsiege',period:'dusk',weather:'breeze'},
  gatehouse:{style:'drawbridge',period:'dusk',weather:'embers'},
  village:{style:'cityfire',period:'night',weather:'embers'},
