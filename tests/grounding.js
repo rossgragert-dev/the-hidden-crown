@@ -12,15 +12,16 @@ const {pathToFileURL}=require('url'),path=require('path'),fs=require('fs');
    await page.goto(pathToFileURL(path.resolve(__dirname,'..','index.html')).href);
    await page.waitForFunction(()=>!!window.__G);
    const sample=await page.evaluate(()=>{
-     const a=window.__G;a.startMission('m0');a.S.talk=false;a.S.q=[];
+     const a=window.__G;a.startMission('m0');a.loadMissionArea(1);a.S.talk=false;a.S.q=[];
      const camera=[0,47,161,308,579].map(cam=>({
-       cam,armory:a.interiorBackCam(cam,'armory'),stable:a.interiorBackCam(cam,'stable'),
+       cam,armory:a.interiorBackCam(cam,'armory'),inn:a.interiorBackCam(cam,'inn'),stable:a.interiorBackCam(cam,'stable'),
        lists:a.interiorBackCam(cam,'lists')}));
      return {camera,ground:a.GY,platforms:a.S.adv.platforms};
    });
    for(const c of sample.camera){
      assert.equal(c.armory,Math.floor(c.cam),'Armory furniture must scroll with physical platforms');
      assert.equal(c.stable,Math.floor(c.cam),'Stable furniture must scroll with physical platforms');
+     assert.equal(c.inn,Math.floor(c.cam),'Inn furniture must scroll with physical platforms');
      assert.equal(c.lists,Math.floor(c.cam*.74),'Open-air tournament keeps distant parallax');
    }
    assert.deepEqual(sample.platforms.map(p=>p.kind),['workbench','loft','rack']);
@@ -30,7 +31,7 @@ const {pathToFileURL}=require('url'),path=require('path'),fs=require('fs');
    const painter=fs.readFileSync(path.resolve(__dirname,'..','src','45_adventure.js'),'utf8');
    assert.ok(painter.includes("R(px-7,ground-1,post+14,2"),'Each wooden support needs a ground-contact shadow');
    assert.ok(painter.includes("Math.max(0,h-5),frame"),'Legs must reach the world floor exactly');
-   for(const [area,worldX,name] of [[0,350,'workbench'],[0,668,'loft'],[0,805,'rack'],[1,600,'hayloft']]){
+   for(const [area,worldX,name] of [[1,350,'workbench'],[1,668,'loft'],[1,805,'rack'],[2,600,'hayloft']]){
      await page.evaluate(({area,worldX})=>{
        const a=window.__G;
        if(area!==a.S.areaIndex)a.loadMissionArea(area);
