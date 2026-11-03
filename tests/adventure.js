@@ -8,7 +8,10 @@ const {pathToFileURL}=require('url'),path=require('path');
   const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(pathToFileURL(path.resolve(__dirname,'..','index.html')).href);
-  await page.evaluate(()=>window.__G.startMission('m0'));
+  // Use the real NEW GAME pathway: it equips Corin's wooden practice sword.
+  // Calling startMission directly from a fresh title bypasses startGear.
+  await page.locator('#bnew').click();
+  await page.waitForFunction(()=>window.__G.S.mode==='play'&&window.__G.S.mission?.id==='m0');
   const skip=async()=>{await page.waitForTimeout(50);await page.evaluate(()=>{
     const g=window.__G;for(let i=0;i<46&&g.S.talk&&!g.S.choosing;i++){g.adv();g.adv();}
   });};
