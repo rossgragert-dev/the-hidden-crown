@@ -85,6 +85,7 @@ const {pathToFileURL}=require('url'),path=require('path');
   let trained=await page.evaluate(()=>{
     const g=window.__G,a=g.S.adv,tar=a.objects.find(o=>o.kind==='archerytarget');
     g.P.x=tar.x-32;g.P.face=1;g.P.w=2;g.P.cd=0;
+    g.S.cam=Math.max(0,g.P.x-g.W*.4);
     g.attack();for(let i=0;i<12&&!tar.done;i++)g.combatTick(.03);
     return {done:tar.done,bow:g.G.eq.bow&&g.G.eq.bow.name};
   });
