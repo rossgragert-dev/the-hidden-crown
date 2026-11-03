@@ -43,7 +43,12 @@ function startMission(id,resume){
   calc();P.hp=P.max;P.mp=P.mmax;P.inv=1;P.shield=0;P.ab=0;P.vx=0;
   FOL[0].k=(G.flags.halvardStands&&G.done.m11)?'ione':'halv';
   const cp=resume&&G.checkpoint&&G.checkpoint.id===id?G.checkpoint:null;
-  loadMissionArea(cp&&m.areas?clamp(cp.area,0,m.areas.length-1):0);
+  // Older m0 saves used [armory,stables,lists,magegarden,greenroad].
+  // Preserve completed tasks while routing checkpoints to their new chapters.
+  const index=cp&&m.areas?(!cp.chapterVersion&&id==='m0'?
+    [1,2,3,6,6][clamp(cp.area,0,4)]:
+    clamp(cp.area,0,m.areas.length-1)):0;
+  loadMissionArea(index);
 }
 function loadMissionArea(idx){
   const m=S.mission,area=m.areas?m.areas[idx]:null;
@@ -71,7 +76,7 @@ function endMissionArea(){
   }
   if(!m.areas||S.areaIndex>=m.areas.length-1){completeMission();return;}
   const idx=S.areaIndex+1;
-  G.checkpoint={id:m.id,area:idx};save();
+  G.checkpoint={id:m.id,area:idx,chapterVersion:m.id==='m0'?7:undefined};save();
   P.hp=Math.min(P.max,P.hp+Math.round(P.max*.25));
   P.mp=Math.min(P.mmax,P.mp+Math.round(P.mmax*.3));
   fade(()=>{if(S.mission===m&&S.mode==='play')loadMissionArea(idx);});
@@ -255,11 +260,40 @@ function hurtPlayer(n,dir){
   P.inv=.7;P.hurt=.25;P.vx=dir*90;S.shake=.15;sfx(100,.15,'sawtooth',.06);
 }
 function fireProj(w,type,mul,vx,pierce){const [d,c]=rollHit(w,mul);proj.push({x:P.x+P.face*10,y:GY+(P.py||0)-30,vx:P.face*vx,type,dmg:d,crit:c,life:1.6,face:P.face,pierce:pierce||0,hits:[]});}
+function trainingTargetComplete(o){
+  if(!o||o.done)return false;
+  o.done=true;G.flags[o.flag]=1;save();
+  const bow=o.kind==='archerytarget';
+  toast(bow?'ELOWEN: CLEAN ARROW — WELL SHOT':'HALVARD: STRIKE TRUE — GOOD FORM');
+  burst(o.x,GY-37,bow?'#eacb82':'#e8d7a0',10,48);
+  sfx(bow?460:220,.12,'triangle',.045);
+  missionHud(true);return true;
+}
 function attack(){
   if(P.cd>0||S.talk||S.mode!=='play')return;
   if(!G.eq[TN[P.w]])P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0;
   let nr=null,nd=1e9;for(const e of enemies){const d=Math.abs(e.x-P.x);if(d<nd){nd=d;nr=e;}}
   if(nr&&nd<120)P.face=nr.x>=P.x?1:-1;
+  if(S.adv&&P.w===1&&G.flags.ionePathChoice&&!G.flags.ionePathMade&&
+     S.adv.bridge&&P.x>=515&&P.x<=S.adv.bridge.edge+10){
+    const route=G.flags.ionePathChoice;
+    if((route==='dusk')!==S.dusk){
+      toast(route==='dawn'?'SELECT DAWN MAGIC TO REVEAL THE CROSSING':'SELECT DUSK MAGIC TO RAISE THE ROCKS');
+      return;
+    }
+    G.flags.ionePathMade=1;save();
+    S.shake=.28;ring(S.adv.bridge.edge+50,GY-9,50,route==='dawn'?'#f4e7a1':'#a87acb');
+    burst(S.adv.bridge.edge+50,GY-28,route==='dawn'?'#e9e4a8':'#bd73d8',18,125);
+    toast(route==='dawn'?'DAWN REVEALS THE OLD STONE CROSSING':'DUSK RAISES A NEW ROCKY CAUSEWAY');
+    say([L('Magister Ione',route==='dawn'?
+      'You saw what the river concealed. Dawn does not always create; sometimes it lets us remember.':
+      'You made a road where none survived. Dusk can be useful, Corin, but learn what it costs to force the world.')],()=>{});
+  }
+  if(S.adv&&P.w===0&&S.adv.scenery==='trainingyard'){
+    const target=S.adv.objects.find(o=>o.kind==='swordtarget'&&!o.done&&(!o.need||G.flags[o.need])&&
+      (o.x-P.x)*P.face>0&&Math.abs(o.x-P.x)<43);
+    if(target)trainingTargetComplete(target);
+  }
   if(P.w===0){P.cd=.36;P.atk=P.atkMax=.22;sfx(200,.08,'sawtooth');
     for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-8&&dx<(e.def.k?44:34)&&heroEnemyOverlap(e)){const [d,c]=rollHit(0,1);hitEnemy(e,d,c,P.face,80);}}}
   else if(P.w===1){const cost=S.dusk?3:2;if(P.mp<cost){toast('Not enough mana');P.cd=.3;return;}
@@ -305,6 +339,11 @@ function updateCombat(dt){
   }
   for(const pr of proj){
     pr.x+=pr.vx*dt;pr.life-=dt;
+    if(!pr.hostile&&pr.type==='arrow'&&S.adv&&S.adv.scenery==='trainingyard'){
+      const target=S.adv.objects.find(o=>o.kind==='archerytarget'&&!o.done&&
+        Math.abs(pr.x-o.x)<14&&Math.abs(pr.y-GY+30)<20);
+      if(target){trainingTargetComplete(target);pr.life=0;continue;}
+    }
     if(pr.hostile){if(!pr.guard&&keys.block&&G.shieldTier>=0&&P.guard>=10&&pr.face===-P.face&&hostileProjectileHitsHero(pr)){
       P.guard=Math.max(0,P.guard-13);
       if(G.shieldTier>=2){pr.hostile=0;pr.vx=-pr.vx;pr.face=-pr.face;pr.hits=[];pr.pierce=0;pr.life=2;pr.dmg=Math.round(pr.dmg*1.3);toast('WARD REFLECT');sfx(740,.14,'triangle',.04);continue;}
@@ -345,7 +384,15 @@ function update(dt){
   const dir=S.joust?0:(keys.r?1:0)-(keys.l?1:0);P.mv=dir!==0;if(dir)P.face=dir;
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
-  P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);P.vx*=Math.pow(.02,dt);
+  if(S.adv&&S.adv.mount&&!S.joust){
+    const horse=S.adv.mount,target=dir>0?94:dir<0?-43:0;
+    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir?1.8:2.5)));
+    P.mv=Math.abs(horse.speed)>5;
+    P.x=clamp(P.x+horse.speed*dt+P.vx*dt,minX,maxX);
+  }else{
+    P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);
+  }
+  P.vx*=Math.pow(.02,dt);
   if(!S.adv&&G.shieldTier>=0)P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);
   if(P.cd>0)P.cd-=dt;if(P.atk>0)P.atk-=dt;if(P.inv>0)P.inv-=dt;if(P.hurt>0)P.hurt-=dt;if(P.ab>0)P.ab-=dt;if(P.shield>0)P.shield=Math.max(0,P.shield-dt*1.5);
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
@@ -418,13 +465,37 @@ function drawScene(cam){
     R(x-4,y-8,8,8,'#17101a');R(x-3,y-7,6,6,col);R(x-3,y-7,6,2,sh(col,.45));R(x-1,y-5,2,2,'#fff');
     if(d.it.rar>=2&&Math.sin(S.t*8+d.x)>.6)R(x+4,y-12,1,3,'#fff');}
   if(S.areaData&&S.areaData.id==='magegarden')drawPerson(170-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.2});
+  if(S.adv&&S.adv.scenery==='trainingyard'){
+    drawPerson(106-cam,GY,1,{...NPCS.lysa,col:'#426b43',trim:'#9bb98d',w:2,quiver:1,ph:S.t*.2});
+    drawPerson(728-cam,GY,-1,{...NPCS.halv,w:0,ph:S.t*.2});
+  }
+  if(S.adv&&S.adv.bridge&&S.adv.bridge.collapsed){
+    drawPerson(514-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.25});
+    if(P.x<760)drawMounted(S.adv.bridge.to+118-cam,GY,-1,
+      {v:'charger',tk:'saddled',liv:'hearth',gait:'idle',ph:S.t*.2},
+      {...NPCS.halv,mv:false,w:-1},null);
+  }
+  if(S.adv&&S.adv.mount&&!S.joust&&S.adv.mount.companion==='halv'){
+    const h=S.adv.mount;
+    drawMounted(h.halvX-cam,GY,1,{v:'charger',tk:'saddled',liv:'hearth',
+      gait:gaitForSpeed(Math.max(25,h.speed)),ph:h.ph+.35},
+      {...NPCS.halv,mv:true,w:-1},null);
+  }
   if(S.npc){
     const o=S.npc.style?{...S.npc.style,w:-1,ph:0,mv:false}: {...NPCS[S.npc.k],w:-1,ph:0};
     if(o.col)drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);
   }
   if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
-  if(!(S.joust&&S.joust.role==='rider'))drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
+  if(S.adv&&S.adv.mount&&!S.joust){
+    const h=S.adv.mount;
+    drawMounted(P.x-cam,GY+(P.py||0),P.face,
+      {v:h.v||'bay',tk:h.tk||'saddled',liv:h.liv||'hearth',
+       gait:gaitForSpeed(h.speed),ph:h.ph},
+      {...heroOpts(),mv:false,w:-1},null);
+  }else if(!(S.joust&&S.joust.role==='rider')){
+    drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
+  }
   if(keys.block&&G.shieldTier>=0){
     const x=Math.round(P.x-cam+P.face*10),y=Math.round(GY+(P.py||0)-27);
     R(x-5,y-11,10,23,G.shieldTier>=2?'#5ba7ed':G.shieldTier===1?'#9295a2':'#8a643a');
