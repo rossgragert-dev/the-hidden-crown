@@ -799,101 +799,151 @@ const L=(who,text)=>({who,text}),N=text=>({who:'',text});
 const REG={hearth:{n:'Castle Hearthmoor',pal:'day'},green:{n:'The Greenmarch',pal:'day'},fen:{n:'Veilfen Reeds',pal:'fen'},night:{n:'Hearthmoor by Night',pal:'night'},forest:{n:'Thornwood',pal:'wood'},cave:{n:'Hollowdeep Caves',pal:'cave'},mine:{n:'Greywatch Mine',pal:'mine'},keep:{n:'Ashfall Keep',pal:'keep'},chapel:{n:'Hearthmoor Chapel',pal:'keep'},road:{n:'The Southern Road',pal:'day'}};
 const ACTN={1:'ACT I: THE SQUIRE',2:'ACT II: THE KNIGHT',3:'ACT III: THE KING'};
 const MISSIONS=[
-{id:'m0',type:'main',act:1,title:"The Knight's Squire",reg:'hearth',lvl:1,
- desc:"Before the crown, a boy's life: fetch Halvard's armor, groom his horse, and serve lances at the tournament.",
+{id:'m0',type:'main',act:1,title:'The Road to Hearthmoor',reg:'hearth',lvl:1,
+ desc:"Seven chapters in the making of a squire: ride with Ser Halvard to the tournament at Castle Hearthmoor, prepare his armor and horse, learn to joust, practice the bow and shield, then survive the broken bridge and discover the Dawn and Dusk paths with Magister Ione.",
  areas:[
-  {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'armory',seed:3,
-    combatAt:[{x:560,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.5}]}],
+  {id:'rideout',title:'The Road from Halvard’s Keep',reg:'green',explore:{
+    length:1220,scenery:'road',seed:81,weather:'breeze',time:'morning',
+    mount:{v:'bay',tk:'saddled',liv:'hearth',companion:'halv',coat:'bay',lesson:true},
+    platforms:[],
+    objects:[
+      {kind:'reins',label:'PRACTICE THE REINS',x:255,y:0,flag:'squireReins'},
+      {kind:'exit',label:'HEARTHMOOR INN',x:1154,y:0,needFlags:['squireReins','squireCanter']}
+    ],
+    combatAt:[]
+  },steps:[{t:'explore',goal:'Ride your own gelding beside Halvard; learn the reins, canter and reach Hearthmoor',intro:[
+    N('Chapter 1 — The morning road from Ser Halvard’s keep. Two horses turn toward Castle Hearthmoor: a grey warhorse for the knight, and a steady bay gelding for his young squire.'),
+    L('Ser Halvard','A knight does not begin with a lance, Corin. He begins by learning to sit a horse without fighting its stride. Keep your hands low. Follow my pace.'),
+    L('Corin','Your charger is twice the horse mine is.'),
+    L('Ser Halvard','Yours is honest, sure-footed and forgiving. Better for learning. Hold RIGHT to gather speed; release it to slow. Tap JUMP to clear an obstacle.'),
+    L('Corin','And what should I watch for at Hearthmoor?'),
+    L('Ser Halvard','At the lists, two knights meet behind a timber tilt. One clean touch of the lance may win a pass. The better knight also guards his horse and keeps his seat. Your duty is my armor, my mount and my spare lances.'),
+    N('Ride to the reins marker and tap USE, then continue until you have cantered. Arrive at the Hearthmoor inn before dusk.')
+  ]}]},
+  {id:'inn',title:'The Hearthmoor Inn and Storeroom',reg:'hearth',explore:{
+    length:1060,scenery:'inn',seed:3,
+    combatAt:[],
     platforms:[{x:320,w:112,y:-26,kind:'workbench'},{x:600,w:165,y:-54,kind:'loft'},{x:780,w:78,y:-28,kind:'rack'}],
     objects:[
-     {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'outfit',rarity:1},
-     {kind:'key',label:'IRON KEY',x:368,y:-26,flag:'squireArmoryKey'},
-     {kind:'shield',label:'PRACTICE SHIELD',x:500,y:0,flag:'squireShield',tier:0},
-     {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
-     {kind:'gear',label:'TOURNAMENT HELM',x:742,y:-54,flag:'squireHelmet'},
-     {kind:'gear',label:'POLISHING OIL',x:813,y:-28,flag:'squireOil'},
-     {kind:'gear',label:'LANCE BUNDLE',x:897,y:0,flag:'squireLancesReady'},
-     {kind:'exit',label:'STABLES DOOR',x:994,y:0,need:'squireArmoryKey',
-      needFlags:['squireArmor','squireHelmet','squireOil','squireLancesReady','squireShield'],locked:'FIND THE ARMORY KEY'}
+      {kind:'chest',label:'TRAVEL CHEST',x:220,y:0,flag:'squireChest',slot:'outfit',rarity:1},
+      {kind:'key',label:'STOREROOM KEY',x:368,y:-26,flag:'squireArmoryKey'},
+      {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
+      {kind:'gear',label:'TOURNAMENT HELM',x:742,y:-54,flag:'squireHelmet'},
+      {kind:'gear',label:'POLISHING OIL',x:813,y:-28,flag:'squireOil'},
+      {kind:'exit',label:'INN STABLES',x:994,y:0,need:'squireArmoryKey',
+        needFlags:['squireArmor','squireHelmet','squireOil'],locked:'GET THE STOREROOM KEY'}
     ]
-   },steps:[{t:'explore',goal:'Prepare Halvard\'s tournament armor, helm, polish and lances',intro:[
-     N('Castle Hearthmoor. The morning of the tournament. Halvard has left Corin responsible for preparing his equipment.'),
-     L('Ser Halvard','Corin! I need my breastplate, tournament helm, polishing oil, and a bundle of sound lances before I ride. The upper racks are locked; find the iron key.'),
-     L('Corin','Aye, Father. I will have every buckle shining before the trumpets sound.'),
-     N('Move with your left thumb and tap JUMP with your right. Search the armor racks, leap to the upper loft, and tap USE near supplies.')
-   ]}]},
-  {id:'stables',title:'The Castle Stables',reg:'hearth',explore:{length:995,scenery:'stable',seed:9,
-    combatAt:[{x:300,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.4},{k:'rat',s:1,d:.9}]}],
+  },steps:[{t:'explore',goal:'Prepare Halvard’s tournament armor in the inn storeroom',intro:[
+    N('Chapter 2 — At the Hearthmoor inn, the host has kept the visiting knights’ tack and armor safe in the upstairs storeroom. Supper smells of onion broth and baked bread.'),
+    L('Ser Halvard','A room at the inn and a stall for each horse. While I meet the herald, fetch my breastplate, helm and polishing oil from the loft.'),
+    L('Innkeeper','The supplies are above the common room, squire. The key hangs by the workbench. Mind the stairs, and do not wake the guests.'),
+    L('Corin','Everything shall be buckled and polished before the first trumpet.'),
+    N('JUMP to the upper storeroom, collect the armor and key, and head to the stables.')
+  ]}]},
+  {id:'stables',title:'Hearthmoor Inn Stables',reg:'hearth',explore:{
+    length:995,scenery:'stable',seed:9,
+    combatAt:[{x:300,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.4}]}],
     platforms:[{x:170,w:115,y:-23,kind:'hay'},{x:520,w:165,y:-36,kind:'hayloft'},{x:740,w:110,y:-26,kind:'tackbench'}],
     objects:[
-     {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
-     {kind:'horse',label:'GROOM HALVARD HORSE',x:416,y:0,flag:'squireHorse'},
-     {kind:'gear',label:'TOURNAMENT SADDLE',x:602,y:-36,flag:'squireSaddle'},
-     {kind:'exit',label:'TO THE LISTS',x:935,y:0,needFlags:['squireHorse','squireSaddle']}
+      {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
+      {kind:'horse',label:'GROOM HALVARD’S CHARGER',x:416,y:0,flag:'squireHorse'},
+      {kind:'gear',label:'TOURNAMENT SADDLE',x:602,y:-36,flag:'squireSaddle'},
+      {kind:'exit',label:'TO THE TOURNAMENT',x:935,y:0,needFlags:['squireHorse','squireSaddle']}
     ]
-   },steps:[{t:'explore',goal:"Groom Halvard's horse and retrieve the saddle",intro:[
-     N('The stables smell of leather, straw and cold morning air.'),
-     L('Stablemaster Tobren','A knight is only as ready as his horse. The saddle is stored above. Mind your footing, squire.'),
-     L('Stablemaster Tobren','And mind the rats. They have been at the grain again. Take that wooden practice sword and see them off.'),
-     L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
-   ]}]},
-  {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,
+  },steps:[{t:'explore',goal:'Groom the charger, secure his saddle and clear rats from the grain',intro:[
+    N('Chapter 3 — The Hearthmoor inn stables are crowded with tournament horses and visiting squires.'),
+    L('Stablemaster Tobren','Halvard’s grey charger takes better care than the gentle bay you rode in on. Brush the coat, check the hooves and fetch his competition saddle.'),
+    L('Ser Halvard','A good rider cares for the horse first, Corin. You may save your own life by seeing to a loose strap now.'),
+    L('Corin','The charger will be ready. I will mind the grain rats, too.'),
+    N('Groom the horse, collect his saddle from the hayloft and leave for the lists.')
+  ]}]},
+  {id:'lists',title:'The Tournament of Hearthmoor',reg:'hearth',explore:{
+    length:1030,scenery:'lists',seed:18,
     platforms:[{x:170,w:136,y:-34,kind:'bleachers'},{x:700,w:118,y:-45,kind:'bleachers'}],
     objects:[
-     {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
-     {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
-     {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
-     {kind:'exit',label:'TO IONE\'S GARDEN',x:956,y:0,needFlags:['squireJoust']}
+      {kind:'armor',label:'ARMOR SER HALVARD',x:120,y:0,flag:'squireHalvardArmored',
+        needFlags:['squireArmor','squireHelmet','squireOil']},
+      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
+      {kind:'joust',label:'SERVE HALVARD AT THE LISTS',x:527,y:0,need:'squireLances',
+        needFlags:['squireHalvardArmored'],flag:'squireJoust',role:'squire'},
+      {kind:'chest',label:'TOURNAMENT REWARD',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
+      {kind:'exit',label:'PRACTICE RING',x:956,y:0,needFlags:['squireJoust']}
     ]
-   },steps:[{t:'explore',goal:'Collect spare lances and assist Halvard during the joust',intro:[
-     N('Bright pennants ripple over the lists. Horns sound as mounted knights take their places.'),
-     L('Ser Halvard','Listen closely. I ride; you bring the lances. Hand each one across as I pass the marker.'),
-     L('Corin','And when may I joust?'),
-     L('Ser Halvard','When you have learned to stand on your own feet. The lance handoff is the first lesson.'),
-     N('Get the spare lances on the raised platform. At the lists, tap USE when the moving marker reaches the green band.')
-   ]}]},
-  {id:'magegarden',title:"Ione's Garden of Runes",reg:'hearth',explore:{
-    length:965,scenery:'magegarden',seed:41,weather:'breeze',time:'late-afternoon',
-    platforms:[{x:244,w:114,y:-28,kind:'stone'},{x:540,w:146,y:-42,kind:'stone'},{x:746,w:88,y:-24,kind:'stone'}],
-    objects:[
-      {kind:'staff',label:"IONE'S TRAINING STAFF",x:308,y:-28,flag:'ioneFirstStaff'},
-      {kind:'gear',label:'LIGHT RUNE',x:612,y:-42,need:'ioneFirstStaff',flag:'ioneLightRune'},
-      {kind:'exit',label:'SOUTH PATROL GATE',x:912,y:0,needFlags:['ioneFirstStaff','ioneLightRune']}
-    ],
-    combatAt:[{x:700,list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.8}]}]
-  },steps:[{t:'explore',goal:'Learn Dawn magic from Magister Ione and retrieve the light rune',intro:[
-    N("Beyond the tournament stands Ione's garden: a quiet courtyard of living vines and carved runes."),
-    L('Magister Ione','Corin! Halvard says you can carry a lance, but have you ever held a little light in your hands?'),
-    L('Corin','Only the sort that comes from a torch, Magister.'),
-    L('Magister Ione','Good. I prefer students who know how much they have to learn. Find the training staff on the upper terrace.'),
-    L('Magister Ione','Choose STAFF when you have it. Your first light is Dawn. Use ATK to release it toward the wandering wisps; then bring me the rune from the far platform.'),
-    N('Move with your left thumb, JUMP with your right. Use STAFF and ATK after receiving Ione\'s gift.')
+  },steps:[{t:'explore',goal:'Fasten Halvard’s armor, supply lances and serve him during three passes',intro:[
+    N('Chapter 4 — Castle Hearthmoor’s tournament. The grandstands roar as knights in brightly painted heraldry ride between the tilts.'),
+    L('Ser Halvard','Come here before the herald calls us. Fasten my cuirass, lace the vambraces and lower the helm onto my shoulders.'),
+    L('Corin','The breastplate sits firm. I have the spare lances stacked beside the lists.'),
+    L('Ser Halvard','Good. Stay beside the rail. Watch the horse, not the cheering. When I approach, offer a lance with USE. I shall handle the rest.'),
+    N('First use ARMOR SER HALVARD, collect the spare lances from the raised gallery, then time three actual lance handoffs.')
   ]}]},
-  {id:'greenroad',title:'The South Patrol Road',reg:'green',explore:{length:1260,scenery:'road',seed:27,
-    platforms:[{x:270,w:115,y:-28,kind:'outcrop'},{x:800,w:160,y:-34,kind:'outcrop'}],
-    combatAt:[
-      {x:320,list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6}]},
-      {x:680,list:[{k:'bandit',s:1,d:0},{k:'scout',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
-      {x:970,list:[{k:'hound',s:1,d:0,boss:1,name:'Greenmarch Ravager',hpm:1.1}]}
-    ],
+  {id:'practicelists',title:'Halvard’s Practice Ring',reg:'hearth',explore:{
+    length:990,scenery:'practice',seed:23,
+    platforms:[{x:198,w:103,y:-23,kind:'bleachers'}],
     objects:[
-     {kind:'chest',label:'HIDDEN ROAD CACHE',x:324,y:-28,flag:'squireRoadCache',slot:'bow'},
-     {kind:'key',label:'PATROL SEAL',x:852,y:-34,flag:'squirePatrolSeal'},
-     {kind:'exit',label:'RETURN TO HEARTHMOOR',x:1205,y:0,need:'squirePatrolSeal'}
+      {kind:'joust',label:'RIDE A PRACTICE JOUST',x:535,y:0,role:'rider',opponent:'halvard',passes:2,
+        flag:'squirePracticeJoust',easy:true},
+      {kind:'exit',label:'TRAINING YARD',x:925,y:0,needFlags:['squirePracticeJoust']}
     ]
-   },steps:[{t:'explore',goal:'Travel the patrol road, defeat threats and recover the seal',intro:[
-     L('Ser Halvard','Ione tells me she has put a staff in your hands. Good. Now I send you along the southern road, to learn every turning of the kingdom.'),
-     L('Corin','Alone?'),
-     L('Ser Halvard','A knight must know when to walk without a shadow at his heel. Keep your shield to hand.'),
-     N('Travel the road yourself. Blight creatures, reavers and archers may be lying in wait; recover the patrol seal on the upper ledge.')
-   ]}]}
+  },steps:[{t:'explore',goal:'Mount your bay and practice two lance passes with Halvard',intro:[
+    N('Chapter 5 — After the tournament, Halvard takes Corin into a quieter sand ring, away from the crowded stands.'),
+    L('Corin','You made the lance look light.'),
+    L('Ser Halvard','It is never light at speed. Now you shall see from the saddle. Ride your bay. I will meet you at a safe practice pace, and we will use blunted lances.'),
+    L('Ser Halvard','Balance, then aim. The horse must know where you are going before your lance does. Lower it with COUCH as I approach.'),
+    N('Tap USE at the practice marker. Ride two mounted passes; tap COUCH to lower the practice lance. A missed touch is a lesson, not failure.')
+  ]}]},
+  {id:'trainingyard',title:'The Ranger and the Sword',reg:'hearth',explore:{
+    length:1230,scenery:'trainingyard',seed:36,
+    platforms:[],
+    objects:[
+      {kind:'bow',label:'RANGER ELOWEN’S FIRST BOW',x:220,y:0,flag:'squireFirstBow'},
+      {kind:'archerytarget',label:'ARCHERY BUTT — SHOOT WITH BOW',x:432,y:0,flag:'squireArcheryHit'},
+      {kind:'shield',label:'HALVARD’S PRACTICE SHIELD',x:648,y:0,need:'squireArcheryHit',
+        flag:'squireShield',tier:0},
+      {kind:'guardtest',label:'BRACE AND GUARD',x:773,y:0,need:'squireShield',flag:'squireGuardLearned'},
+      {kind:'swordtarget',label:'STRIKE THE STRAW DUMMY',x:913,y:0,need:'squireGuardLearned',
+        flag:'squireSwordHit'},
+      {kind:'sword',label:'HALVARD’S BLUNT IRON BLADE',x:1040,y:0,need:'squireSwordHit',
+        flag:'squireSwordAward'},
+      {kind:'exit',label:'RIDE HOME',x:1171,y:0,
+        needFlags:['squireFirstBow','squireArcheryHit','squireGuardLearned','squireSwordHit','squireSwordAward']}
+    ]
+  },steps:[{t:'explore',goal:'Receive a bow; shoot the target, guard and strike the sword dummy',intro:[
+    N('Chapter 6 — Under the castle walls, targets stand among straw dummies. A cloaked ranger leans on her unstrung bow beside Ser Halvard.'),
+    L('Ser Halvard','Corin, meet Ranger Elowen. She watched my back on the southern marches long before you were born.'),
+    L('Ranger Elowen','And he still holds a bow like a broomstick. Try mine. Stand, draw, breathe out and let the arrow go when the target is still.'),
+    L('Corin','I have never owned a bow.'),
+    L('Ranger Elowen','You do now. Shoot the straw butt ahead using BOW and ATK. Then ask Halvard about the wooden shield.'),
+    L('Ser Halvard','First, raise GUARD to turn a blow. Then take your wooden practice sword and strike the dummy before I hand you iron.'),
+    N('Take the bow and fire at the archery butt. Collect the shield; hold GUARD while using the brace marker. Strike the sword dummy with SWORD and ATK.')
+  ]}]},
+  {id:'returnroad',title:'The Broken Bridge and Ione’s Garden',reg:'green',explore:{
+    length:1270,scenery:'brokenbridge',seed:41,weather:'storm',time:'dusk',
+    mount:{v:'bay',tk:'saddled',liv:'hearth',companion:'halv',until:476,returning:true},
+    bridge:{trigger:476,edge:625,to:737,choiceX:593},
+    platforms:[{x:856,w:110,y:-27,kind:'stone'},{x:961,w:99,y:-34,kind:'stone'}],
+    combatAt:[],
+    objects:[
+      {kind:'staff',label:'IONE’S ROWAN STAFF',x:533,y:0,flag:'ioneFirstStaff'},
+      {kind:'crossroads',label:'DAWN OR DUSK — CAST A PATH',x:600,y:0,
+        need:'ioneFirstStaff',flag:'ionePathChoice'},
+      {kind:'gear',label:'THE LIGHT RUNE',x:993,y:-34,need:'ionePathMade',flag:'ioneLightRune'},
+      {kind:'exit',label:'THE HOMEWARD TRACK',x:1212,y:0,
+        needFlags:['ioneFirstStaff','ionePathMade','ioneLightRune']}
+    ]
+  },steps:[{t:'explore',goal:'Ride home, survive the bridge collapse, and cast a Dawn or Dusk path with Ione',intro:[
+    N('Chapter 7 — The last day of the tournament. Corin and Ser Halvard ride home together under thickening clouds.'),
+    L('Ser Halvard','Your seat is easier now. You have earned a bow, a wooden shield and the beginning of a sword-arm. A fine few days, lad.'),
+    L('Corin','And the lance?'),
+    L('Ser Halvard','That comes after a thousand more days on horseback. Stay close; the weather looks ill.'),
+    N('Ride beside Halvard on the homeward road. The old bridge lies beyond the hillside.')
+  ]}]}
  ]},
 {id:'m1',type:'main',act:1,title:'Blight at the Castle Gates',reg:'hearth',lvl:1,req:'m0',
  desc:"After the tournament and Corin's first patrol, blighted creatures approach the walls of Hearthmoor. Hold the castle approaches before the danger reaches the villagers.",
  steps:[
   {t:'say',lines:[
-    L('Ser Halvard','Back from the patrol already, Corin? Your report will have to wait. The watchmen have seen blighted creatures by the north gate.'),
-    L('Corin','I saw the same markings on the road. They are moving toward the village.'),
+    L('Ser Halvard','You made it back from the broken bridge, Corin. I feared you lost. The watchmen have now spotted blighted creatures near the northern gate.'),
+    L('Corin','I found a path with Ione’s magic. The blight is on the roads too, and it is moving toward our village.'),
     L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
   ]},
   {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'scout',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
@@ -1160,6 +1210,8 @@ function adventureBegin(area){
     platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y,kind:p.kind||null})),
     objects:(d.objects||[]).map((o,i)=>Object.assign({i,done:!S.replay&&!!(o.flag&&G.flags[o.flag])},o)),
     scenery:d.scenery||'castle',seed:d.seed||5,verticalCamera:!!d.verticalCamera,
+    mount:d.mount?{...d.mount,speed:0,ph:0,halvX:102}:null,
+    bridge:d.bridge?{...d.bridge,collapsed:false}:null,
     progress:0,combatAt:(d.combatAt||[]).map((w,i)=>Object.assign({i,done:false},w))
   };
   P.py=0;P.vy=0;P.grounded=true;S.camY=0;S.joust=null;
@@ -1174,7 +1226,7 @@ function adventureEnd(){
 }
 function adventureJump(){
   if(S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
-  P.vy=-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
+  P.vy=S.adv&&S.adv.mount?-235:-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
 }
 function adventureNear(){
   if(!S.adv||S.talk||S.arena||S.joust)return null;
@@ -1192,6 +1244,27 @@ function adventureUse(){
   const o=adventureNear();
   if(!o)return false;
   if(o.need&&!G.flags[o.need]){toast(o.locked||'A KEY OR TASK IS MISSING');sfx(110,.18,'square',.04);return true;}
+  if(o.needFlags&&o.needFlags.some(f=>!G.flags[f])&&o.kind!=='exit'){
+    toast('COMPLETE THE EARLIER LESSON FIRST');return true;
+  }
+  if(o.kind==='archerytarget'||o.kind==='swordtarget'){
+    toast(o.kind==='archerytarget'?'SELECT BOW AND FIRE AN ARROW':'SELECT SWORD AND STRIKE THE DUMMY');return true;
+  }
+  if(o.kind==='guardtest'&&!keys.block){
+    toast('HOLD GUARD WHILE YOU TAP USE');return true;
+  }
+  if(o.kind==='crossroads'){
+    if(G.flags.ionePathChoice){toast('SELECT STAFF AND CAST WITH ATK TO OPEN THE PATH');return true;}
+    choose('The bridge is broken. How will Corin use Ione’s new staff?',[
+      {label:'DAWN — reveal the hidden crossing',desc:'Illuminate the old stepping stones beneath the mist.',
+       fn:()=>{S.dusk=false;G.flags.ionePathChoice='dawn';o.done=true;save();
+         toast('DAWN CHOSEN — SELECT STAFF AND CAST AT THE BRIDGE');}},
+      {label:'DUSK — force a new crossing',desc:'Break the obstruction and pull a rough new road from the rock.',
+       fn:()=>{S.dusk=true;G.flags.ionePathChoice='dusk';o.done=true;shift(-3,'DUSK POWER');save();
+         toast('DUSK CHOSEN — SELECT STAFF AND CAST AT THE BRIDGE');}}
+    ]);
+    return true;
+  }
   if(o.kind==='exit'){
     if(o.needFlags&&o.needFlags.some(f=>!G.flags[f])){toast('FINISH YOUR TASKS FIRST');return true;}
     G.flags[o.flag||('exit'+S.areaIndex)]=1;
@@ -1200,7 +1273,7 @@ function adventureUse(){
   }
   if(o.kind==='joust'){
     joustPrebake();P.face=1;const rr=o.role==='rider';
-    S.joust=joustCreate(rr?{role:'rider',anchor:Math.round(o.x),object:o,lead:560,seed:5+Math.floor(S.t*7)%90}:{role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
+    S.joust=joustCreate(rr?{role:'rider',anchor:Math.round(o.x),object:o,lead:560,seed:5+Math.floor(S.t*7)%90,passes:o.passes||3,easy:!!o.easy,opponent:o.opponent}:{role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
     S.joust.on=joustOn;toast(rr?'LOWER YOUR LANCE AS HE CHARGES':'OFFER THE LANCE AS THE RIDER REACHES YOUR HAND');return true;
   }
   o.done=true;
@@ -1210,16 +1283,28 @@ function adventureUse(){
     P.w=1;G.flags.ioneTaught=1;calc();hud(true);save();
     toast('ROWAN STAFF RECEIVED — SELECT STAFF AND CAST WITH ATK');
     say([L('Magister Ione','The staff listens to intention, not strength. Breathe, focus, then let the Dawn tide carry your light.'),L('Corin','Then this is not a weapon of force. It is a promise to aim well.')],()=>{});
+  }else if(o.kind==='bow'){
+    if(!G.eq.bow)G.eq.bow=fixedItem('bow','Elowen’s Field Bow',9,0,{gift:'elowen'});
+    P.w=2;calc();save();hud(true);
+    toast('FIRST BOW RECEIVED — SELECT BOW AND FIRE AT THE STRAW TARGET');
+    say([L('Ranger Elowen','It is yours. Let the string settle against your cheek. Do not chase the mark with your fingers.'),L('Corin','I shall loose the next arrow only when I am steady.')],()=>{});
+  }else if(o.kind==='reins'){
+    toast('REINS CHECKED — HOLD RIGHT TO CANTER; JUMP TO CLEAR AN OBSTACLE');
+  }else if(o.kind==='armor'){
+    toast('HALVARD’S ARMOR FASTENED');
+    say([L('Ser Halvard','Good. The breastplate is firm, and the helm sits square. Now keep three spare lances ready at the tilts.')],()=>{});
+  }else if(o.kind==='guardtest'){
+    toast('SHIELD GUARD LEARNED — HALVARD APPROVES');
+  }else if(o.kind==='sword'){
+    giveBluntSword();P.w=0;calc();hud(true);
+    toast('HALVARD’S BLUNT IRON SWORD RECEIVED');
+    say([L('Ser Halvard','That is the beginning of a true cut, lad. Take this blunted blade. You must earn a sharper one later.')],()=>{});
   }else if(o.kind==='shield'){
     G.shieldTier=Math.max(G.shieldTier||0,o.tier||0);
     toast('WOODEN SHIELD ACQUIRED — HOLD GUARD');
   }else if(o.kind==='key'){
     toast('KEY FOUND: '+(o.label||'IRON KEY'));
-  }else if(o.kind==='staff'){
-      R(x-2,py-34,4,30,'#8e6a45');R(x-3,py-35,6,4,'#e5ca80');
-      R(x-7,py-43,14,9,'rgba(175,235,255,.24)');
-      R(x-2,py-42,5,6,'#c9eaff');
-    }else if(o.kind==='chest'){
+  }else if(o.kind==='chest'){
     const item=genItem(S.ilvl+1,Math.max(1,o.rarity||1),o.slot||'armor');
     addItem(item,true);toast('CHEST OPENED: '+item.name);
   }else if(o.kind==='gear'){
@@ -1241,15 +1326,47 @@ function joustOn(k,v){
 function adventureJoustFinish(){
   const j=S.joust;if(!j)return;
   const o=j.object;
-  if(j.role==='rider'){S.joust=null;P.x=o.x-50;P.face=1;toast('LISTS ENDED — YOU '+j.score+'  FOE '+j.foe+(j.score>j.foe?'  YOU WIN':j.score<j.foe?'  FOE WINS':'  DRAW'));missionHud(true);return;}
+  if(j.role==='rider'){
+    if(o){o.done=true;G.flags[o.flag||'squirePracticeJoust']=1;save();}
+    S.joust=null;P.x=o.x-50;P.face=1;
+    toast('PRACTICE COMPLETE — YOU '+j.score+'  FOE '+j.foe);
+    if(o&&o.opponent==='halvard')say([
+      L('Ser Halvard','You found the seat and lowered the lance. Remember: the first victory is keeping balance, not unhorsing a friend.'),
+      L('Corin','I thought the horse might throw me before I even reached you.')],()=>{});
+    missionHud(true);return;
+  }
   if(o){o.done=true;G.flags[o.flag||'joustServed']=1;save();}
   S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / '+j.passes+' HANDOFFS');
   if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
-  if(giveBluntSword())say([L('Ser Halvard','You served well, lad. This blade is blunt, but it is iron. A squire should feel real weight in his hand.'),N('BLUNT IRON SWORD RECEIVED')],()=>{});
+  say([L('Ser Halvard','A good squire remembers every handoff. Tomorrow, I shall show you how the same pass feels from a saddle.')],()=>{});
   missionHud(true);
 }
 function adventureUpdate(dt){
   const a=S.adv;if(!a||S.mode!=='play')return;
+  if(a.mount){
+    a.mount.ph+=dt*strideRate(gaitForSpeed(a.mount.speed),a.mount.speed);
+    a.mount.halvX=lerp(a.mount.halvX,Math.max(94,P.x+86),Math.min(1,dt*1.8));
+    if(P.x>340&&a.mount.speed>66&&!G.flags.squireCanter){
+      G.flags.squireCanter=1;toast('HORSEMANSHIP: STEADY CANTER LEARNED');save();
+    }
+  }
+  if(a.bridge){
+    if(!a.bridge.collapsed&&P.x>=a.bridge.trigger){
+      a.bridge.collapsed=true;P.x=a.bridge.trigger;P.vx=0;P.vy=0;
+      a.mount=null;P.py=0;P.grounded=true;
+      G.flags.squireBridgeBroken=1;save();
+      S.shake=.55;sfx(85,.6,'sawtooth',.09);
+      say([
+        N('The swollen river tears loose the old bridge supports. With a crack of timber, the middle span falls into the torrent. Corin’s bay refuses the edge.'),
+        L('Ser Halvard','Corin! Hold your horse! The bridge is gone. I am on the far bank and cannot come back.'),
+        L('Corin','Father! How am I to cross?'),
+        L('Ser Halvard','Keep your head. Find another way. I will seek the north ford and meet you at home.'),
+        N('Stranded among mist and standing stones, Corin sees a lantern flicker in a hidden garden beside the broken span.')
+      ],()=>{});
+      return;
+    }
+    if(!G.flags.ionePathMade&&P.x>a.bridge.edge)P.x=a.bridge.edge;
+  }
   if(S.joust){joustStep(S.joust,dt);if(joustDone(S.joust))adventureJoustFinish();else if(S.joust.role==='rider')P.x=clamp(S.joust.a.x,10,a.length);}
   const prev=P.py||0;
   // Walk off ledges naturally. A platform only supports the hero while
@@ -1285,12 +1402,14 @@ function adventureUpdate(dt){
 // Indoor architectural props share the same horizontal world space as the
 // platform collision surfaces and Corin's feet. Exterior lists may parallax.
 function interiorBackCam(cam,kind){
-  return kind==='armory'||kind==='stable'?Math.floor(cam):Math.floor(cam*.74);
+  return kind==='armory'||kind==='stable'||kind==='inn'?Math.floor(cam):Math.floor(cam*.74);
 }
 function adventureBackdrop(cam){
   const a=S.adv,kind=a&&a.scenery,y=GY;
-  if(!a||['armory','stable','lists'].indexOf(kind)<0)return false;
+  if(!a||['armory','stable','lists','inn','practice'].indexOf(kind)<0)return false;
   const backCam=interiorBackCam(cam,kind);
+  if(kind==='inn'){sceneInn(cam,y);return true;}
+  if(kind==='practice'){scenePractice(cam,y);return true;}
   if(kind==='armory'){
     R(0,0,W,H,'#141722');
     R(0,0,W,y+1,'#353643');
@@ -1500,7 +1619,7 @@ function adventureWorldDraw(cam){
   // Deterministic scenery per world segment, not a repeated painted strip.
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
-    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists'||a.scenery==='magegarden')continue;
+    if(['armory','stable','lists','inn','practice','magegarden','trainingyard','returnroad'].includes(a.scenery))continue;
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;
@@ -1528,6 +1647,49 @@ function adventureWorldDraw(cam){
       else{R(x+28,y-57,4,18,'#a76b32');R(x+24,y-65,12,9,'#e9bc60');}
     }
   }
+  if(a.bridge){
+    const B=a.bridge,edge=B.edge-cam,right=B.to-cam,w=B.to-B.edge;
+    // The drowned stone road and broken bridge are world-anchored. The gap
+    // is impassable until Corin casts the spell he chose with Ione.
+    if(edge<W+60&&right>-60){
+      R(edge-23,y-25,29,25,'#817367');R(edge-23,y-25,31,4,'#c2ae8a');
+      R(right-2,y-25,29,25,'#817367');R(right-2,y-25,29,4,'#c2ae8a');
+      R(edge+5,y-5,w-7,20,'#345962');
+      for(let k=0;k<8;k++){
+        const xx=edge+10+k*17;
+        R(xx,y+4+(k%3)*3,10,1,'#81a8a6');
+        if(k%2===0)R(xx+3,y-3,2,5,'#aec4b8');
+      }
+      // Broken rafters dip into the water on each bank.
+      g.strokeStyle='#70523f';g.lineWidth=3;g.beginPath();
+      g.moveTo(edge-15,y-13);g.lineTo(edge+13,y+11);
+      g.moveTo(right+12,y-13);g.lineTo(right-12,y+12);g.stroke();
+      const route=G.flags.ionePathMade&&G.flags.ionePathChoice;
+      if(route==='dawn'){
+        // Light reveals the ancient stepping stones, formerly hidden in mist.
+        for(let k=0;k<6;k++){
+          const xx=edge+k*(w-16)/5+3,top=y-10+(k%2)*2;
+          R(xx,top,19,10,'#899d99');
+          R(xx+1,top,17,3,'#d4ebe3');
+          R(xx+3,top-3,11,2,'rgba(239,241,159,.8)');
+          worldGlow(xx+9,top,20,'rgba(218,255,186,.13)');
+        }
+      }else if(route==='dusk'){
+        // Dusk raises a rough, jagged new causeway from the river.
+        R(edge+5,y-14,w-7,16,'#38314b');
+        for(let k=0;k<10;k++){
+          const xx=edge+5+k*12,top=y-19-(k%3)*3;
+          R(xx,top,15,7,k%3?'#715583':'#524266');
+          R(xx+2,top,8,2,'#a789ae');
+        }
+        worldGlow((edge+right)*.5,y-13,35,'rgba(185,91,237,.13)');
+      }
+      if(!route){R(edge+w*.47,y-35,8,20,'#7e6a58');R(edge+w*.47+2,y-38,4,4,'#ba9b71');}
+    }
+  }
+
+  if(a.scenery==='trainingyard')sceneRangerRange(cam,y);
+  if(a.scenery==='brokenbridge'||a.scenery==='returnroad')sceneMysticGrove(cam,y);
   for(const p of a.platforms)drawSupportedPlatform(p,cam,y,a.scenery);
   for(const o of a.objects){
     if(o.done&&o.kind!=='horse')continue;
@@ -1551,6 +1713,42 @@ function adventureWorldDraw(cam){
       drawHorse(x,py,1,{v:'charger',tk:sd?'saddled':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
       if(gt&&Math.floor(S.t*14)%2)R(x+Math.round(Math.sin(S.t*9)*14),py-34-Math.round((S.t*40)%12),1,2,'#fff6c0');
       else if(gr&&Math.floor(S.t*2.2)%5===0)R(x-10+Math.floor(S.t*7)%24,py-30,1,1,'#fff6c0');
+    }else if(o.kind==='archerytarget'||o.kind==='swordtarget'){
+      R(x-3,py-38,6,38,'#6a5039');R(x-8,py-3,16,3,'#4d392c');
+      R(x-13,py-47,26,26,'#a38050');
+      R(x-11,py-45,22,22,'#dac28a');
+      R(x-7,py-41,14,14,'#a95c42');
+      R(x-3,py-37,6,6,'#e9d79c');
+      if(o.kind==='swordtarget'){R(x-15,py-47,4,27,'#9d834e');R(x+11,py-47,4,27,'#9d834e');}
+    }else if(o.kind==='armor'){
+      R(x-11,py-37,22,29,'#7b818e');R(x-13,py-32,5,19,'#b2b8bf');
+      R(x+8,py-32,5,19,'#b2b8bf');
+      R(x-10,py-43,20,8,'#acb2ba');
+      R(x-2,py-23,5,13,'#d6b871');
+      R(x-11,py-8,22,6,'#574b49');
+    }else if(o.kind==='bow'||o.kind==='sword'||o.kind==='staff'){
+      R(x-2,py-39,4,37,'#8c6d4d');
+      if(o.kind==='bow'){
+        g.strokeStyle='#b28a52';g.lineWidth=3;
+        g.beginPath();g.moveTo(x,py-40);g.quadraticCurveTo(x+17,py-20,x,py-2);g.stroke();
+        g.strokeStyle='#e0d7b0';g.lineWidth=1;g.beginPath();g.moveTo(x,py-40);g.lineTo(x,py-2);g.stroke();
+      }else if(o.kind==='staff'){
+        R(x-5,py-45,10,9,'#9acae6');R(x-2,py-43,4,6,'#e4f7e8');
+      }else{R(x-4,py-41,8,14,'#acb6c6');R(x-6,py-30,12,3,'#e0c487');}
+    }else if(o.kind==='crossroads'){
+      R(x-9,py-51,18,48,'#666574');
+      R(x-14,py-57,28,8,'#9e9daa');
+      R(x-6,py-47,12,32,'#31354b');
+      R(x-3,py-43,6,8,'#e4d4a4');
+      R(x-4,py-23,8,9,'#8d6ab8');
+    }else if(o.kind==='reins'){
+      R(x-8,py-34,16,34,'#776047');R(x-11,py-38,22,6,'#ba9d68');
+      R(x-3,py-34,3,26,'#d5bc8a');
+      R(x+1,py-30,6,3,'#b6a580');
+    }else if(o.kind==='guardtest'){
+      R(x-8,py-43,16,39,'#705744');
+      R(x-11,py-39,22,25,'#abb1b9');
+      R(x-7,py-36,14,19,'#3b5b7a');R(x-2,py-31,4,9,'#c4af77');
     }else{
       R(x-9,py-16,18,16,o.kind==='key'?'#b59e4b':o.kind==='shield'?'#4d6e91':'#6e5843');
       R(x-3,py-20,6,6,'#e8c469');
@@ -1807,7 +2005,7 @@ const JOUST_CFG={
 function joustCreate(c){
   const easy=!!(G.opts&&G.opts.joustEasy)||!!c.easy,role=c.role||'squire',seed=c.seed||11;
   const J={role,easy,seed,rnd:mkr(seed),acc:0,t:0,round:1,passes:c.passes||3,score:0,foe:0,object:c.object||null,
-    anchor:c.anchor||0,lane:c.lane||0,lead:c.lead||300,phase:'prep',pt:0,events:[],result:null,
+    anchor:c.anchor||0,lane:c.lane||0,lead:c.lead||300,opponent:c.opponent||'brannoch',phase:'prep',pt:0,events:[],result:null,
     reach:easy?JOUST_CFG.reachEasy:JOUST_CFG.reach,offerDur:easy?JOUST_CFG.offerEasy:JOUST_CFG.offer,
     offer:0,used:false,handed:false,verdict:'',set:-1,broke:false,log:[],
     a:{x:0,v:0,gait:'idle',ph:0,face:1,ang:-12},b:{x:0,v:0,gait:'idle',ph:0,face:-1,ang:-12,set:-1,q:0}};
@@ -1909,7 +2107,10 @@ function joustDraw(J,cam,gy){
   if(J.role==='squire'&&J.handed){drawLance(Math.round(ax+10),gy-26,1,-70,{back:6});}
   if(J.role==='rider'){
     const b=J.b,bl={ang:b.set>=0?2:-26,none:false};
-    drawMounted(b.x-cam,laneY,-1,{v:'black',tk:'tourney',liv:'crimson',gait:b.gait,ph:b.ph},{...NPCS.brannoch,mv:true,w:3,helm:'#8a8f9a',crest:'plume',crestC:'#2a2a34'},bl);
+    const mentor=J.opponent==='halvard';
+    drawMounted(b.x-cam,laneY,-1,
+      {v:mentor?'charger':'black',tk:'tourney',liv:mentor?'hearth':'crimson',gait:b.gait,ph:b.ph},
+      mentor?{...NPCS.halv,mv:true,w:3}:{...NPCS.brannoch,mv:true,w:3,helm:'#8a8f9a',crest:'plume',crestC:'#2a2a34'},bl);
   }
   // off-screen indicator for the narrow portrait view
   const rx=a.x-cam;
@@ -2105,6 +2306,167 @@ function sceneLists(cam,backCam,y){
   for(let k=bx-24;k<W+24;k+=24){R(k,y-26,12,4,'#b7463e');R(k+12,y-16,12,4,'#2c567e');R(k+2,y-30,5,30,'#654733');R(k+2,y-30,2,30,'#8a6a48');R(k+1,y-34,7,4,'#7a5a3a');}
   R(0,y-1,W,2,'rgba(60,40,20,.28)');
 }
+/* ================= OPENING SAGA — DISTINCT LOCATIONS =================
+ * Inn, training ring and hidden garden are hand-authored game-scale pixel art,
+ * not the legacy repeated tower / generic castle wallpaper.
+ */
+function sceneInn(cam,y){
+  R(0,0,W,H,'#2b2429');
+  R(0,0,W,y,'#51423d');
+  R(0,y,W,H-y,'#615347');
+  // Above the inn's stone ground floor, a timbered upper storeroom.
+  for(let row=0;row<Math.ceil(y/17);row++){
+    const yy=row*17-4;
+    for(let i=Math.floor(cam/51)-2;i<=Math.ceil((cam+W)/51)+2;i++){
+      const x=i*51+(row%2)*25-cam,h=worldHash(i,row);
+      R(x,yy,50,15,(h%3)===0?'#67605d':(h%3)===1?'#746b64':'#5e5555');
+      R(x+3,yy+2,22,1,'rgba(225,204,168,.07)');
+    }
+  }
+  for(let i=Math.floor(cam/162)-1;i<=Math.ceil((cam+W)/162)+1;i++){
+    const x=i*162-cam;
+    // Oak frame and diagonal braces, with visible foot contact.
+    R(x,0,13,y,'#49352d');R(x+4,0,4,y,'#ae845f');
+    R(x+147,0,14,y,'#4a382f');R(x+148,0,4,y,'#b18b67');
+    R(x+8,24,144,10,'#9c7556');R(x+10,25,140,2,'#deb589');
+    g.strokeStyle='#79573e';g.lineWidth=5;g.beginPath();
+    g.moveTo(x+15,37);g.lineTo(x+67,10);
+    g.moveTo(x+145,37);g.lineTo(x+94,10);g.stroke();
+    // A timber shelf with real crockery and different room props.
+    if(i%3===0){
+      R(x+26,y-127,105,64,'#383237');R(x+30,y-124,97,58,'#5a514e');
+      R(x+34,y-91,89,5,'#aa8766');
+      for(let j=0;j<7;j++){
+        const xx=x+39+j*12;
+        R(xx,y-106,8,12,j%2?'#b7a98e':'#798a8b');
+        R(xx+1,y-106,6,2,'#e8d6b2');
+      }
+      R(x+30,y-58,104,7,'#a47c5c');
+      R(x+36,y-46,13,45,'#76573a');R(x+115,y-46,13,45,'#76573a');
+      R(x+33,y-4,102,3,'rgba(0,0,0,.3)');
+    }else if(i%3===1){
+      R(x+35,y-140,94,100,'#322d30');
+      R(x+40,y-135,84,89,'#807061');
+      R(x+42,y-132,81,7,'#b9a081');
+      for(let j=0;j<6;j++){
+        R(x+47+j*12,y-91,7,44,'#644c3f');
+        R(x+48+j*12,y-87,3,38,'#91745d');
+      }
+      R(x+50,y-45,67,9,'#9c7c5b');
+      R(x+47,y-36,73,32,'#735442');
+      R(x+50,y-29,67,3,'#a17a52');
+      R(x+57,y-4,59,3,'rgba(0,0,0,.27)');
+    }else{
+      // Arrival at an inn should read as an inn: a warm fire, benches, food.
+      R(x+42,y-91,82,88,'#4d3d3b');
+      R(x+50,y-83,64,76,'#282128');
+      R(x+63,y-23,39,21,'#a65d28');
+      R(x+67,y-25,29,12,'#f5aa47');
+      const fl=5+Math.round(Math.sin(S.t*7+i)*4);
+      R(x+74,y-28-fl,13,fl+14,'#ffd37b');
+      worldGlow(x+81,y-34,65,'rgba(249,160,77,.19)');
+      R(x+37,y-20,25,8,'#9c7352');R(x+45,y-12,5,12,'#654c36');
+      R(x+110,y-20,24,7,'#917251');R(x+118,y-13,5,13,'#5e4536');
+    }
+    // Oil lantern and flags; only a few, not repeated at every pixel.
+    R(x+138,y-130,3,37,'#a07d55');
+    R(x+134,y-141,12,11,'#7c6a53');R(x+137,y-138,6,6,'#e6d291');
+    worldGlow(x+140,y-134,35,'rgba(239,185,84,.14)');
+  }
+  R(0,y-5,W,5,'#958575');R(0,y+2,W,2,'#8c755b');
+  for(let x=-(cam%30);x<W;x+=30){
+    R(x,y+5,28,15,'#85746a');R(x+2,y+6,13,1,'#a39a85');
+  }
+}
+function scenePractice(cam,y){
+  // Quiet practice lists: sandy surface, timber rail, stone stable wall,
+  // hay targets and individual shield banners instead of tournament crowds.
+  const gr=g.createLinearGradient(0,0,0,y);
+  gr.addColorStop(0,'#6596be');gr.addColorStop(.62,'#b4bdac');gr.addColorStop(1,'#d5ba89');
+  g.fillStyle=gr;g.fillRect(0,0,W,H);
+  R(0,y,W,H-y,'#a99879');
+  for(let k=-1;k<11;k++){
+    const x=k*112-cam*.2;
+    R(x,y-138,104,138,'#7a7b75');
+    R(x+4,y-134,96,130,'#b1a28d');
+    R(x+11,y-113,78,4,'#756f6e');
+    for(let j=0;j<5;j++)R(x+12+j*16,y-108,12,37,'#777a79');
+    R(x+6,y-11,94,10,'#625b55');
+  }
+  for(let i=Math.floor(cam/191)-1;i<=Math.ceil((cam+W)/191)+1;i++){
+    const x=i*191-cam;
+    R(x+24,y-38,113,5,'#946e49');R(x+27,y-34,110,2,'#e5c18a');
+    for(let j=0;j<4;j++){
+      R(x+28+j*33,y-35,6,35,'#755139');
+      R(x+30+j*33,y-33,2,29,'#c39c69');
+      R(x+23+j*33,y-6,14,5,'rgba(36,22,17,.18)');
+    }
+    R(x+64,y-74,4,35,'#765437');
+    R(x+58,y-78,16,7,'#d8b77e');
+    R(x+62,y-86,8,8,'#9b6d39');
+    R(x+5,y-65,2,34,'#96734f');
+    R(x+7,y-65,26,17,(i%2)?'#3c5f83':'#9d6844');
+    R(x+11,y-63,16,2,'#c5b88b');
+  }
+  R(0,y-5,W,5,'#e4c99b');
+  for(let i=0;i<W;i+=23){const x=i-(cam%23);R(x,y-3,13,1,'#b69870');R(x+5,y+2,3,1,'#8e7d65');}
+}
+function sceneRangerRange(cam,y){
+  const first=Math.floor(cam/204)-1,last=Math.ceil((cam+W)/204)+1;
+  for(let i=first;i<=last;i++){
+    const x=i*204-cam;
+    // Scattered stone and timber huts, outer range wall and rope lines.
+    R(x+21,y-52,125,50,'#807d70');
+    R(x+28,y-57,111,8,'#ac9d7c');
+    for(let b=0;b<6;b++){
+      R(x+30+b*18,y-43,16,28,'#a4a18a');
+      R(x+33+b*18,y-41,7,1,'#e2d3b1');
+    }
+    R(x+20,y-54,4,52,'#544c44');
+    R(x+142,y-55,4,53,'#544c44');
+    R(x+36,y-4,95,3,'rgba(34,29,25,.3)');
+    // Hay and practice bows hang from an intermittent rack.
+    if(i%2===0){
+      R(x+160,y-37,30,24,'#b79552');
+      R(x+162,y-41,26,5,'#e2c77e');
+      for(let k=0;k<6;k++){R(x+160+k*5,y-34,3,22,k%2?'#927144':'#cead6d');}
+    }else{
+      R(x+165,y-58,5,58,'#75563b');R(x+176,y-54,5,54,'#725339');
+      R(x+163,y-58,21,4,'#b59162');
+      g.strokeStyle='#e2b984';g.lineWidth=1;g.beginPath();g.arc(x+175,y-38,10,1.45,4.9);g.stroke();
+    }
+  }
+}
+function sceneMysticGrove(cam,y){
+  // Ancient arch behind Ione's magic crossing and winding luminous garden.
+  const x=797-cam;
+  if(x>W+150||x+350<-150)return;
+  R(x+10,y-91,11,91,'#697b75');
+  R(x+318,y-103,11,103,'#697b75');
+  R(x+11,y-102,317,10,'#a0b1a4');
+  for(let k=0;k<12;k++){
+    const xx=x+20+k*24;
+    R(xx,y-99,21,5,k%2?'#8e9d95':'#c1c0ad');
+    R(xx+2,y-96,7,2,'#d2d9c3');
+  }
+  for(let k=0;k<19;k++){
+    const xx=x+18+k*17,yy=y-110-(k%4)*7;
+    R(xx,yy,7,4,k%2?'#4e8b67':'#2c674d');
+    R(xx+3,yy-3,4,3,'#a9bd82');
+  }
+  for(let i=0;i<5;i++){
+    const xx=x+49+i*54;
+    R(xx,y-25,31,21,'#677f65');R(xx+2,y-28,25,5,'#a9ad79');
+    R(xx+9,y-41,5,18,'#638b66');
+    R(xx+4,y-44,17,4,i%2?'#bfa7d1':'#e3d38d');
+    R(xx+12,y-47,6,3,'#f1edd0');
+    R(xx+17,y-4,8,2,'rgba(31,19,29,.24)');
+  }
+  worldGlow(x+166,y-87,74,'rgba(166,231,176,.17)');
+  R(x+159,y-99,18,32,'#7b8e86');
+  R(x+164,y-106,8,10,'#e1dbab');
+  R(x+167,y-104,3,7,'#fcf4bd');
+}
 /* ================= LIVING WORLD / STORY-BOUND SCENERY =================
  * Every story chapter has a distinct geographical identity. No shared
  * castle/tower/moon-window tile is drawn in these scenes. The same authored
@@ -2136,6 +2498,10 @@ const WORLD_ID={
  d4:{style:'ruins',period:'dusk',weather:'embers'}
 };
 const WORLD_AREAS={
+ rideout:{style:'farmroad',period:'morning',weather:'breeze'},
+ trainingyard:{style:'training',period:'noon',weather:'clear'},
+ returnroad:{style:'forest',period:'dusk',weather:'storm'},
+ practicelists:{style:'training',period:'noon',weather:'breeze'},
  outskirts:{style:'fieldsiege',period:'dusk',weather:'breeze'},
  gatehouse:{style:'drawbridge',period:'dusk',weather:'embers'},
  village:{style:'cityfire',period:'night',weather:'embers'},
@@ -2929,7 +3295,12 @@ function startMission(id,resume){
   calc();P.hp=P.max;P.mp=P.mmax;P.inv=1;P.shield=0;P.ab=0;P.vx=0;
   FOL[0].k=(G.flags.halvardStands&&G.done.m11)?'ione':'halv';
   const cp=resume&&G.checkpoint&&G.checkpoint.id===id?G.checkpoint:null;
-  loadMissionArea(cp&&m.areas?clamp(cp.area,0,m.areas.length-1):0);
+  // Older m0 saves used [armory,stables,lists,magegarden,greenroad].
+  // Preserve completed tasks while routing checkpoints to their new chapters.
+  const index=cp&&m.areas?(!cp.chapterVersion&&id==='m0'?
+    [1,2,3,6,6][clamp(cp.area,0,4)]:
+    clamp(cp.area,0,m.areas.length-1)):0;
+  loadMissionArea(index);
 }
 function loadMissionArea(idx){
   const m=S.mission,area=m.areas?m.areas[idx]:null;
@@ -2957,7 +3328,7 @@ function endMissionArea(){
   }
   if(!m.areas||S.areaIndex>=m.areas.length-1){completeMission();return;}
   const idx=S.areaIndex+1;
-  G.checkpoint={id:m.id,area:idx};save();
+  G.checkpoint={id:m.id,area:idx,chapterVersion:m.id==='m0'?7:undefined};save();
   P.hp=Math.min(P.max,P.hp+Math.round(P.max*.25));
   P.mp=Math.min(P.mmax,P.mp+Math.round(P.mmax*.3));
   fade(()=>{if(S.mission===m&&S.mode==='play')loadMissionArea(idx);});
@@ -3141,11 +3512,40 @@ function hurtPlayer(n,dir){
   P.inv=.7;P.hurt=.25;P.vx=dir*90;S.shake=.15;sfx(100,.15,'sawtooth',.06);
 }
 function fireProj(w,type,mul,vx,pierce){const [d,c]=rollHit(w,mul);proj.push({x:P.x+P.face*10,y:GY+(P.py||0)-30,vx:P.face*vx,type,dmg:d,crit:c,life:1.6,face:P.face,pierce:pierce||0,hits:[]});}
+function trainingTargetComplete(o){
+  if(!o||o.done)return false;
+  o.done=true;G.flags[o.flag]=1;save();
+  const bow=o.kind==='archerytarget';
+  toast(bow?'ELOWEN: CLEAN ARROW — WELL SHOT':'HALVARD: STRIKE TRUE — GOOD FORM');
+  burst(o.x,GY-37,bow?'#eacb82':'#e8d7a0',10,48);
+  sfx(bow?460:220,.12,'triangle',.045);
+  missionHud(true);return true;
+}
 function attack(){
   if(P.cd>0||S.talk||S.mode!=='play')return;
   if(!G.eq[TN[P.w]])P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0;
   let nr=null,nd=1e9;for(const e of enemies){const d=Math.abs(e.x-P.x);if(d<nd){nd=d;nr=e;}}
   if(nr&&nd<120)P.face=nr.x>=P.x?1:-1;
+  if(S.adv&&P.w===1&&G.flags.ionePathChoice&&!G.flags.ionePathMade&&
+     S.adv.bridge&&P.x>=515&&P.x<=S.adv.bridge.edge+10){
+    const route=G.flags.ionePathChoice;
+    if((route==='dusk')!==S.dusk){
+      toast(route==='dawn'?'SELECT DAWN MAGIC TO REVEAL THE CROSSING':'SELECT DUSK MAGIC TO RAISE THE ROCKS');
+      return;
+    }
+    G.flags.ionePathMade=1;save();
+    S.shake=.28;ring(S.adv.bridge.edge+50,GY-9,50,route==='dawn'?'#f4e7a1':'#a87acb');
+    burst(S.adv.bridge.edge+50,GY-28,route==='dawn'?'#e9e4a8':'#bd73d8',18,125);
+    toast(route==='dawn'?'DAWN REVEALS THE OLD STONE CROSSING':'DUSK RAISES A NEW ROCKY CAUSEWAY');
+    say([L('Magister Ione',route==='dawn'?
+      'You saw what the river concealed. Dawn does not always create; sometimes it lets us remember.':
+      'You made a road where none survived. Dusk can be useful, Corin, but learn what it costs to force the world.')],()=>{});
+  }
+  if(S.adv&&P.w===0&&S.adv.scenery==='trainingyard'){
+    const target=S.adv.objects.find(o=>o.kind==='swordtarget'&&!o.done&&(!o.need||G.flags[o.need])&&
+      (o.x-P.x)*P.face>0&&Math.abs(o.x-P.x)<43);
+    if(target)trainingTargetComplete(target);
+  }
   if(P.w===0){P.cd=.36;P.atk=P.atkMax=.22;sfx(200,.08,'sawtooth');
     for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-8&&dx<(e.def.k?44:34)&&heroEnemyOverlap(e)){const [d,c]=rollHit(0,1);hitEnemy(e,d,c,P.face,80);}}}
   else if(P.w===1){const cost=S.dusk?3:2;if(P.mp<cost){toast('Not enough mana');P.cd=.3;return;}
@@ -3191,6 +3591,11 @@ function updateCombat(dt){
   }
   for(const pr of proj){
     pr.x+=pr.vx*dt;pr.life-=dt;
+    if(!pr.hostile&&pr.type==='arrow'&&S.adv&&S.adv.scenery==='trainingyard'){
+      const target=S.adv.objects.find(o=>o.kind==='archerytarget'&&!o.done&&
+        Math.abs(pr.x-o.x)<14&&Math.abs(pr.y-GY+30)<20);
+      if(target){trainingTargetComplete(target);pr.life=0;continue;}
+    }
     if(pr.hostile){if(!pr.guard&&keys.block&&G.shieldTier>=0&&P.guard>=10&&pr.face===-P.face&&hostileProjectileHitsHero(pr)){
       P.guard=Math.max(0,P.guard-13);
       if(G.shieldTier>=2){pr.hostile=0;pr.vx=-pr.vx;pr.face=-pr.face;pr.hits=[];pr.pierce=0;pr.life=2;pr.dmg=Math.round(pr.dmg*1.3);toast('WARD REFLECT');sfx(740,.14,'triangle',.04);continue;}
@@ -3231,7 +3636,15 @@ function update(dt){
   const dir=S.joust?0:(keys.r?1:0)-(keys.l?1:0);P.mv=dir!==0;if(dir)P.face=dir;
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
-  P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);P.vx*=Math.pow(.02,dt);
+  if(S.adv&&S.adv.mount&&!S.joust){
+    const horse=S.adv.mount,target=dir>0?94:dir<0?-43:0;
+    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir?1.8:2.5)));
+    P.mv=Math.abs(horse.speed)>5;
+    P.x=clamp(P.x+horse.speed*dt+P.vx*dt,minX,maxX);
+  }else{
+    P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);
+  }
+  P.vx*=Math.pow(.02,dt);
   if(!S.adv&&G.shieldTier>=0)P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);
   if(P.cd>0)P.cd-=dt;if(P.atk>0)P.atk-=dt;if(P.inv>0)P.inv-=dt;if(P.hurt>0)P.hurt-=dt;if(P.ab>0)P.ab-=dt;if(P.shield>0)P.shield=Math.max(0,P.shield-dt*1.5);
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
@@ -3304,13 +3717,37 @@ function drawScene(cam){
     R(x-4,y-8,8,8,'#17101a');R(x-3,y-7,6,6,col);R(x-3,y-7,6,2,sh(col,.45));R(x-1,y-5,2,2,'#fff');
     if(d.it.rar>=2&&Math.sin(S.t*8+d.x)>.6)R(x+4,y-12,1,3,'#fff');}
   if(S.areaData&&S.areaData.id==='magegarden')drawPerson(170-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.2});
+  if(S.adv&&S.adv.scenery==='trainingyard'){
+    drawPerson(106-cam,GY,1,{...NPCS.lysa,col:'#426b43',trim:'#9bb98d',w:2,quiver:1,ph:S.t*.2});
+    drawPerson(728-cam,GY,-1,{...NPCS.halv,w:0,ph:S.t*.2});
+  }
+  if(S.adv&&S.adv.bridge&&S.adv.bridge.collapsed){
+    drawPerson(514-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.25});
+    if(P.x<760)drawMounted(S.adv.bridge.to+118-cam,GY,-1,
+      {v:'charger',tk:'saddled',liv:'hearth',gait:'idle',ph:S.t*.2},
+      {...NPCS.halv,mv:false,w:-1},null);
+  }
+  if(S.adv&&S.adv.mount&&!S.joust&&S.adv.mount.companion==='halv'){
+    const h=S.adv.mount;
+    drawMounted(h.halvX-cam,GY,1,{v:'charger',tk:'saddled',liv:'hearth',
+      gait:gaitForSpeed(Math.max(25,h.speed)),ph:h.ph+.35},
+      {...NPCS.halv,mv:true,w:-1},null);
+  }
   if(S.npc){
     const o=S.npc.style?{...S.npc.style,w:-1,ph:0,mv:false}: {...NPCS[S.npc.k],w:-1,ph:0};
     if(o.col)drawPerson(S.npc.x-cam,GY,S.npc.face,o,S.npc.k==='child'?.72:1);
   }
   if(!S.adv&&S.mode==='play'&&S.mission&&S.mission.showFollowers)FOL.forEach((f,i)=>drawPerson(f.x-cam,GY,f.face,{...NPCS[f.k],mv:f.mv,w:i?2:(f.k==='ione'?1:0),ph:i+1,wcol:i?'#9a6a32':'#eef2fa'}));
   for(const e of enemies)drawEnemy(e,cam,e.def);
-  if(!(S.joust&&S.joust.role==='rider'))drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
+  if(S.adv&&S.adv.mount&&!S.joust){
+    const h=S.adv.mount;
+    drawMounted(P.x-cam,GY+(P.py||0),P.face,
+      {v:h.v||'bay',tk:h.tk||'saddled',liv:h.liv||'hearth',
+       gait:gaitForSpeed(h.speed),ph:h.ph},
+      {...heroOpts(),mv:false,w:-1},null);
+  }else if(!(S.joust&&S.joust.role==='rider')){
+    drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
+  }
   if(keys.block&&G.shieldTier>=0){
     const x=Math.round(P.x-cam+P.face*10),y=Math.round(GY+(P.py||0)-27);
     R(x-5,y-11,10,23,G.shieldTier>=2?'#5ba7ed':G.shieldTier===1?'#9295a2':'#8a643a');
