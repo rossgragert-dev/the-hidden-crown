@@ -1282,10 +1282,15 @@ function adventureUpdate(dt){
 /* Unique hand-authored pixel-art environment vocabulary for each opening room.
    These backgrounds stay fixed vertically for indoor platforming; the character
    jumps in front of immovable walls, shelves, bridges and foreground objects. */
+// Indoor architectural props share the same horizontal world space as the
+// platform collision surfaces and Corin's feet. Exterior lists may parallax.
+function interiorBackCam(cam,kind){
+  return kind==='armory'||kind==='stable'?Math.floor(cam):Math.floor(cam*.74);
+}
 function adventureBackdrop(cam){
   const a=S.adv,kind=a&&a.scenery,y=GY;
   if(!a||['armory','stable','lists'].indexOf(kind)<0)return false;
-  const backCam=Math.floor(cam*.74);
+  const backCam=interiorBackCam(cam,kind);
   if(kind==='armory'){
     R(0,0,W,H,'#141722');
     R(0,0,W,y+1,'#353643');
@@ -1439,8 +1444,10 @@ function drawSupportedPlatform(p,cam,ground,scenery){
     R(px,top+5,post,Math.max(0,h-5),frame);
     R(px+1,top+6,2,Math.max(0,h-6),highlight);
     R(px-4,ground-4,post+8,4,'#4a3a30');
+    // Pressed into the floor, not suspended just above the flagstones.
+    R(px-7,ground-1,post+14,2,'rgba(25,17,13,.48)');
   }
-  if(w>=125){const mid=x+Math.floor(w/2);R(mid,top+8,5,Math.max(0,h-8),frame);R(mid+1,top+9,2,Math.max(0,h-9),highlight);}
+  if(w>=125){const mid=x+Math.floor(w/2);R(mid,top+8,5,Math.max(0,h-8),frame);R(mid+1,top+9,2,Math.max(0,h-9),highlight);R(mid-5,ground-1,15,2,'rgba(25,17,13,.35)');}
   if(h>=26){
     // Cross-bracing joins upper beams to lower supports and prevents the
     // illusion that catwalks are floating above a worktable.
@@ -1468,6 +1475,8 @@ function drawSupportedPlatform(p,cam,ground,scenery){
     // A tabletop, workbench or storage rack with a full-width cabinet / shelf
     // under the top; legs genuinely reach the floor.
     R(x-2,top,w+4,5,'#b28a58');R(x,top,w,2,'#e4bd79');
+    // A narrow under-lip shadow gives the tabletop actual thickness.
+    R(x-2,top+5,w+4,2,'#503929');
     R(x+4,top+6,w-8,4,frame);
     if(h>17)R(x+12,ground-11,w-24,4,'#a07c55');
     if(kind==='rack'){
@@ -1963,6 +1972,7 @@ function armoryBay(x,y,n,style){
     R(x+20,y-130,2,96,'#bfa681');R(x+18,y-134,6,5,'#9aa3b0');R(x+124,y-130,2,96,'#bfa681');R(x+122,y-134,6,5,'#9aa3b0');
     heaterShield(x+22,y-70,'#a83a3a','#e8d8a0');heaterShield(x+112,y-70,'#2c567e','#e8d8a0');
     R(x+60,y-22,56,22,'#4a3a2c');R(x+60,y-22,56,3,'#6a5238');R(x+64,y-19,3,19,'#2f241c');R(x+109,y-19,3,19,'#2f241c');
+    R(x+60,y-2,58,3,'rgba(21,16,15,.36)');
   }else if(style===1){ // weapon wall
     R(x+24,y-130,124,5,'#34272c');R(x+24,y-130,124,1,'#5a4048');R(x+24,y-88,124,5,'#34272c');
     for(let k=0;k<7;k++){const q=x+34+k*17,t=k%4;
@@ -1970,6 +1980,7 @@ function armoryBay(x,y,n,style){
     R(x+26,y-62,120,4,'#34272c');
     for(let k=0;k<5;k++)R(x+34+k*22,y-120+(k%2)*2,3,28,'#7a5a3a');
     R(x+40,y-22,96,6,'#6a5038');R(x+44,y-16,5,16,'#3a2c22');R(x+127,y-16,5,16,'#3a2c22');
+    R(x+40,y-2,100,3,'rgba(22,16,13,.40)');
     R(x+56,y-30,8,8,'#9aa3b0');R(x+70,y-28,12,6,'#7a5a3a');R(x+96,y-31,10,9,STEEL_D);
   }else if(style===2){ // forge
     R(x+30,y-92,96,92,'#3e353b');R(x+30,y-92,96,3,'#6a5c62');R(x+34,y-88,88,84,'#4d4248');
@@ -1982,6 +1993,7 @@ function armoryBay(x,y,n,style){
     const wg=g.createRadialGradient(x+78,y-30,4,x+78,y-30,70);wg.addColorStop(0,'rgba(255,150,60,.26)');wg.addColorStop(1,'rgba(255,150,60,0)');g.fillStyle=wg;g.fillRect(x+8,y-100,140,110);
     // anvil on stump
     R(x+136,y-12,20,12,'#5a4330');R(x+136,y-12,20,2,'#7a5a40');
+    R(x+133,y-2,28,3,'rgba(18,13,11,.4)');
     R(x+130,y-26,34,6,'#4d525c');R(x+130,y-26,34,1,'#8d93a0');R(x+160,y-24,10,3,'#4d525c');R(x+138,y-20,16,8,'#3d424c');
     R(x+10,y-70,2,30,'#8a8a92');R(x+16,y-70,2,30,'#8a8a92');R(x+8,y-44,12,4,'#6a6a72'); // hanging tongs
     R(x+4,y-28,18,28,'#5a4330');R(x+4,y-28,18,3,'#8a6a40');R(x+4,y-18,18,2,'#2a2a30');R(x+5,y-30,16,2,'#3a6a8a');
@@ -1990,7 +2002,8 @@ function armoryBay(x,y,n,style){
     plateStand(x+112,y,{tab:'#8a2a3a',plume:'#e8e8f2'});
     R(x+62,y-110,40,4,'#4a3a2c');R(x+62,y-110,40,1,'#7a6048');
     for(let k=0;k<3;k++){const hx=x+66+k*13;R(hx,y-126,10,16,STEEL);R(hx,y-126,10,2,STEEL_L);R(hx+1,y-120,8,2,'#15151c');}
-    R(x+130,y-24,34,24,'#67503e');R(x+130,y-24,34,3,'#b08e58');R(x+130,y-14,34,2,'#3a2a20');R(x+144,y-18,6,6,GOLD);
+    R(x+130,y-24,34,24,'#67503e');R(x+130,y-24,34,3,'#b08e58');
+    R(x+129,y-2,37,3,'rgba(22,16,13,.4)');R(x+130,y-14,34,2,'#3a2a20');R(x+144,y-18,6,6,GOLD);
   }
 }
 function sceneArmory(cam,backCam,y){
@@ -2015,8 +2028,11 @@ function sceneArmory(cam,backCam,y){
   }
   // floor: worn runner rug with gold border
   const ry=y+8;R(0,ry,W,20,'#5a2a30');R(0,ry,W,2,'#d0a850');R(0,ry+18,W,2,'#d0a850');
-  for(let k=-(Math.floor(cam*.9)%24);k<W;k+=24)R(k+9,ry+7,6,6,'#8a4a4a');
+  for(let k=-(Math.floor(backCam)%24);k<W;k+=24)R(k+9,ry+7,6,6,'#8a4a4a');
   R(0,y-12,W,2,'#8a7a70');
+  // Continuous contact plane beneath movable furniture. The rug begins below
+  // this line, so supports and shadows must terminate here at exactly y=GY.
+  R(0,y-1,W,2,'rgba(32,25,24,.25)');
 }
 function crowdPerson(px,py,i,j,cheer){
   const h=sHash(i,j),cols=['#b7463e','#2c567e','#e2b55f','#4a7a4a','#7a4a8a','#d8d0c0','#8a5a3a'],sk=['#e8bd94','#d8a880','#c89870','#f0cfa8'],hr=['#3a2a1a','#8a5a2a','#c8a058','#6a6a6a','#1c1c24'];
@@ -3713,7 +3729,7 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
 layout();if(hasSave())load();calc();showTitle();requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,genItem2:null,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,genItem2:null,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
 })();
 </script>
 </body>
