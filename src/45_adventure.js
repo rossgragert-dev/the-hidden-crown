@@ -10,6 +10,8 @@ function adventureBegin(area){
     platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y,kind:p.kind||null})),
     objects:(d.objects||[]).map((o,i)=>Object.assign({i,done:!S.replay&&!!(o.flag&&G.flags[o.flag])},o)),
     scenery:d.scenery||'castle',seed:d.seed||5,verticalCamera:!!d.verticalCamera,
+    mount:d.mount?{...d.mount,speed:0,ph:0,halvX:102}:null,
+    bridge:d.bridge?{...d.bridge,collapsed:false}:null,
     progress:0,combatAt:(d.combatAt||[]).map((w,i)=>Object.assign({i,done:false},w))
   };
   P.py=0;P.vy=0;P.grounded=true;S.camY=0;S.joust=null;
@@ -24,7 +26,7 @@ function adventureEnd(){
 }
 function adventureJump(){
   if(S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
-  P.vy=-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
+  P.vy=S.adv&&S.adv.mount?-235:-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
 }
 function adventureNear(){
   if(!S.adv||S.talk||S.arena||S.joust)return null;
@@ -42,6 +44,27 @@ function adventureUse(){
   const o=adventureNear();
   if(!o)return false;
   if(o.need&&!G.flags[o.need]){toast(o.locked||'A KEY OR TASK IS MISSING');sfx(110,.18,'square',.04);return true;}
+  if(o.needFlags&&o.needFlags.some(f=>!G.flags[f])&&o.kind!=='exit'){
+    toast('COMPLETE THE EARLIER LESSON FIRST');return true;
+  }
+  if(o.kind==='archerytarget'||o.kind==='swordtarget'){
+    toast(o.kind==='archerytarget'?'SELECT BOW AND FIRE AN ARROW':'SELECT SWORD AND STRIKE THE DUMMY');return true;
+  }
+  if(o.kind==='guardtest'&&!keys.block){
+    toast('HOLD GUARD WHILE YOU TAP USE');return true;
+  }
+  if(o.kind==='crossroads'){
+    if(G.flags.ionePathChoice){toast('SELECT STAFF AND CAST WITH ATK TO OPEN THE PATH');return true;}
+    choose('The bridge is broken. How will Corin use Ione’s new staff?',[
+      {label:'DAWN — reveal the hidden crossing',desc:'Illuminate the old stepping stones beneath the mist.',
+       fn:()=>{S.dusk=false;G.flags.ionePathChoice='dawn';o.done=true;save();
+         toast('DAWN CHOSEN — SELECT STAFF AND CAST AT THE BRIDGE');}},
+      {label:'DUSK — force a new crossing',desc:'Break the obstruction and pull a rough new road from the rock.',
+       fn:()=>{S.dusk=true;G.flags.ionePathChoice='dusk';o.done=true;shift(-3,'DUSK POWER');save();
+         toast('DUSK CHOSEN — SELECT STAFF AND CAST AT THE BRIDGE');}}
+    ]);
+    return true;
+  }
   if(o.kind==='exit'){
     if(o.needFlags&&o.needFlags.some(f=>!G.flags[f])){toast('FINISH YOUR TASKS FIRST');return true;}
     G.flags[o.flag||('exit'+S.areaIndex)]=1;
@@ -50,7 +73,7 @@ function adventureUse(){
   }
   if(o.kind==='joust'){
     joustPrebake();P.face=1;const rr=o.role==='rider';
-    S.joust=joustCreate(rr?{role:'rider',anchor:Math.round(o.x),object:o,lead:560,seed:5+Math.floor(S.t*7)%90}:{role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
+    S.joust=joustCreate(rr?{role:'rider',anchor:Math.round(o.x),object:o,lead:560,seed:5+Math.floor(S.t*7)%90,passes:o.passes||3,easy:!!o.easy,opponent:o.opponent}:{role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
     S.joust.on=joustOn;toast(rr?'LOWER YOUR LANCE AS HE CHARGES':'OFFER THE LANCE AS THE RIDER REACHES YOUR HAND');return true;
   }
   o.done=true;
@@ -60,16 +83,28 @@ function adventureUse(){
     P.w=1;G.flags.ioneTaught=1;calc();hud(true);save();
     toast('ROWAN STAFF RECEIVED — SELECT STAFF AND CAST WITH ATK');
     say([L('Magister Ione','The staff listens to intention, not strength. Breathe, focus, then let the Dawn tide carry your light.'),L('Corin','Then this is not a weapon of force. It is a promise to aim well.')],()=>{});
+  }else if(o.kind==='bow'){
+    if(!G.eq.bow)G.eq.bow=fixedItem('bow','Elowen’s Field Bow',9,0,{gift:'elowen'});
+    P.w=2;calc();save();hud(true);
+    toast('FIRST BOW RECEIVED — SELECT BOW AND FIRE AT THE STRAW TARGET');
+    say([L('Ranger Elowen','It is yours. Let the string settle against your cheek. Do not chase the mark with your fingers.'),L('Corin','I shall loose the next arrow only when I am steady.')],()=>{});
+  }else if(o.kind==='reins'){
+    toast('REINS CHECKED — HOLD RIGHT TO CANTER; JUMP TO CLEAR AN OBSTACLE');
+  }else if(o.kind==='armor'){
+    toast('HALVARD’S ARMOR FASTENED');
+    say([L('Ser Halvard','Good. The breastplate is firm, and the helm sits square. Now keep three spare lances ready at the tilts.')],()=>{});
+  }else if(o.kind==='guardtest'){
+    toast('SHIELD GUARD LEARNED — HALVARD APPROVES');
+  }else if(o.kind==='sword'){
+    giveBluntSword();P.w=0;calc();hud(true);
+    toast('HALVARD’S BLUNT IRON SWORD RECEIVED');
+    say([L('Ser Halvard','That is the beginning of a true cut, lad. Take this blunted blade. You must earn a sharper one later.')],()=>{});
   }else if(o.kind==='shield'){
     G.shieldTier=Math.max(G.shieldTier||0,o.tier||0);
     toast('WOODEN SHIELD ACQUIRED — HOLD GUARD');
   }else if(o.kind==='key'){
     toast('KEY FOUND: '+(o.label||'IRON KEY'));
-  }else if(o.kind==='staff'){
-      R(x-2,py-34,4,30,'#8e6a45');R(x-3,py-35,6,4,'#e5ca80');
-      R(x-7,py-43,14,9,'rgba(175,235,255,.24)');
-      R(x-2,py-42,5,6,'#c9eaff');
-    }else if(o.kind==='chest'){
+  }else if(o.kind==='chest'){
     const item=genItem(S.ilvl+1,Math.max(1,o.rarity||1),o.slot||'armor');
     addItem(item,true);toast('CHEST OPENED: '+item.name);
   }else if(o.kind==='gear'){
@@ -91,15 +126,47 @@ function joustOn(k,v){
 function adventureJoustFinish(){
   const j=S.joust;if(!j)return;
   const o=j.object;
-  if(j.role==='rider'){S.joust=null;P.x=o.x-50;P.face=1;toast('LISTS ENDED — YOU '+j.score+'  FOE '+j.foe+(j.score>j.foe?'  YOU WIN':j.score<j.foe?'  FOE WINS':'  DRAW'));missionHud(true);return;}
+  if(j.role==='rider'){
+    if(o){o.done=true;G.flags[o.flag||'squirePracticeJoust']=1;save();}
+    S.joust=null;P.x=o.x-50;P.face=1;
+    toast('PRACTICE COMPLETE — YOU '+j.score+'  FOE '+j.foe);
+    if(o&&o.opponent==='halvard')say([
+      L('Ser Halvard','You found the seat and lowered the lance. Remember: the first victory is keeping balance, not unhorsing a friend.'),
+      L('Corin','I thought the horse might throw me before I even reached you.')],()=>{});
+    missionHud(true);return;
+  }
   if(o){o.done=true;G.flags[o.flag||'joustServed']=1;save();}
   S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / '+j.passes+' HANDOFFS');
   if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
-  if(giveBluntSword())say([L('Ser Halvard','You served well, lad. This blade is blunt, but it is iron. A squire should feel real weight in his hand.'),N('BLUNT IRON SWORD RECEIVED')],()=>{});
+  say([L('Ser Halvard','A good squire remembers every handoff. Tomorrow, I shall show you how the same pass feels from a saddle.')],()=>{});
   missionHud(true);
 }
 function adventureUpdate(dt){
   const a=S.adv;if(!a||S.mode!=='play')return;
+  if(a.mount){
+    a.mount.ph+=dt*strideRate(gaitForSpeed(a.mount.speed),a.mount.speed);
+    a.mount.halvX=lerp(a.mount.halvX,Math.max(94,P.x+86),Math.min(1,dt*1.8));
+    if(P.x>340&&a.mount.speed>66&&!G.flags.squireCanter){
+      G.flags.squireCanter=1;toast('HORSEMANSHIP: STEADY CANTER LEARNED');save();
+    }
+  }
+  if(a.bridge){
+    if(!a.bridge.collapsed&&P.x>=a.bridge.trigger){
+      a.bridge.collapsed=true;P.x=a.bridge.trigger;P.vx=0;P.vy=0;
+      a.mount=null;P.py=0;P.grounded=true;
+      G.flags.squireBridgeBroken=1;save();
+      S.shake=.55;sfx(85,.6,'sawtooth',.09);
+      say([
+        N('The swollen river tears loose the old bridge supports. With a crack of timber, the middle span falls into the torrent. Corin’s bay refuses the edge.'),
+        L('Ser Halvard','Corin! Hold your horse! The bridge is gone. I am on the far bank and cannot come back.'),
+        L('Corin','Father! How am I to cross?'),
+        L('Ser Halvard','Keep your head. Find another way. I will seek the north ford and meet you at home.'),
+        N('Stranded among mist and standing stones, Corin sees a lantern flicker in a hidden garden beside the broken span.')
+      ],()=>{});
+      return;
+    }
+    if(!G.flags.ionePathMade&&P.x>a.bridge.edge)P.x=a.bridge.edge;
+  }
   if(S.joust){joustStep(S.joust,dt);if(joustDone(S.joust))adventureJoustFinish();else if(S.joust.role==='rider')P.x=clamp(S.joust.a.x,10,a.length);}
   const prev=P.py||0;
   // Walk off ledges naturally. A platform only supports the hero while
@@ -135,12 +202,16 @@ function adventureUpdate(dt){
 // Indoor architectural props share the same horizontal world space as the
 // platform collision surfaces and Corin's feet. Exterior lists may parallax.
 function interiorBackCam(cam,kind){
-  return kind==='armory'||kind==='stable'?Math.floor(cam):Math.floor(cam*.74);
+  return kind==='armory'||kind==='stable'||kind==='inn'?Math.floor(cam):Math.floor(cam*.74);
 }
 function adventureBackdrop(cam){
   const a=S.adv,kind=a&&a.scenery,y=GY;
-  if(!a||['armory','stable','lists'].indexOf(kind)<0)return false;
+  if(!a||['armory','stable','lists','inn','practice','trainingyard','brokenbridge','returnroad'].indexOf(kind)<0)return false;
   const backCam=interiorBackCam(cam,kind);
+  if(kind==='inn'){sceneInn(cam,y);return true;}
+  if(kind==='practice'){scenePractice(cam,y);return true;}
+  if(kind==='trainingyard'){sceneTrainingYard(cam,y);return true;}
+  if(kind==='brokenbridge'||kind==='returnroad'){sceneStormGorge(cam,y);return true;}
   if(kind==='armory'){
     R(0,0,W,H,'#141722');
     R(0,0,W,y+1,'#353643');
@@ -324,19 +395,21 @@ function drawSupportedPlatform(p,cam,ground,scenery){
   }else{
     // A tabletop, workbench or storage rack with a full-width cabinet / shelf
     // under the top; legs genuinely reach the floor.
-    R(x-2,top,w+4,5,'#b28a58');R(x,top,w,2,'#e4bd79');
-    // A narrow under-lip shadow gives the tabletop actual thickness.
-    R(x-2,top+5,w+4,2,'#503929');
-    R(x+4,top+6,w-8,4,frame);
+    woodB(x-2,top,w+4,6,'#a8804e');R(x,top,w,1,'#e4bd79');
+    for(let k=20;k<w;k+=24)R(x+k,top+1,1,4,'#6a4a2e');            // plank joints
+    R(x-2,top+6,w+4,2,'#3e2c20');                                  // under-lip shadow = thickness
+    bv(x+4,top+8,w-8,5,frame);                                     // apron
+    for(let k=10;k<w-10;k+=26)R(x+k,top+9,2,3,'#2a1a12');          // drawer pulls / pegs
     if(h>17)R(x+12,ground-11,w-24,4,'#a07c55');
     if(kind==='rack'){
       for(let i=14;i<w-10;i+=18){
         R(x+i,top-17,2,16,'#8d8b8a');R(x+i-4,top-20,10,4,'#c4a968');
       }
     }else if(kind==='workbench'){
-      R(x+16,top-8,w-32,7,'#51463c');
-      R(x+21,top-10,16,3,'#aab0b5');
-      R(x+w-34,top-10,9,3,'#d2bd89');
+      bv(x+10,top-9,12,9,'#4a4d58');R(x+12,top-12,8,3,'#8a8e9a');R(x+15,top-14,2,3,'#6a6e7a');        // bench vise
+      R(x+30,top-3,14,2,'#6a4a2e');bv(x+42,top-7,7,7,'#7a7e8a');                                        // hammer
+      bv(x+58,top-4,18,4,'#d8d0c0');R(x+60,top-3,14,1,'#a89a82');                                        // polishing cloth
+      bv(x+w-26,top-11,9,11,'#9a5a32');R(x+w-24,top-14,5,3,'#d8c08a');bv(x+w-14,top-7,8,7,'#b08a52');   // oil jar, tin
     }else if(kind==='tackbench'){
       R(x+18,top-10,22,6,'#8d6447');
       R(x+50,top-12,26,8,'#9c7a54');
@@ -350,7 +423,7 @@ function adventureWorldDraw(cam){
   // Deterministic scenery per world segment, not a repeated painted strip.
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
-    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists'||a.scenery==='magegarden')continue;
+    if(['armory','stable','lists','inn','practice','magegarden','trainingyard','returnroad','brokenbridge'].includes(a.scenery))continue;
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;
@@ -378,36 +451,72 @@ function adventureWorldDraw(cam){
       else{R(x+28,y-57,4,18,'#a76b32');R(x+24,y-65,12,9,'#e9bc60');}
     }
   }
+  if(a.bridge)sceneBridgeWorld(a,cam,y);
+  worldDressing(a,cam,y);
   for(const p of a.platforms)drawSupportedPlatform(p,cam,y,a.scenery);
+  const lbl=[];
   for(const o of a.objects){
     if(o.done&&o.kind!=='horse')continue;
     const x=Math.round(o.x-cam),py=Math.round(y+(o.y||0));
     if(x<-40||x>W+40)continue;
     const locked=o.need&&!G.flags[o.need];
+    let lh=58;
     if(o.kind==='exit'||o.kind==='door'){
-      R(x-12,py-46,24,46,'#49404d');R(x-9,py-43,18,43,'#9e8769');
-      R(x-6,py-38,12,35,locked?'#5d2c2c':'#394f38');
-      R(x+3,py-20,2,2,'#e4c778');
+      propDoor(x,py,locked,a.scenery==='stable'?'barn':(a.scenery==='inn'?'oak':'gate'));lh=66;
     }else if(o.kind==='chest'){
-      R(x-12,py-15,24,15,'#503127');R(x-12,py-19,24,7,'#9c653b');
-      R(x-2,py-15,4,10,'#ebc664');
+      propChest(x,py,o);lh=30;
     }else if(o.kind==='horse'){
+      lh=58;
       // stall dressing: hay, bucket, tack hook
       R(x+30,py-8,22,8,'#c9a85a');R(x+33,py-11,16,4,'#dcc070');R(x+36,py-13,3,2,'#e8d08a');
       R(x-48,py-10,9,10,'#6a4a2a');R(x-48,py-10,9,2,'#8a6a3a');R(x-47,py-8,7,1,'#3a2a18');
       const gr=!!o.done,sd=G.flags.squireSaddle,gt=o.groomT>0;
       if(gt)o.groomT-=1/60;
       const ph=gt?S.t*3.2:S.t*.35;
-      drawHorse(x,py,1,{v:'charger',tk:sd?'saddled':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
+      drawHorse(x,py,1,{v:'charger',tk:sd?'knight':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
       if(gt&&Math.floor(S.t*14)%2)R(x+Math.round(Math.sin(S.t*9)*14),py-34-Math.round((S.t*40)%12),1,2,'#fff6c0');
       else if(gr&&Math.floor(S.t*2.2)%5===0)R(x-10+Math.floor(S.t*7)%24,py-30,1,1,'#fff6c0');
+    }else if(o.kind==='archerytarget'){
+      propArcheryButt(x,py,!!G.flags[o.flag]);lh=52;
+    }else if(o.kind==='swordtarget'){
+      propDummy(x,py);lh=62;
+    }else if(o.kind==='armor'){
+      plateStand(x,py,{tab:NAVY,plume:'#e8e8f2'});lh=98;
+    }else if(o.kind==='bow'||o.kind==='sword'||o.kind==='staff'){
+      propWeapon(x,py,o.kind);lh=60;
+    }else if(o.kind==='crossroads'){
+      propRuneStone(x,py,!!G.flags.ionePathMade);lh=60;
+    }else if(o.kind==='reins'){
+      propReins(x,py);lh=34;
+    }else if(o.kind==='guardtest'){
+      propGuardStand(x,py);lh=62;
+    }else if(o.kind==='shield'){
+      propShieldRack(x,py,'#2c567e');lh=38;
+    }else if(o.kind==='key'){
+      propKey(x,py);lh=36;
+    }else if(o.kind==='joust'){
+      propBanner(x,py,'#2f5fd0','#e8e0cc');lh=76;
+    }else if(o.kind==='gear'){
+      const fl=o.flag||'';
+      if(fl==='squireArmor'){propBreastplate(x,py);lh=44;}
+      else if(fl==='squireHelmet'){propHelm(x,py);lh=40;}
+      else if(fl==='squireOil'){propOil(x,py);lh=24;}
+      else if(fl==='squireSaddle'){propSaddle(x,py);lh=38;}
+      else if(fl==='squireLances'||fl==='squireLancesReady'){propLances(x,py,5);lh=58;}
+      else if(fl==='ioneLightRune'){propRuneStone(x,py,true);lh=60;}
+      else{bv(x-9,py-16,18,16,'#6e5843');R(x-3,py-20,6,6,'#e8c469');lh=26;}
     }else{
-      R(x-9,py-16,18,16,o.kind==='key'?'#b59e4b':o.kind==='shield'?'#4d6e91':'#6e5843');
-      R(x-3,py-20,6,6,'#e8c469');
-      if(o.kind==='key'){R(x+7,py-10,8,3,'#e9cb52');}
+      bv(x-9,py-16,18,16,'#6e5843');R(x-3,py-20,6,6,'#e8c469');lh=26;
     }
-    if(!(S.joust&&o.kind==='joust')&&!o.done){g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
-    g.fillText(o.label||o.kind.toUpperCase(),x,py-51);}
+    if(!(S.joust&&o.kind==='joust')&&!o.done){
+      const tx=o.label||o.kind.toUpperCase();g.font='bold 8px Courier New';g.textAlign='center';
+      const tw=Math.ceil(g.measureText(tx).width)+8;let ty=py-lh-4,lx=clamp(x,Math.ceil(tw/2)+2,W-Math.ceil(tw/2)-2);
+      // stack nearby labels instead of letting them overprint each other
+      for(let tries=0;tries<4;tries++){const hit=lbl.find(b=>Math.abs(b.ty-ty)<11&&Math.abs(b.x-lx)<(b.tw+tw)/2+1);if(!hit)break;ty-=11;}
+      lbl.push({x:lx,tw,ty});
+      R(Math.round(lx-tw/2),ty-8,tw,11,'rgba(14,10,12,.78)');R(Math.round(lx-tw/2),ty-8,tw,1,'rgba(255,230,170,.35)');
+      g.fillStyle='#ffedbb';g.fillText(tx,lx,ty);
+    }
   }
   if(S.joust){joustDraw(S.joust,cam,y);joustHud(S.joust,6,80);}
 }

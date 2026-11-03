@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.7.0 art & environment polish pass (development, not merged)
+
+- **Environments.** New hand-authored, layered scenes: Practice Ring (timber stable block, quintain, ring fence, castle wall and tournament roofs beyond), Training Yard (Elowen's ranger camp and fire, archery lane, hay butts, Halvard's stone wall and banners, sword yard, home gate), and the Broken Bridge storm gorge (lightning, gorge and river with foam/spray, wrecked cart, ancient arch and glowing garden, Dawn stepping stones, Dusk basalt causeway). The generic arch-and-window pillars that used to show behind chapter 7 are gone.
+- **Set dressing** (`src/48d_dressing.js`): dirt road with ruts, Halvard's keep gate, milestones, hedges, wayside shrine and the Hearthmoor inn facade (ch.1); plank floor, rugs, hanging herbs/hams, lanterns, casks, tables (ch.2); straw/cobble floor, tack wall, wheelbarrow, feed sacks, lantern (ch.3); heraldic shields on the barrier, banner poles and bunting (ch.4).
+- **Foreground props** (`src/48b_props.js`): every interactable (chests, keys, breastplate, helm, oil, saddle, lances, shield rack, doors, archery butt, training dummy, guard stand, weapons, reins post, rune stone, signs, benches, crates, barrels) redrawn with edge-lit bevels, wood grain and contact shadows. Platform tops, workbench tools and labels share the same language. Labels now sit on dark pills, stack when neighbours overlap and clamp to the screen.
+- **Horses.** Halvard's grey charger wears a navy-and-gold travelling caparison with chamfron (`tk:'knight'`); Corin's bay gelding keeps plain russet tack.
+- **Performance.** Static parallax layers (ridges, tree lines, walls, storm clouds) are cached offscreen (`vLayer`); worst chapter is about 1.7k rects/frame, down from the 4.4k first draft.
+- **Test shortcut.** `?chapter=N` (or `#chapter=N`) starts a fresh unsaved run at opening chapter N and never writes a save.
+- New `tests/art_pass.js`, `tests/chapter_shots.js` (before/after screenshots in `docs/evidence/v070-before|after`). See `docs/V0_7_0_ART_PASS.md`.
+
+## v0.7.0 — The Road to Hearthmoor (development, not merged)
+
+- Replaced M0's previous five-area opening with **seven sequential chapters**: mounted ride to the Hearthmoor tournament; inn equipment room; visiting stables; armor preparation and tournament handoffs; Corin's practice joust against Halvard; ranger bow and knight sword/shield training; broken bridge and Ione's first magic.
+- Corin rides a **bay gelding**, distinct in tack and coat from Halvard's armored grey charger. Hold RIGHT to gather speed and JUMP to leap; canter and reins tasks are part of the first chapter.
+- Reused the horse animation and jousting simulations, with Halvard as the mounted practice opponent.
+- Bow, shield and blunt iron sword now require appropriate lessons; the archery target requires a real arrow hit, the sword dummy requires a melee hit, and the shield brace requires holding GUARD.
+- At the broken bridge, a player-chosen Dawn cast reveals hidden stepping stones while Dusk creates a rock crossing; both paths are blocked until the matching staff spell is cast.
+- Added an original inn, practice lists, training-yard and mystical garden art; preserved all earlier scenery, M1–M12 quest IDs, and a legacy chapter-checkpoint migration.
+- See `docs/V0_7_0_SEVEN_CHAPTER_OPENING.md` for full narrative, QA and constraints.
+
+
 ## v0.6.3 — Living Roads and Magic (development, not merged)
 
 - Mission-aware backgrounds for Act I and the six Hearthmoor siege stages: visible drawbridge and defenders, burning village and keep, distinctive Greenmarch, Veilfen, library and mountain scenes.

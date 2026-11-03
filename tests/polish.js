@@ -85,10 +85,10 @@ const fs=require('fs');
    assert.equal(hero.hero,true);assert.equal(hero.nosh,true);
    assert.equal(hero.oversized,false,'No protruding rectangular shield on idle Corin');
 
-   await page.evaluate(()=>{const a=window.__G;a.startMission('m0');a.loadMissionArea(3);});
+   await page.evaluate(()=>{const a=window.__G;a.startMission('m0');a.loadMissionArea(6);});
    await page.waitForTimeout(130);
    if(viewport.width===390)await page.screenshot({path:screenshotDir+'/v065-garden-arcade.png'});
-   await page.evaluate(()=>{const a=window.__G;a.loadMissionArea(1);});
+   await page.evaluate(()=>{const a=window.__G;a.loadMissionArea(2);});
    await page.waitForTimeout(130);
    if(viewport.width===390)await page.screenshot({path:screenshotDir+'/v065-stable-texture.png'});
    assert.deepEqual(errors,[],'No browser rendering or script errors');

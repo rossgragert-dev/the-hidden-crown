@@ -1,5 +1,5 @@
 /* ================= CORE ================= */
-const cv=document.getElementById('cv'),g=cv.getContext('2d');
+const cv=document.getElementById('cv');let g=cv.getContext('2d');
 const $=id=>document.getElementById(id);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
 let _s=11;const rnd=()=>{_s=(_s*16807)%2147483647;return (_s-1)/2147483646;};
@@ -32,7 +32,8 @@ function sfx(f,d,type,v){if(!AC)return;try{const t=AC.currentTime,o=AC.createOsc
 const SAVEKEY='hiddencrown.save.v2';
 const G={};
 function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null,shieldTier:-1,sq:1,stash:[]});}
-function save(){try{localStorage.setItem(SAVEKEY,JSON.stringify(G));}catch(e){}}
+let NOSAVE=false; // set by the ?chapter=N test shortcut so a preview never overwrites a real save
+function save(){if(NOSAVE)return;try{localStorage.setItem(SAVEKEY,JSON.stringify(G));}catch(e){}}
 function load(){try{const s=localStorage.getItem(SAVEKEY);if(!s)return false;newG();const p=JSON.parse(s);Object.assign(G,p);
   // Saves from before the squire-kit change keep their gear and look (treated as already knighted).
   if(!p.sq){G.sq=0;G.stash=[];G.flags=G.flags||{};G.flags.knighted=1;}return true;}catch(e){return false;}}

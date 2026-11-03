@@ -23,101 +23,151 @@ const L=(who,text)=>({who,text}),N=text=>({who:'',text});
 const REG={hearth:{n:'Castle Hearthmoor',pal:'day'},green:{n:'The Greenmarch',pal:'day'},fen:{n:'Veilfen Reeds',pal:'fen'},night:{n:'Hearthmoor by Night',pal:'night'},forest:{n:'Thornwood',pal:'wood'},cave:{n:'Hollowdeep Caves',pal:'cave'},mine:{n:'Greywatch Mine',pal:'mine'},keep:{n:'Ashfall Keep',pal:'keep'},chapel:{n:'Hearthmoor Chapel',pal:'keep'},road:{n:'The Southern Road',pal:'day'}};
 const ACTN={1:'ACT I: THE SQUIRE',2:'ACT II: THE KNIGHT',3:'ACT III: THE KING'};
 const MISSIONS=[
-{id:'m0',type:'main',act:1,title:"The Knight's Squire",reg:'hearth',lvl:1,
- desc:"Before the crown, a boy's life: fetch Halvard's armor, groom his horse, and serve lances at the tournament.",
+{id:'m0',type:'main',act:1,title:'The Road to Hearthmoor',reg:'hearth',lvl:1,
+ desc:"Seven chapters in the making of a squire: ride with Ser Halvard to the tournament at Castle Hearthmoor, prepare his armor and horse, learn to joust, practice the bow and shield, then survive the broken bridge and discover the Dawn and Dusk paths with Magister Ione.",
  areas:[
-  {id:'armory',title:'Hearthmoor Armory',reg:'hearth',explore:{length:1060,scenery:'armory',seed:3,
-    combatAt:[{x:560,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.5}]}],
+  {id:'rideout',title:'The Road from Halvard’s Keep',reg:'green',explore:{
+    length:1220,scenery:'road',seed:81,weather:'breeze',time:'morning',
+    mount:{v:'bay',tk:'saddled',liv:'hearth',companion:'halv',coat:'bay',lesson:true},
+    platforms:[],
+    objects:[
+      {kind:'reins',label:'PRACTICE THE REINS',x:255,y:0,flag:'squireReins'},
+      {kind:'exit',label:'HEARTHMOOR INN',x:1154,y:0,needFlags:['squireReins','squireCanter']}
+    ],
+    combatAt:[]
+  },steps:[{t:'explore',goal:'Ride your own gelding beside Halvard; learn the reins, canter and reach Hearthmoor',intro:[
+    N('Chapter 1 — The morning road from Ser Halvard’s keep. Two horses turn toward Castle Hearthmoor: a grey warhorse for the knight, and a steady bay gelding for his young squire.'),
+    L('Ser Halvard','A knight does not begin with a lance, Corin. He begins by learning to sit a horse without fighting its stride. Keep your hands low. Follow my pace.'),
+    L('Corin','Your charger is twice the horse mine is.'),
+    L('Ser Halvard','Yours is honest, sure-footed and forgiving. Better for learning. Hold RIGHT to gather speed; release it to slow. Tap JUMP to clear an obstacle.'),
+    L('Corin','And what should I watch for at Hearthmoor?'),
+    L('Ser Halvard','At the lists, two knights meet behind a timber tilt. One clean touch of the lance may win a pass. The better knight also guards his horse and keeps his seat. Your duty is my armor, my mount and my spare lances.'),
+    N('Ride to the reins marker and tap USE, then continue until you have cantered. Arrive at the Hearthmoor inn before dusk.')
+  ]}]},
+  {id:'inn',title:'The Hearthmoor Inn and Storeroom',reg:'hearth',explore:{
+    length:1060,scenery:'inn',seed:3,
+    combatAt:[],
     platforms:[{x:320,w:112,y:-26,kind:'workbench'},{x:600,w:165,y:-54,kind:'loft'},{x:780,w:78,y:-28,kind:'rack'}],
     objects:[
-     {kind:'chest',label:'OLD CHEST',x:220,y:0,flag:'squireChest',slot:'outfit',rarity:1},
-     {kind:'key',label:'IRON KEY',x:368,y:-26,flag:'squireArmoryKey'},
-     {kind:'shield',label:'PRACTICE SHIELD',x:500,y:0,flag:'squireShield',tier:0},
-     {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
-     {kind:'gear',label:'TOURNAMENT HELM',x:742,y:-54,flag:'squireHelmet'},
-     {kind:'gear',label:'POLISHING OIL',x:813,y:-28,flag:'squireOil'},
-     {kind:'gear',label:'LANCE BUNDLE',x:897,y:0,flag:'squireLancesReady'},
-     {kind:'exit',label:'STABLES DOOR',x:994,y:0,need:'squireArmoryKey',
-      needFlags:['squireArmor','squireHelmet','squireOil','squireLancesReady','squireShield'],locked:'FIND THE ARMORY KEY'}
+      {kind:'chest',label:'TRAVEL CHEST',x:220,y:0,flag:'squireChest',slot:'outfit',rarity:1},
+      {kind:'key',label:'STOREROOM KEY',x:368,y:-26,flag:'squireArmoryKey'},
+      {kind:'gear',label:'BREASTPLATE',x:667,y:-54,flag:'squireArmor'},
+      {kind:'gear',label:'TOURNAMENT HELM',x:742,y:-54,flag:'squireHelmet'},
+      {kind:'gear',label:'POLISHING OIL',x:813,y:-28,flag:'squireOil'},
+      {kind:'exit',label:'INN STABLES',x:994,y:0,need:'squireArmoryKey',
+        needFlags:['squireArmor','squireHelmet','squireOil'],locked:'GET THE STOREROOM KEY'}
     ]
-   },steps:[{t:'explore',goal:'Prepare Halvard\'s tournament armor, helm, polish and lances',intro:[
-     N('Castle Hearthmoor. The morning of the tournament. Halvard has left Corin responsible for preparing his equipment.'),
-     L('Ser Halvard','Corin! I need my breastplate, tournament helm, polishing oil, and a bundle of sound lances before I ride. The upper racks are locked; find the iron key.'),
-     L('Corin','Aye, Father. I will have every buckle shining before the trumpets sound.'),
-     N('Move with your left thumb and tap JUMP with your right. Search the armor racks, leap to the upper loft, and tap USE near supplies.')
-   ]}]},
-  {id:'stables',title:'The Castle Stables',reg:'hearth',explore:{length:995,scenery:'stable',seed:9,
-    combatAt:[{x:300,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.4},{k:'rat',s:1,d:.9}]}],
+  },steps:[{t:'explore',goal:'Prepare Halvard’s tournament armor in the inn storeroom',intro:[
+    N('Chapter 2 — At the Hearthmoor inn, the host has kept the visiting knights’ tack and armor safe in the upstairs storeroom. Supper smells of onion broth and baked bread.'),
+    L('Ser Halvard','A room at the inn and a stall for each horse. While I meet the herald, fetch my breastplate, helm and polishing oil from the loft.'),
+    L('Innkeeper','The supplies are above the common room, squire. The key hangs by the workbench. Mind the stairs, and do not wake the guests.'),
+    L('Corin','Everything shall be buckled and polished before the first trumpet.'),
+    N('JUMP to the upper storeroom, collect the armor and key, and head to the stables.')
+  ]}]},
+  {id:'stables',title:'Hearthmoor Inn Stables',reg:'hearth',explore:{
+    length:995,scenery:'stable',seed:9,
+    combatAt:[{x:300,list:[{k:'rat',s:1,d:0},{k:'rat',s:-1,d:.4}]}],
     platforms:[{x:170,w:115,y:-23,kind:'hay'},{x:520,w:165,y:-36,kind:'hayloft'},{x:740,w:110,y:-26,kind:'tackbench'}],
     objects:[
-     {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
-     {kind:'horse',label:'GROOM HALVARD HORSE',x:416,y:0,flag:'squireHorse'},
-     {kind:'gear',label:'TOURNAMENT SADDLE',x:602,y:-36,flag:'squireSaddle'},
-     {kind:'exit',label:'TO THE LISTS',x:935,y:0,needFlags:['squireHorse','squireSaddle']}
+      {kind:'chest',label:'TACK ROOM CHEST',x:222,y:-23,flag:'squireTackChest',slot:'trinket'},
+      {kind:'horse',label:'GROOM HALVARD’S CHARGER',x:416,y:0,flag:'squireHorse'},
+      {kind:'gear',label:'TOURNAMENT SADDLE',x:602,y:-36,flag:'squireSaddle'},
+      {kind:'exit',label:'TO THE TOURNAMENT',x:935,y:0,needFlags:['squireHorse','squireSaddle']}
     ]
-   },steps:[{t:'explore',goal:"Groom Halvard's horse and retrieve the saddle",intro:[
-     N('The stables smell of leather, straw and cold morning air.'),
-     L('Stablemaster Tobren','A knight is only as ready as his horse. The saddle is stored above. Mind your footing, squire.'),
-     L('Stablemaster Tobren','And mind the rats. They have been at the grain again. Take that wooden practice sword and see them off.'),
-     L('Corin','The grey charger will be groomed and saddled before the first trumpet.')
-   ]}]},
-  {id:'lists',title:'The Tournament Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,
+  },steps:[{t:'explore',goal:'Groom the charger, secure his saddle and clear rats from the grain',intro:[
+    N('Chapter 3 — The Hearthmoor inn stables are crowded with tournament horses and visiting squires.'),
+    L('Stablemaster Tobren','Halvard’s grey charger takes better care than the gentle bay you rode in on. Brush the coat, check the hooves and fetch his competition saddle.'),
+    L('Ser Halvard','A good rider cares for the horse first, Corin. You may save your own life by seeing to a loose strap now.'),
+    L('Corin','The charger will be ready. I will mind the grain rats, too.'),
+    N('Groom the horse, collect his saddle from the hayloft and leave for the lists.')
+  ]}]},
+  {id:'lists',title:'The Tournament of Hearthmoor',reg:'hearth',explore:{
+    length:1030,scenery:'lists',seed:18,
     platforms:[{x:170,w:136,y:-34,kind:'bleachers'},{x:700,w:118,y:-45,kind:'bleachers'}],
     objects:[
-     {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
-     {kind:'joust',label:'SERVE THE JOUST',x:527,y:0,need:'squireLances',flag:'squireJoust'},
-     {kind:'chest',label:'CHAMPION CHEST',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
-     {kind:'exit',label:'TO IONE\'S GARDEN',x:956,y:0,needFlags:['squireJoust']}
+      {kind:'armor',label:'ARMOR SER HALVARD',x:120,y:0,flag:'squireHalvardArmored',
+        needFlags:['squireArmor','squireHelmet','squireOil']},
+      {kind:'gear',label:'SPARE LANCES',x:236,y:-34,flag:'squireLances'},
+      {kind:'joust',label:'SERVE HALVARD AT THE LISTS',x:527,y:0,need:'squireLances',
+        needFlags:['squireHalvardArmored'],flag:'squireJoust',role:'squire'},
+      {kind:'chest',label:'TOURNAMENT REWARD',x:765,y:-45,flag:'squireTournamentChest',slot:'outfit',rarity:2},
+      {kind:'exit',label:'PRACTICE RING',x:956,y:0,needFlags:['squireJoust']}
     ]
-   },steps:[{t:'explore',goal:'Collect spare lances and assist Halvard during the joust',intro:[
-     N('Bright pennants ripple over the lists. Horns sound as mounted knights take their places.'),
-     L('Ser Halvard','Listen closely. I ride; you bring the lances. Hand each one across as I pass the marker.'),
-     L('Corin','And when may I joust?'),
-     L('Ser Halvard','When you have learned to stand on your own feet. The lance handoff is the first lesson.'),
-     N('Get the spare lances on the raised platform. At the lists, tap USE when the moving marker reaches the green band.')
-   ]}]},
-  {id:'magegarden',title:"Ione's Garden of Runes",reg:'hearth',explore:{
-    length:965,scenery:'magegarden',seed:41,weather:'breeze',time:'late-afternoon',
-    platforms:[{x:244,w:114,y:-28,kind:'stone'},{x:540,w:146,y:-42,kind:'stone'},{x:746,w:88,y:-24,kind:'stone'}],
-    objects:[
-      {kind:'staff',label:"IONE'S TRAINING STAFF",x:308,y:-28,flag:'ioneFirstStaff'},
-      {kind:'gear',label:'LIGHT RUNE',x:612,y:-42,need:'ioneFirstStaff',flag:'ioneLightRune'},
-      {kind:'exit',label:'SOUTH PATROL GATE',x:912,y:0,needFlags:['ioneFirstStaff','ioneLightRune']}
-    ],
-    combatAt:[{x:700,list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.8}]}]
-  },steps:[{t:'explore',goal:'Learn Dawn magic from Magister Ione and retrieve the light rune',intro:[
-    N("Beyond the tournament stands Ione's garden: a quiet courtyard of living vines and carved runes."),
-    L('Magister Ione','Corin! Halvard says you can carry a lance, but have you ever held a little light in your hands?'),
-    L('Corin','Only the sort that comes from a torch, Magister.'),
-    L('Magister Ione','Good. I prefer students who know how much they have to learn. Find the training staff on the upper terrace.'),
-    L('Magister Ione','Choose STAFF when you have it. Your first light is Dawn. Use ATK to release it toward the wandering wisps; then bring me the rune from the far platform.'),
-    N('Move with your left thumb, JUMP with your right. Use STAFF and ATK after receiving Ione\'s gift.')
+  },steps:[{t:'explore',goal:'Fasten Halvard’s armor, supply lances and serve him during three passes',intro:[
+    N('Chapter 4 — Castle Hearthmoor’s tournament. The grandstands roar as knights in brightly painted heraldry ride between the tilts.'),
+    L('Ser Halvard','Come here before the herald calls us. Fasten my cuirass, lace the vambraces and lower the helm onto my shoulders.'),
+    L('Corin','The breastplate sits firm. I have the spare lances stacked beside the lists.'),
+    L('Ser Halvard','Good. Stay beside the rail. Watch the horse, not the cheering. When I approach, offer a lance with USE. I shall handle the rest.'),
+    N('First use ARMOR SER HALVARD, collect the spare lances from the raised gallery, then time three actual lance handoffs.')
   ]}]},
-  {id:'greenroad',title:'The South Patrol Road',reg:'green',explore:{length:1260,scenery:'road',seed:27,
-    platforms:[{x:270,w:115,y:-28,kind:'outcrop'},{x:800,w:160,y:-34,kind:'outcrop'}],
-    combatAt:[
-      {x:320,list:[{k:'blight',s:1,d:0},{k:'blight',s:-1,d:.6}]},
-      {x:680,list:[{k:'bandit',s:1,d:0},{k:'scout',s:-1,d:.7},{k:'bandit',s:1,d:1.3}]},
-      {x:970,list:[{k:'hound',s:1,d:0,boss:1,name:'Greenmarch Ravager',hpm:1.1}]}
-    ],
+  {id:'practicelists',title:'Halvard’s Practice Ring',reg:'hearth',explore:{
+    length:990,scenery:'practice',seed:23,
+    platforms:[{x:198,w:103,y:-23,kind:'bleachers'}],
     objects:[
-     {kind:'chest',label:'HIDDEN ROAD CACHE',x:324,y:-28,flag:'squireRoadCache',slot:'bow'},
-     {kind:'key',label:'PATROL SEAL',x:852,y:-34,flag:'squirePatrolSeal'},
-     {kind:'exit',label:'RETURN TO HEARTHMOOR',x:1205,y:0,need:'squirePatrolSeal'}
+      {kind:'joust',label:'RIDE A PRACTICE JOUST',x:535,y:0,role:'rider',opponent:'halvard',passes:2,
+        flag:'squirePracticeJoust',easy:true},
+      {kind:'exit',label:'TRAINING YARD',x:925,y:0,needFlags:['squirePracticeJoust']}
     ]
-   },steps:[{t:'explore',goal:'Travel the patrol road, defeat threats and recover the seal',intro:[
-     L('Ser Halvard','Ione tells me she has put a staff in your hands. Good. Now I send you along the southern road, to learn every turning of the kingdom.'),
-     L('Corin','Alone?'),
-     L('Ser Halvard','A knight must know when to walk without a shadow at his heel. Keep your shield to hand.'),
-     N('Travel the road yourself. Blight creatures, reavers and archers may be lying in wait; recover the patrol seal on the upper ledge.')
-   ]}]}
+  },steps:[{t:'explore',goal:'Mount your bay and practice two lance passes with Halvard',intro:[
+    N('Chapter 5 — After the tournament, Halvard takes Corin into a quieter sand ring, away from the crowded stands.'),
+    L('Corin','You made the lance look light.'),
+    L('Ser Halvard','It is never light at speed. Now you shall see from the saddle. Ride your bay. I will meet you at a safe practice pace, and we will use blunted lances.'),
+    L('Ser Halvard','Balance, then aim. The horse must know where you are going before your lance does. Lower it with COUCH as I approach.'),
+    N('Tap USE at the practice marker. Ride two mounted passes; tap COUCH to lower the practice lance. A missed touch is a lesson, not failure.')
+  ]}]},
+  {id:'trainingyard',title:'The Ranger and the Sword',reg:'hearth',explore:{
+    length:1230,scenery:'trainingyard',seed:36,
+    platforms:[],
+    objects:[
+      {kind:'bow',label:'RANGER ELOWEN’S FIRST BOW',x:220,y:0,flag:'squireFirstBow'},
+      {kind:'archerytarget',label:'ARCHERY BUTT — SHOOT WITH BOW',x:432,y:0,flag:'squireArcheryHit'},
+      {kind:'shield',label:'HALVARD’S PRACTICE SHIELD',x:648,y:0,need:'squireArcheryHit',
+        flag:'squireShield',tier:0},
+      {kind:'guardtest',label:'BRACE AND GUARD',x:773,y:0,need:'squireShield',flag:'squireGuardLearned'},
+      {kind:'swordtarget',label:'STRIKE THE STRAW DUMMY',x:913,y:0,need:'squireGuardLearned',
+        flag:'squireSwordHit'},
+      {kind:'sword',label:'HALVARD’S BLUNT IRON BLADE',x:1040,y:0,need:'squireSwordHit',
+        flag:'squireSwordAward'},
+      {kind:'exit',label:'RIDE HOME',x:1171,y:0,
+        needFlags:['squireFirstBow','squireArcheryHit','squireGuardLearned','squireSwordHit','squireSwordAward']}
+    ]
+  },steps:[{t:'explore',goal:'Receive a bow; shoot the target, guard and strike the sword dummy',intro:[
+    N('Chapter 6 — Under the castle walls, targets stand among straw dummies. A cloaked ranger leans on her unstrung bow beside Ser Halvard.'),
+    L('Ser Halvard','Corin, meet Ranger Elowen. She watched my back on the southern marches long before you were born.'),
+    L('Ranger Elowen','And he still holds a bow like a broomstick. Try mine. Stand, draw, breathe out and let the arrow go when the target is still.'),
+    L('Corin','I have never owned a bow.'),
+    L('Ranger Elowen','You do now. Shoot the straw butt ahead using BOW and ATK. Then ask Halvard about the wooden shield.'),
+    L('Ser Halvard','First, raise GUARD to turn a blow. Then take your wooden practice sword and strike the dummy before I hand you iron.'),
+    N('Take the bow and fire at the archery butt. Collect the shield; hold GUARD while using the brace marker. Strike the sword dummy with SWORD and ATK.')
+  ]}]},
+  {id:'returnroad',title:'The Broken Bridge and Ione’s Garden',reg:'green',explore:{
+    length:1270,scenery:'brokenbridge',seed:41,weather:'storm',time:'dusk',
+    mount:{v:'bay',tk:'saddled',liv:'hearth',companion:'halv',until:476,returning:true},
+    bridge:{trigger:476,edge:625,to:737,choiceX:593},
+    platforms:[{x:856,w:110,y:-27,kind:'stone'},{x:961,w:99,y:-34,kind:'stone'}],
+    combatAt:[],
+    objects:[
+      {kind:'staff',label:'IONE’S ROWAN STAFF',x:533,y:0,flag:'ioneFirstStaff'},
+      {kind:'crossroads',label:'DAWN OR DUSK — CAST A PATH',x:600,y:0,
+        need:'ioneFirstStaff',flag:'ionePathChoice'},
+      {kind:'gear',label:'THE LIGHT RUNE',x:993,y:-34,need:'ionePathMade',flag:'ioneLightRune'},
+      {kind:'exit',label:'THE HOMEWARD TRACK',x:1212,y:0,
+        needFlags:['ioneFirstStaff','ionePathMade','ioneLightRune']}
+    ]
+  },steps:[{t:'explore',goal:'Ride home, survive the bridge collapse, and cast a Dawn or Dusk path with Ione',intro:[
+    N('Chapter 7 — The last day of the tournament. Corin and Ser Halvard ride home together under thickening clouds.'),
+    L('Ser Halvard','Your seat is easier now. You have earned a bow, a wooden shield and the beginning of a sword-arm. A fine few days, lad.'),
+    L('Corin','And the lance?'),
+    L('Ser Halvard','That comes after a thousand more days on horseback. Stay close; the weather looks ill.'),
+    N('Ride beside Halvard on the homeward road. The old bridge lies beyond the hillside.')
+  ]}]}
  ]},
 {id:'m1',type:'main',act:1,title:'Blight at the Castle Gates',reg:'hearth',lvl:1,req:'m0',
  desc:"After the tournament and Corin's first patrol, blighted creatures approach the walls of Hearthmoor. Hold the castle approaches before the danger reaches the villagers.",
  steps:[
   {t:'say',lines:[
-    L('Ser Halvard','Back from the patrol already, Corin? Your report will have to wait. The watchmen have seen blighted creatures by the north gate.'),
-    L('Corin','I saw the same markings on the road. They are moving toward the village.'),
+    L('Ser Halvard','You made it back from the broken bridge, Corin. I feared you lost. The watchmen have now spotted blighted creatures near the northern gate.'),
+    L('Corin','I found a path with Ione’s magic. The blight is on the roads too, and it is moving toward our village.'),
     L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
   ]},
   {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'scout',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[

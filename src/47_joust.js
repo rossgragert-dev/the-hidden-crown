@@ -16,7 +16,7 @@ const JOUST_CFG={
 function joustCreate(c){
   const easy=!!(G.opts&&G.opts.joustEasy)||!!c.easy,role=c.role||'squire',seed=c.seed||11;
   const J={role,easy,seed,rnd:mkr(seed),acc:0,t:0,round:1,passes:c.passes||3,score:0,foe:0,object:c.object||null,
-    anchor:c.anchor||0,lane:c.lane||0,lead:c.lead||300,phase:'prep',pt:0,events:[],result:null,
+    anchor:c.anchor||0,lane:c.lane||0,lead:c.lead||300,opponent:c.opponent||'brannoch',phase:'prep',pt:0,events:[],result:null,
     reach:easy?JOUST_CFG.reachEasy:JOUST_CFG.reach,offerDur:easy?JOUST_CFG.offerEasy:JOUST_CFG.offer,
     offer:0,used:false,handed:false,verdict:'',set:-1,broke:false,log:[],
     a:{x:0,v:0,gait:'idle',ph:0,face:1,ang:-12},b:{x:0,v:0,gait:'idle',ph:0,face:-1,ang:-12,set:-1,q:0}};
@@ -118,7 +118,10 @@ function joustDraw(J,cam,gy){
   if(J.role==='squire'&&J.handed){drawLance(Math.round(ax+10),gy-26,1,-70,{back:6});}
   if(J.role==='rider'){
     const b=J.b,bl={ang:b.set>=0?2:-26,none:false};
-    drawMounted(b.x-cam,laneY,-1,{v:'black',tk:'tourney',liv:'crimson',gait:b.gait,ph:b.ph},{...NPCS.brannoch,mv:true,w:3,helm:'#8a8f9a',crest:'plume',crestC:'#2a2a34'},bl);
+    const mentor=J.opponent==='halvard';
+    drawMounted(b.x-cam,laneY,-1,
+      {v:mentor?'charger':'black',tk:'tourney',liv:mentor?'hearth':'crimson',gait:b.gait,ph:b.ph},
+      mentor?{...NPCS.halv,mv:true,w:3}:{...NPCS.brannoch,mv:true,w:3,helm:'#8a8f9a',crest:'plume',crestC:'#2a2a34'},bl);
   }
   // off-screen indicator for the narrow portrait view
   const rx=a.x-cam;
