@@ -25,6 +25,8 @@ jobs:
       - run: npm run test:boot
       - run: npm run test:adventure
         if: ${{ !cancelled() }}
+      - run: npm run test:magic-paths
+        if: ${{ !cancelled() }}
       - run: npm run test:opening
         if: ${{ !cancelled() }}
       - run: npm run test:grounding
