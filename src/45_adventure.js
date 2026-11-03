@@ -132,10 +132,15 @@ function adventureUpdate(dt){
 /* Unique hand-authored pixel-art environment vocabulary for each opening room.
    These backgrounds stay fixed vertically for indoor platforming; the character
    jumps in front of immovable walls, shelves, bridges and foreground objects. */
+// Indoor architectural props share the same horizontal world space as the
+// platform collision surfaces and Corin's feet. Exterior lists may parallax.
+function interiorBackCam(cam,kind){
+  return kind==='armory'||kind==='stable'?Math.floor(cam):Math.floor(cam*.74);
+}
 function adventureBackdrop(cam){
   const a=S.adv,kind=a&&a.scenery,y=GY;
   if(!a||['armory','stable','lists'].indexOf(kind)<0)return false;
-  const backCam=Math.floor(cam*.74);
+  const backCam=interiorBackCam(cam,kind);
   if(kind==='armory'){
     R(0,0,W,H,'#141722');
     R(0,0,W,y+1,'#353643');
@@ -289,8 +294,10 @@ function drawSupportedPlatform(p,cam,ground,scenery){
     R(px,top+5,post,Math.max(0,h-5),frame);
     R(px+1,top+6,2,Math.max(0,h-6),highlight);
     R(px-4,ground-4,post+8,4,'#4a3a30');
+    // Pressed into the floor, not suspended just above the flagstones.
+    R(px-7,ground-1,post+14,2,'rgba(25,17,13,.48)');
   }
-  if(w>=125){const mid=x+Math.floor(w/2);R(mid,top+8,5,Math.max(0,h-8),frame);R(mid+1,top+9,2,Math.max(0,h-9),highlight);}
+  if(w>=125){const mid=x+Math.floor(w/2);R(mid,top+8,5,Math.max(0,h-8),frame);R(mid+1,top+9,2,Math.max(0,h-9),highlight);R(mid-5,ground-1,15,2,'rgba(25,17,13,.35)');}
   if(h>=26){
     // Cross-bracing joins upper beams to lower supports and prevents the
     // illusion that catwalks are floating above a worktable.
@@ -318,6 +325,8 @@ function drawSupportedPlatform(p,cam,ground,scenery){
     // A tabletop, workbench or storage rack with a full-width cabinet / shelf
     // under the top; legs genuinely reach the floor.
     R(x-2,top,w+4,5,'#b28a58');R(x,top,w,2,'#e4bd79');
+    // A narrow under-lip shadow gives the tabletop actual thickness.
+    R(x-2,top+5,w+4,2,'#503929');
     R(x+4,top+6,w-8,4,frame);
     if(h>17)R(x+12,ground-11,w-24,4,'#a07c55');
     if(kind==='rack'){
