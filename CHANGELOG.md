@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.7.0 — The Road to Hearthmoor (development, not merged)
+
+- Replaced M0's previous five-area opening with **seven sequential chapters**: mounted ride to the Hearthmoor tournament; inn equipment room; visiting stables; armor preparation and tournament handoffs; Corin's practice joust against Halvard; ranger bow and knight sword/shield training; broken bridge and Ione's first magic.
+- Corin rides a **bay gelding**, distinct in tack and coat from Halvard's armored grey charger. Hold RIGHT to gather speed and JUMP to leap; canter and reins tasks are part of the first chapter.
+- Reused the horse animation and jousting simulations, with Halvard as the mounted practice opponent.
+- Bow, shield and blunt iron sword now require appropriate lessons; the archery target requires a real arrow hit, the sword dummy requires a melee hit, and the shield brace requires holding GUARD.
+- At the broken bridge, a player-chosen Dawn cast reveals hidden stepping stones while Dusk creates a rock crossing; both paths are blocked until the matching staff spell is cast.
+- Added an original inn, practice lists, training-yard and mystical garden art; preserved all earlier scenery, M1–M12 quest IDs, and a legacy chapter-checkpoint migration.
+- See `docs/V0_7_0_SEVEN_CHAPTER_OPENING.md` for full narrative, QA and constraints.
+
+
 ## v0.6.3 — Living Roads and Magic (development, not merged)
 
 - Mission-aware backgrounds for Act I and the six Hearthmoor siege stages: visible drawbridge and defenders, burning village and keep, distinctive Greenmarch, Veilfen, library and mountain scenes.
