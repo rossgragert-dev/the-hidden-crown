@@ -23,7 +23,7 @@ const fs=require('fs');
       assert.equal(story.id,'m0');
       assert.equal(story.area,'rideout');
       assert.equal(story.prologue,false,'The old narrated pre-armory prologue must not appear');
-      await page.evaluate(()=>{const g=window.__G;g.loadMissionArea(1);g.S.talk=false;g.S.q=[];});
+      await page.evaluate(()=>{const g=window.__G;g.loadMissionArea(1);g.S.bi=g.S.beats.length;g.S.talk=false;g.S.q=[];});
       const geom=await page.evaluate(()=>{
         const g=window.__G;
         const a=g.S.adv;
@@ -31,7 +31,7 @@ const fs=require('fs');
       });
       assert.equal(geom.kind,'inn');
       assert.deepEqual(geom.platforms.map(p=>p.kind),['workbench','loft','rack']);
-      await page.evaluate(()=>{const g=window.__G;g.S.talk=false;g.S.q=[];g.P.x=350;g.P.py=-26;g.P.grounded=true;g.P.vy=0;g.S.cam=180;});
+      await page.evaluate(()=>{const g=window.__G;g.S.bi=g.S.beats.length;g.S.talk=false;g.S.q=[];g.P.x=350;g.P.py=-26;g.P.grounded=true;g.P.vy=0;g.S.cam=180;});
       await page.waitForTimeout(100);
       if(viewport.width===390){
         const shot='/tmp/shots/opening-armory-supported.png';
@@ -49,6 +49,7 @@ const fs=require('fs');
           return e;
         };
         g.S.arena=false;
+        g.S.talk=false;g.S.q=[];
         g.keys.block=0;
         g.P.inv=0;g.P.hp=g.P.max;
         let e=enemy();
