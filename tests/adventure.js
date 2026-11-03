@@ -102,10 +102,13 @@ const {pathToFileURL}=require('url'),path=require('path');
   assert.equal(block.locked,false);assert.equal(block.guard,1);
   const sword=await page.evaluate(()=>{
     const g=window.__G,o=g.S.adv.objects.find(o=>o.kind==='swordtarget');
-    g.P.x=o.x-23;g.P.face=1;g.P.w=0;g.P.cd=0;g.attack();
-    return {flag:g.G.flags.squireSwordHit,done:o.done};
+    g.P.x=o.x-23;g.P.face=1;g.P.w=0;g.P.cd=0;g.S.talk=false;g.S.q=[];
+    g.attack();
+    return {flag:g.G.flags.squireSwordHit,done:o.done,talk:g.S.talk,
+      cd:g.P.cd,world:g.S.adv.scenery,need:g.G.flags.squireGuardLearned,
+      facing:g.P.face,weapon:g.P.w,x:g.P.x,targetX:o.x};
   });
-  assert.ok(sword.flag);assert.ok(sword.done);
+  assert.ok(sword.flag,'Sword practice target: '+JSON.stringify(sword));assert.ok(sword.done);
   assert.ok((await obj('sword')).flag);
   assert.equal(await page.evaluate(()=>window.__G.G.eq.sword.name),'Blunt Iron Sword');
   await advance('returnroad');
