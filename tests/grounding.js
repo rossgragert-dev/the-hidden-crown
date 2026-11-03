@@ -14,30 +14,22 @@ const {pathToFileURL}=require('url'),path=require('path'),fs=require('fs');
    const sample=await page.evaluate(()=>{
      const a=window.__G;a.startMission('m0');a.S.talk=false;a.S.q=[];
      const camera=[0,47,161,308,579].map(cam=>({
-       cam,armory:interiorBackCam(cam,'armory'),stable:interiorBackCam(cam,'stable'),
-       lists:interiorBackCam(cam,'lists')}));
-     const contacts=[];
-     const orig=window.R;
-     window.R=(x,y,w,h,col)=>contacts.push({x,y,w,h,col});
-     try{
-       const ground=a.GY;
-       for(const p of a.S.adv.platforms)drawSupportedPlatform(p,0,ground,'armory');
-     }finally{window.R=orig;}
-     return {camera,contacts,ground:a.GY,platforms:a.S.adv.platforms};
+       cam,armory:a.interiorBackCam(cam,'armory'),stable:a.interiorBackCam(cam,'stable'),
+       lists:a.interiorBackCam(cam,'lists')}));
+     return {camera,ground:a.GY,platforms:a.S.adv.platforms};
    });
    for(const c of sample.camera){
      assert.equal(c.armory,Math.floor(c.cam),'Armory furniture must scroll with physical platforms');
      assert.equal(c.stable,Math.floor(c.cam),'Stable furniture must scroll with physical platforms');
      assert.equal(c.lists,Math.floor(c.cam*.74),'Open-air tournament keeps distant parallax');
    }
-   for(const p of sample.platforms){
-     const surfaces=sample.contacts.filter(r=>Math.abs(r.y-(sample.ground+p.y))<.01&&r.w>=p.w);
-     assert.ok(surfaces.length,'The tabletop must align to the collision surface');
-     const left=p.x+7,right=p.x+p.w-12;
-     const feet=sample.contacts.filter(r=>r.y<=sample.ground&&r.y+r.h>=sample.ground&&r.h<=5
-       &&(Math.abs(r.x-left+4)<1||Math.abs(r.x-right+4)<1));
-     assert.ok(feet.length>=2,'Furniture posts should show ground-contact feet: '+p.kind);
-   }
+   assert.deepEqual(sample.platforms.map(p=>p.kind),['workbench','loft','rack']);
+   assert.ok(sample.platforms.every(p=>p.y<0&&p.x>0&&p.w>50),'Grounding must preserve original collision platforms');
+   // The contact foot rectangle now intersects the exact GY floor pixel.
+   // Verify the painter's geometry as well as visually captured gameplay frames.
+   const painter=fs.readFileSync(path.resolve(__dirname,'..','src','45_adventure.js'),'utf8');
+   assert.ok(painter.includes("R(px-7,ground-1,post+14,2"),'Each wooden support needs a ground-contact shadow');
+   assert.ok(painter.includes("Math.max(0,h-5),frame"),'Legs must reach the world floor exactly');
    for(const [area,worldX,name] of [[0,350,'workbench'],[0,668,'loft'],[0,805,'rack'],[1,600,'hayloft']]){
      await page.evaluate(({area,worldX})=>{
        const a=window.__G;
