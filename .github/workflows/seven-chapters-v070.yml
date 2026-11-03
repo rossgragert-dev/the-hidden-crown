@@ -1,0 +1,42 @@
+name: v0.7.0 Seven Chapter Opening
+on:
+  push:
+    branches: [feature/v070-seven-chapter-squire]
+  pull_request:
+    branches: [feature/v0651-armory-grounding]
+concurrency:
+  group: seven-chapters-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: mkdir -p /tmp/shots
+      - run: npm run build
+      - run: git diff --exit-code -- index.html
+      - run: npm run test:smoke
+      - run: npm run test:boot
+      - run: npm run test:adventure
+      - run: npm run test:opening
+      - run: npm run test:grounding
+      - run: npm run test:squire
+      - run: npm run test:polish
+      - run: npm run test:world
+      - run: npm run test:pixel-art
+      - run: npm run test:quest
+      - run: npm run test:zoom
+      - run: npm run test:joust
+      - run: node tests/lab.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v070-seven-chapters-evidence
+          path: /tmp/shots/*.png
+          if-no-files-found: ignore
