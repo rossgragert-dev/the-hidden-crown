@@ -26,7 +26,7 @@ jobs:
       - run: npm run test:adventure
       - run: npm run test:opening
       - run: npm run test:grounding
-      - run: npm run test:squire
+      - run: node tests/squire.js
       - run: npm run test:polish
       - run: npm run test:world
       - run: npm run test:pixel-art
