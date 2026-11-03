@@ -24,16 +24,27 @@ jobs:
       - run: npm run test:smoke
       - run: npm run test:boot
       - run: npm run test:adventure
+        if: ${{ !cancelled() }}
       - run: npm run test:opening
+        if: ${{ !cancelled() }}
       - run: npm run test:grounding
+        if: ${{ !cancelled() }}
       - run: node tests/squire.js
+        if: ${{ !cancelled() }}
       - run: npm run test:polish
+        if: ${{ !cancelled() }}
       - run: npm run test:world
+        if: ${{ !cancelled() }}
       - run: npm run test:pixel-art
+        if: ${{ !cancelled() }}
       - run: npm run test:quest
+        if: ${{ !cancelled() }}
       - run: npm run test:zoom
+        if: ${{ !cancelled() }}
       - run: npm run test:joust
+        if: ${{ !cancelled() }}
       - run: node tests/lab.js
+        if: ${{ !cancelled() }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
