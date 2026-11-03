@@ -21,14 +21,15 @@ const fs=require('fs');
       });
       assert.equal(story.mode,'play');
       assert.equal(story.id,'m0');
-      assert.equal(story.area,'armory');
+      assert.equal(story.area,'rideout');
       assert.equal(story.prologue,false,'The old narrated pre-armory prologue must not appear');
+      await page.evaluate(()=>window.__G.loadMissionArea(1));
       const geom=await page.evaluate(()=>{
         const g=window.__G;
         const a=g.S.adv;
         return {kind:a.scenery,platforms:a.platforms.map(p=>({kind:p.kind,x:p.x,y:p.y,w:p.w})),next:g.S.mission.id};
       });
-      assert.equal(geom.kind,'armory');
+      assert.equal(geom.kind,'inn');
       assert.deepEqual(geom.platforms.map(p=>p.kind),['workbench','loft','rack']);
       await page.evaluate(()=>{const g=window.__G;g.S.talk=false;g.S.q=[];g.P.x=350;g.P.py=-26;g.P.grounded=true;g.P.vy=0;g.S.cam=180;});
       await page.waitForTimeout(100);
@@ -97,6 +98,6 @@ const fs=require('fs');
       assert.deepEqual(errs,[],'No browser runtime errors');
       await context.close();
     }
-    console.log('Opening: direct armory start, context-specific next quest, grounded platform art, vertical combat safety: PASS');
+    console.log('Opening: starts mounted, inn shelves align with platforms, safe vertical combat: PASS');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
