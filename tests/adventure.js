@@ -81,6 +81,7 @@ const {pathToFileURL}=require('url'),path=require('path');
   await advance('trainingyard');
   assert.equal(await page.evaluate(()=>window.__G.G.eq.bow),null);
   assert.ok((await obj('bow')).flag);
+  await skip();
   let trained=await page.evaluate(()=>{
     const g=window.__G,a=g.S.adv,tar=a.objects.find(o=>o.kind==='archerytarget');
     g.P.x=tar.x-32;g.P.face=1;g.P.w=2;g.P.cd=0;
