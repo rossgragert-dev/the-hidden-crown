@@ -1,5 +1,7 @@
 # Story Bible: The Hidden Crown
 
+**Current opening continuity (v0.7.0, November 2026):** Corin is raised at **Ser Halvard's own keep**, separate from the tournament destination **Castle Hearthmoor**. The new opening follows seven chapters: travel together on horseback; inn; stables; tournament support; Corin's mounted practice joust; Ranger Elowen's first bow and Halvard's sword/shield training; homeward ride broken by a bridge collapse and Magister Ione's Dawn/Dusk path lesson. Later M1–M12 IDs remain, while the historic Act I table below documents an older campaign baseline. See [Seven-Chapter Opening](V0_7_0_SEVEN_CHAPTER_OPENING.md).
+
 Source of truth for story and systems design. (Originally authored as a claude.ai doc; this is the portable copy.)
 
 ## Premise & Pillars
