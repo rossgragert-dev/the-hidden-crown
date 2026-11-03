@@ -143,6 +143,30 @@ function adventureJoustFinish(){
 }
 function adventureUpdate(dt){
   const a=S.adv;if(!a||S.mode!=='play')return;
+  if(a.mount){
+    a.mount.ph+=dt*strideRate(gaitForSpeed(a.mount.speed),a.mount.speed);
+    a.mount.halvX=lerp(a.mount.halvX,Math.max(94,P.x+86),Math.min(1,dt*1.8));
+    if(P.x>340&&a.mount.speed>66&&!G.flags.squireCanter){
+      G.flags.squireCanter=1;toast('HORSEMANSHIP: STEADY CANTER LEARNED');save();
+    }
+  }
+  if(a.bridge){
+    if(!a.bridge.collapsed&&P.x>=a.bridge.trigger){
+      a.bridge.collapsed=true;P.x=a.bridge.trigger;P.vx=0;P.vy=0;
+      a.mount=null;P.py=0;P.grounded=true;
+      G.flags.squireBridgeBroken=1;save();
+      S.shake=.55;sfx(85,.6,'sawtooth',.09);
+      say([
+        N('The swollen river tears loose the old bridge supports. With a crack of timber, the middle span falls into the torrent. Corin’s bay refuses the edge.'),
+        L('Ser Halvard','Corin! Hold your horse! The bridge is gone. I am on the far bank and cannot come back.'),
+        L('Corin','Father! How am I to cross?'),
+        L('Ser Halvard','Keep your head. Find another way. I will seek the north ford and meet you at home.'),
+        N('Stranded among mist and standing stones, Corin sees a lantern flicker in a hidden garden beside the broken span.')
+      ],()=>{});
+      return;
+    }
+    if(!G.flags.ionePathMade&&P.x>a.bridge.edge)P.x=a.bridge.edge;
+  }
   if(S.joust){joustStep(S.joust,dt);if(joustDone(S.joust))adventureJoustFinish();else if(S.joust.role==='rider')P.x=clamp(S.joust.a.x,10,a.length);}
   const prev=P.py||0;
   // Walk off ledges naturally. A platform only supports the hero while
@@ -421,6 +445,47 @@ function adventureWorldDraw(cam){
       else{R(x+28,y-57,4,18,'#a76b32');R(x+24,y-65,12,9,'#e9bc60');}
     }
   }
+  if(a.bridge){
+    const B=a.bridge,edge=B.edge-cam,right=B.to-cam,w=B.to-B.edge;
+    // The drowned stone road and broken bridge are world-anchored. The gap
+    // is impassable until Corin casts the spell he chose with Ione.
+    if(edge<W+60&&right>-60){
+      R(edge-23,y-25,29,25,'#817367');R(edge-23,y-25,31,4,'#c2ae8a');
+      R(right-2,y-25,29,25,'#817367');R(right-2,y-25,29,4,'#c2ae8a');
+      R(edge+5,y-5,w-7,20,'#345962');
+      for(let k=0;k<8;k++){
+        const xx=edge+10+k*17;
+        R(xx,y+4+(k%3)*3,10,1,'#81a8a6');
+        if(k%2===0)R(xx+3,y-3,2,5,'#aec4b8');
+      }
+      // Broken rafters dip into the water on each bank.
+      g.strokeStyle='#70523f';g.lineWidth=3;g.beginPath();
+      g.moveTo(edge-15,y-13);g.lineTo(edge+13,y+11);
+      g.moveTo(right+12,y-13);g.lineTo(right-12,y+12);g.stroke();
+      const route=G.flags.ionePathMade&&G.flags.ionePathChoice;
+      if(route==='dawn'){
+        // Light reveals the ancient stepping stones, formerly hidden in mist.
+        for(let k=0;k<6;k++){
+          const xx=edge+k*(w-16)/5+3,top=y-10+(k%2)*2;
+          R(xx,top,19,10,'#899d99');
+          R(xx+1,top,17,3,'#d4ebe3');
+          R(xx+3,top-3,11,2,'rgba(239,241,159,.8)');
+          worldGlow(xx+9,top,20,'rgba(218,255,186,.13)');
+        }
+      }else if(route==='dusk'){
+        // Dusk raises a rough, jagged new causeway from the river.
+        R(edge+5,y-14,w-7,16,'#38314b');
+        for(let k=0;k<10;k++){
+          const xx=edge+5+k*12,top=y-19-(k%3)*3;
+          R(xx,top,15,7,k%3?'#715583':'#524266');
+          R(xx+2,top,8,2,'#a789ae');
+        }
+        worldGlow((edge+right)*.5,y-13,35,'rgba(185,91,237,.13)');
+      }
+      if(!route){R(edge+w*.47,y-35,8,20,'#7e6a58');R(edge+w*.47+2,y-38,4,4,'#ba9b71');}
+    }
+  }
+
   for(const p of a.platforms)drawSupportedPlatform(p,cam,y,a.scenery);
   for(const o of a.objects){
     if(o.done&&o.kind!=='horse')continue;
@@ -444,6 +509,42 @@ function adventureWorldDraw(cam){
       drawHorse(x,py,1,{v:'charger',tk:sd?'saddled':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
       if(gt&&Math.floor(S.t*14)%2)R(x+Math.round(Math.sin(S.t*9)*14),py-34-Math.round((S.t*40)%12),1,2,'#fff6c0');
       else if(gr&&Math.floor(S.t*2.2)%5===0)R(x-10+Math.floor(S.t*7)%24,py-30,1,1,'#fff6c0');
+    }else if(o.kind==='archerytarget'||o.kind==='swordtarget'){
+      R(x-3,py-38,6,38,'#6a5039');R(x-8,py-3,16,3,'#4d392c');
+      R(x-13,py-47,26,26,'#a38050');
+      R(x-11,py-45,22,22,'#dac28a');
+      R(x-7,py-41,14,14,'#a95c42');
+      R(x-3,py-37,6,6,'#e9d79c');
+      if(o.kind==='swordtarget'){R(x-15,py-47,4,27,'#9d834e');R(x+11,py-47,4,27,'#9d834e');}
+    }else if(o.kind==='armor'){
+      R(x-11,py-37,22,29,'#7b818e');R(x-13,py-32,5,19,'#b2b8bf');
+      R(x+8,py-32,5,19,'#b2b8bf');
+      R(x-10,py-43,20,8,'#acb2ba');
+      R(x-2,py-23,5,13,'#d6b871');
+      R(x-11,py-8,22,6,'#574b49');
+    }else if(o.kind==='bow'||o.kind==='sword'||o.kind==='staff'){
+      R(x-2,py-39,4,37,'#8c6d4d');
+      if(o.kind==='bow'){
+        g.strokeStyle='#b28a52';g.lineWidth=3;
+        g.beginPath();g.moveTo(x,py-40);g.quadraticCurveTo(x+17,py-20,x,py-2);g.stroke();
+        g.strokeStyle='#e0d7b0';g.lineWidth=1;g.beginPath();g.moveTo(x,py-40);g.lineTo(x,py-2);g.stroke();
+      }else if(o.kind==='staff'){
+        R(x-5,py-45,10,9,'#9acae6');R(x-2,py-43,4,6,'#e4f7e8');
+      }else{R(x-4,py-41,8,14,'#acb6c6');R(x-6,py-30,12,3,'#e0c487');}
+    }else if(o.kind==='crossroads'){
+      R(x-9,py-51,18,48,'#666574');
+      R(x-14,py-57,28,8,'#9e9daa');
+      R(x-6,py-47,12,32,'#31354b');
+      R(x-3,py-43,6,8,'#e4d4a4');
+      R(x-4,py-23,8,9,'#8d6ab8');
+    }else if(o.kind==='reins'){
+      R(x-8,py-34,16,34,'#776047');R(x-11,py-38,22,6,'#ba9d68');
+      R(x-3,py-34,3,26,'#d5bc8a');
+      R(x+1,py-30,6,3,'#b6a580');
+    }else if(o.kind==='guardtest'){
+      R(x-8,py-43,16,39,'#705744');
+      R(x-11,py-39,22,25,'#abb1b9');
+      R(x-7,py-36,14,19,'#3b5b7a');R(x-2,py-31,4,9,'#c4af77');
     }else{
       R(x-9,py-16,18,16,o.kind==='key'?'#b59e4b':o.kind==='shield'?'#4d6e91':'#6e5843');
       R(x-3,py-20,6,6,'#e8c469');
