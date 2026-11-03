@@ -206,10 +206,12 @@ function interiorBackCam(cam,kind){
 }
 function adventureBackdrop(cam){
   const a=S.adv,kind=a&&a.scenery,y=GY;
-  if(!a||['armory','stable','lists','inn','practice'].indexOf(kind)<0)return false;
+  if(!a||['armory','stable','lists','inn','practice','trainingyard','brokenbridge','returnroad'].indexOf(kind)<0)return false;
   const backCam=interiorBackCam(cam,kind);
   if(kind==='inn'){sceneInn(cam,y);return true;}
   if(kind==='practice'){scenePractice(cam,y);return true;}
+  if(kind==='trainingyard'){sceneTrainingYard(cam,y);return true;}
+  if(kind==='brokenbridge'||kind==='returnroad'){sceneStormGorge(cam,y);return true;}
   if(kind==='armory'){
     R(0,0,W,H,'#141722');
     R(0,0,W,y+1,'#353643');
@@ -393,19 +395,21 @@ function drawSupportedPlatform(p,cam,ground,scenery){
   }else{
     // A tabletop, workbench or storage rack with a full-width cabinet / shelf
     // under the top; legs genuinely reach the floor.
-    R(x-2,top,w+4,5,'#b28a58');R(x,top,w,2,'#e4bd79');
-    // A narrow under-lip shadow gives the tabletop actual thickness.
-    R(x-2,top+5,w+4,2,'#503929');
-    R(x+4,top+6,w-8,4,frame);
+    woodB(x-2,top,w+4,6,'#a8804e');R(x,top,w,1,'#e4bd79');
+    for(let k=20;k<w;k+=24)R(x+k,top+1,1,4,'#6a4a2e');            // plank joints
+    R(x-2,top+6,w+4,2,'#3e2c20');                                  // under-lip shadow = thickness
+    bv(x+4,top+8,w-8,5,frame);                                     // apron
+    for(let k=10;k<w-10;k+=26)R(x+k,top+9,2,3,'#2a1a12');          // drawer pulls / pegs
     if(h>17)R(x+12,ground-11,w-24,4,'#a07c55');
     if(kind==='rack'){
       for(let i=14;i<w-10;i+=18){
         R(x+i,top-17,2,16,'#8d8b8a');R(x+i-4,top-20,10,4,'#c4a968');
       }
     }else if(kind==='workbench'){
-      R(x+16,top-8,w-32,7,'#51463c');
-      R(x+21,top-10,16,3,'#aab0b5');
-      R(x+w-34,top-10,9,3,'#d2bd89');
+      bv(x+10,top-9,12,9,'#4a4d58');R(x+12,top-12,8,3,'#8a8e9a');R(x+15,top-14,2,3,'#6a6e7a');        // bench vise
+      R(x+30,top-3,14,2,'#6a4a2e');bv(x+42,top-7,7,7,'#7a7e8a');                                        // hammer
+      bv(x+58,top-4,18,4,'#d8d0c0');R(x+60,top-3,14,1,'#a89a82');                                        // polishing cloth
+      bv(x+w-26,top-11,9,11,'#9a5a32');R(x+w-24,top-14,5,3,'#d8c08a');bv(x+w-14,top-7,8,7,'#b08a52');   // oil jar, tin
     }else if(kind==='tackbench'){
       R(x+18,top-10,22,6,'#8d6447');
       R(x+50,top-12,26,8,'#9c7a54');
@@ -419,7 +423,7 @@ function adventureWorldDraw(cam){
   // Deterministic scenery per world segment, not a repeated painted strip.
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
-    if(['armory','stable','lists','inn','practice','magegarden','trainingyard','returnroad'].includes(a.scenery))continue;
+    if(['armory','stable','lists','inn','practice','magegarden','trainingyard','returnroad','brokenbridge'].includes(a.scenery))continue;
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;
@@ -447,115 +451,72 @@ function adventureWorldDraw(cam){
       else{R(x+28,y-57,4,18,'#a76b32');R(x+24,y-65,12,9,'#e9bc60');}
     }
   }
-  if(a.bridge){
-    const B=a.bridge,edge=B.edge-cam,right=B.to-cam,w=B.to-B.edge;
-    // The drowned stone road and broken bridge are world-anchored. The gap
-    // is impassable until Corin casts the spell he chose with Ione.
-    if(edge<W+60&&right>-60){
-      R(edge-23,y-25,29,25,'#817367');R(edge-23,y-25,31,4,'#c2ae8a');
-      R(right-2,y-25,29,25,'#817367');R(right-2,y-25,29,4,'#c2ae8a');
-      R(edge+5,y-5,w-7,20,'#345962');
-      for(let k=0;k<8;k++){
-        const xx=edge+10+k*17;
-        R(xx,y+4+(k%3)*3,10,1,'#81a8a6');
-        if(k%2===0)R(xx+3,y-3,2,5,'#aec4b8');
-      }
-      // Broken rafters dip into the water on each bank.
-      g.strokeStyle='#70523f';g.lineWidth=3;g.beginPath();
-      g.moveTo(edge-15,y-13);g.lineTo(edge+13,y+11);
-      g.moveTo(right+12,y-13);g.lineTo(right-12,y+12);g.stroke();
-      const route=G.flags.ionePathMade&&G.flags.ionePathChoice;
-      if(route==='dawn'){
-        // Light reveals the ancient stepping stones, formerly hidden in mist.
-        for(let k=0;k<6;k++){
-          const xx=edge+k*(w-16)/5+3,top=y-10+(k%2)*2;
-          R(xx,top,19,10,'#899d99');
-          R(xx+1,top,17,3,'#d4ebe3');
-          R(xx+3,top-3,11,2,'rgba(239,241,159,.8)');
-          worldGlow(xx+9,top,20,'rgba(218,255,186,.13)');
-        }
-      }else if(route==='dusk'){
-        // Dusk raises a rough, jagged new causeway from the river.
-        R(edge+5,y-14,w-7,16,'#38314b');
-        for(let k=0;k<10;k++){
-          const xx=edge+5+k*12,top=y-19-(k%3)*3;
-          R(xx,top,15,7,k%3?'#715583':'#524266');
-          R(xx+2,top,8,2,'#a789ae');
-        }
-        worldGlow((edge+right)*.5,y-13,35,'rgba(185,91,237,.13)');
-      }
-      if(!route){R(edge+w*.47,y-35,8,20,'#7e6a58');R(edge+w*.47+2,y-38,4,4,'#ba9b71');}
-    }
-  }
-
-  if(a.scenery==='trainingyard')sceneRangerRange(cam,y);
-  if(a.scenery==='brokenbridge'||a.scenery==='returnroad')sceneMysticGrove(cam,y);
+  if(a.bridge)sceneBridgeWorld(a,cam,y);
+  worldDressing(a,cam,y);
   for(const p of a.platforms)drawSupportedPlatform(p,cam,y,a.scenery);
+  const lbl=[];
   for(const o of a.objects){
     if(o.done&&o.kind!=='horse')continue;
     const x=Math.round(o.x-cam),py=Math.round(y+(o.y||0));
     if(x<-40||x>W+40)continue;
     const locked=o.need&&!G.flags[o.need];
+    let lh=58;
     if(o.kind==='exit'||o.kind==='door'){
-      R(x-12,py-46,24,46,'#49404d');R(x-9,py-43,18,43,'#9e8769');
-      R(x-6,py-38,12,35,locked?'#5d2c2c':'#394f38');
-      R(x+3,py-20,2,2,'#e4c778');
+      propDoor(x,py,locked,a.scenery==='stable'?'barn':(a.scenery==='inn'?'oak':'gate'));lh=66;
     }else if(o.kind==='chest'){
-      R(x-12,py-15,24,15,'#503127');R(x-12,py-19,24,7,'#9c653b');
-      R(x-2,py-15,4,10,'#ebc664');
+      propChest(x,py,o);lh=30;
     }else if(o.kind==='horse'){
+      lh=58;
       // stall dressing: hay, bucket, tack hook
       R(x+30,py-8,22,8,'#c9a85a');R(x+33,py-11,16,4,'#dcc070');R(x+36,py-13,3,2,'#e8d08a');
       R(x-48,py-10,9,10,'#6a4a2a');R(x-48,py-10,9,2,'#8a6a3a');R(x-47,py-8,7,1,'#3a2a18');
       const gr=!!o.done,sd=G.flags.squireSaddle,gt=o.groomT>0;
       if(gt)o.groomT-=1/60;
       const ph=gt?S.t*3.2:S.t*.35;
-      drawHorse(x,py,1,{v:'charger',tk:sd?'saddled':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
+      drawHorse(x,py,1,{v:'charger',tk:sd?'knight':gr?'blanket':'stable',liv:'hearth',gait:gt?'groom':'idle',ph,st:{dirty:!gr,groomed:gr}});
       if(gt&&Math.floor(S.t*14)%2)R(x+Math.round(Math.sin(S.t*9)*14),py-34-Math.round((S.t*40)%12),1,2,'#fff6c0');
       else if(gr&&Math.floor(S.t*2.2)%5===0)R(x-10+Math.floor(S.t*7)%24,py-30,1,1,'#fff6c0');
-    }else if(o.kind==='archerytarget'||o.kind==='swordtarget'){
-      R(x-3,py-38,6,38,'#6a5039');R(x-8,py-3,16,3,'#4d392c');
-      R(x-13,py-47,26,26,'#a38050');
-      R(x-11,py-45,22,22,'#dac28a');
-      R(x-7,py-41,14,14,'#a95c42');
-      R(x-3,py-37,6,6,'#e9d79c');
-      if(o.kind==='swordtarget'){R(x-15,py-47,4,27,'#9d834e');R(x+11,py-47,4,27,'#9d834e');}
+    }else if(o.kind==='archerytarget'){
+      propArcheryButt(x,py,!!G.flags[o.flag]);lh=52;
+    }else if(o.kind==='swordtarget'){
+      propDummy(x,py);lh=62;
     }else if(o.kind==='armor'){
-      R(x-11,py-37,22,29,'#7b818e');R(x-13,py-32,5,19,'#b2b8bf');
-      R(x+8,py-32,5,19,'#b2b8bf');
-      R(x-10,py-43,20,8,'#acb2ba');
-      R(x-2,py-23,5,13,'#d6b871');
-      R(x-11,py-8,22,6,'#574b49');
+      plateStand(x,py,{tab:NAVY,plume:'#e8e8f2'});lh=98;
     }else if(o.kind==='bow'||o.kind==='sword'||o.kind==='staff'){
-      R(x-2,py-39,4,37,'#8c6d4d');
-      if(o.kind==='bow'){
-        g.strokeStyle='#b28a52';g.lineWidth=3;
-        g.beginPath();g.moveTo(x,py-40);g.quadraticCurveTo(x+17,py-20,x,py-2);g.stroke();
-        g.strokeStyle='#e0d7b0';g.lineWidth=1;g.beginPath();g.moveTo(x,py-40);g.lineTo(x,py-2);g.stroke();
-      }else if(o.kind==='staff'){
-        R(x-5,py-45,10,9,'#9acae6');R(x-2,py-43,4,6,'#e4f7e8');
-      }else{R(x-4,py-41,8,14,'#acb6c6');R(x-6,py-30,12,3,'#e0c487');}
+      propWeapon(x,py,o.kind);lh=60;
     }else if(o.kind==='crossroads'){
-      R(x-9,py-51,18,48,'#666574');
-      R(x-14,py-57,28,8,'#9e9daa');
-      R(x-6,py-47,12,32,'#31354b');
-      R(x-3,py-43,6,8,'#e4d4a4');
-      R(x-4,py-23,8,9,'#8d6ab8');
+      propRuneStone(x,py,!!G.flags.ionePathMade);lh=60;
     }else if(o.kind==='reins'){
-      R(x-8,py-34,16,34,'#776047');R(x-11,py-38,22,6,'#ba9d68');
-      R(x-3,py-34,3,26,'#d5bc8a');
-      R(x+1,py-30,6,3,'#b6a580');
+      propReins(x,py);lh=34;
     }else if(o.kind==='guardtest'){
-      R(x-8,py-43,16,39,'#705744');
-      R(x-11,py-39,22,25,'#abb1b9');
-      R(x-7,py-36,14,19,'#3b5b7a');R(x-2,py-31,4,9,'#c4af77');
+      propGuardStand(x,py);lh=62;
+    }else if(o.kind==='shield'){
+      propShieldRack(x,py,'#2c567e');lh=38;
+    }else if(o.kind==='key'){
+      propKey(x,py);lh=36;
+    }else if(o.kind==='joust'){
+      propBanner(x,py,'#2f5fd0','#e8e0cc');lh=76;
+    }else if(o.kind==='gear'){
+      const fl=o.flag||'';
+      if(fl==='squireArmor'){propBreastplate(x,py);lh=44;}
+      else if(fl==='squireHelmet'){propHelm(x,py);lh=40;}
+      else if(fl==='squireOil'){propOil(x,py);lh=24;}
+      else if(fl==='squireSaddle'){propSaddle(x,py);lh=38;}
+      else if(fl==='squireLances'||fl==='squireLancesReady'){propLances(x,py,5);lh=58;}
+      else if(fl==='ioneLightRune'){propRuneStone(x,py,true);lh=60;}
+      else{bv(x-9,py-16,18,16,'#6e5843');R(x-3,py-20,6,6,'#e8c469');lh=26;}
     }else{
-      R(x-9,py-16,18,16,o.kind==='key'?'#b59e4b':o.kind==='shield'?'#4d6e91':'#6e5843');
-      R(x-3,py-20,6,6,'#e8c469');
-      if(o.kind==='key'){R(x+7,py-10,8,3,'#e9cb52');}
+      bv(x-9,py-16,18,16,'#6e5843');R(x-3,py-20,6,6,'#e8c469');lh=26;
     }
-    if(!(S.joust&&o.kind==='joust')&&!o.done){g.font='bold 8px Courier New';g.fillStyle='#ffedbb';g.textAlign='center';
-    g.fillText(o.label||o.kind.toUpperCase(),x,py-51);}
+    if(!(S.joust&&o.kind==='joust')&&!o.done){
+      const tx=o.label||o.kind.toUpperCase();g.font='bold 8px Courier New';g.textAlign='center';
+      const tw=Math.ceil(g.measureText(tx).width)+8;let ty=py-lh-4,lx=clamp(x,Math.ceil(tw/2)+2,W-Math.ceil(tw/2)-2);
+      // stack nearby labels instead of letting them overprint each other
+      for(let tries=0;tries<4;tries++){const hit=lbl.find(b=>Math.abs(b.ty-ty)<11&&Math.abs(b.x-lx)<(b.tw+tw)/2+1);if(!hit)break;ty-=11;}
+      lbl.push({x:lx,tw,ty});
+      R(Math.round(lx-tw/2),ty-8,tw,11,'rgba(14,10,12,.78)');R(Math.round(lx-tw/2),ty-8,tw,1,'rgba(255,230,170,.35)');
+      g.fillStyle='#ffedbb';g.fillText(tx,lx,ty);
+    }
   }
   if(S.joust){joustDraw(S.joust,cam,y);joustHud(S.joust,6,80);}
 }

@@ -19,7 +19,8 @@
     "test:polish": "node tests/polish.js",
     "test:grounding": "node tests/grounding.js",
     "test:chapters": "node tests/adventure.js",
-    "test:magic-paths": "node tests/magic_paths.js"
+    "test:magic-paths": "node tests/magic_paths.js",
+    "test:art-pass": "node tests/art_pass.js"
   },
   "devDependencies": {
     "playwright": "^1.40.0"

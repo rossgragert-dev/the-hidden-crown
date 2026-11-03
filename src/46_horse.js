@@ -129,19 +129,20 @@ function horseVec(ctx,v,tk,L,P,st){
   // ---- tack ----
   const bit=at(Lh*.97,2.3);P.bit={x:bit[0],y:bit[1]};
   const strapC='#4a2e1c',brass='#d8b050';
-  if(tk==='halter'||tk==='blanket'||tk==='saddled'||tk==='tourney'||tk==='stable'){
+  if(tk==='halter'||tk==='blanket'||tk==='saddled'||tk==='tourney'||tk==='knight'||tk==='stable'){
     const rope=tk==='stable'||tk==='halter';
     seg(at(1,-3.2),at(4.5,4.8),1.1,rope?'#c9ad74':strapC);seg(at(Lh*.66,-2.4),at(Lh*.66,3),1.2,rope?'#c9ad74':strapC);seg(at(4.5,4.8),at(Lh*.66,3),.9,rope?'#c9ad74':strapC);
     if(!rope){seg(at(Lh*.97,-1.5),bit,.9,strapC);ctx.fillStyle=brass;ctx.fillRect(bit[0]-.9,bit[1]-.9,1.8,1.8);}
     else{ctx.fillStyle='#b0903e';ctx.fillRect(at(Lh*.66,3)[0]-.8,at(Lh*.66,3)[1]-.8,1.6,1.6);}
   }
-  if(tk==='blanket'||tk==='saddled'||tk==='tourney'||tk==='stable'){
-    const pad=tk==='tourney'?L.a:tk==='stable'?'#7a2f2f':'#3a5a8a',trim=tk==='tourney'?L.b:'#d8c08a';
-    if(tk==='tourney'){ // caparison: heraldic cloth over the barrel with scalloped hem
-      const hem=yB+6;ctx.fillStyle=pad;ctx.beginPath();ctx.moveTo(-26,yC+3);ctx.quadraticCurveTo(-4,yS-3,11,yW+1);ctx.lineTo(25,yW+10);ctx.lineTo(26,hem-3);
-      for(let i=0;i<8;i++){const x=26-i*7.4;ctx.lineTo(x-3.7,hem+3);ctx.lineTo(x-7.4,hem-.5);}ctx.lineTo(-30,yC+12);ctx.closePath();ctx.fill();
+  if(tk==='blanket'||tk==='saddled'||tk==='tourney'||tk==='knight'||tk==='stable'){
+    const kn=tk==='tourney'||tk==='knight',pad=kn?L.a:tk==='stable'?'#7a2f2f':tk==='saddled'?'#6a5440':'#3a5a8a',trim=kn?L.b:tk==='saddled'?'#b0a07a':'#d8c08a';
+    if(kn){ // caparison: heraldic cloth over the barrel with scalloped hem
+      const hem=yB+(tk==='knight'?2:6);ctx.fillStyle=pad;ctx.beginPath();ctx.moveTo(-26,yC+3);ctx.quadraticCurveTo(-4,yS-3,11,yW+1);ctx.lineTo(25,yW+10);ctx.lineTo(26,hem-3);
+      if(tk==='knight'){ctx.lineTo(-26,hem+1);}else{for(let i=0;i<8;i++){const x=26-i*7.4;ctx.lineTo(x-3.7,hem+3);ctx.lineTo(x-7.4,hem-.5);}}ctx.lineTo(-30,yC+12);ctx.closePath();ctx.fill();
       ctx.fillStyle=trim;ctx.fillRect(-30,hem-4,57,1.8);
-      for(let i=0;i<8;i++){const x=26-i*7.4;ctx.beginPath();ctx.moveTo(x,hem-1);ctx.lineTo(x-3.7,hem+3);ctx.lineTo(x-7.4,hem-1);ctx.fillStyle=trim;ctx.fill();}
+      if(tk==='knight')ctx.fillRect(-26,hem+.5,52,1.4);
+      if(tk==='tourney')for(let i=0;i<8;i++){const x=26-i*7.4;ctx.beginPath();ctx.moveTo(x,hem-1);ctx.lineTo(x-3.7,hem+3);ctx.lineTo(x-7.4,hem-1);ctx.fillStyle=trim;ctx.fill();}
       ctx.fillStyle=trim;
       if(L.e==='cross'){ctx.fillRect(-8,yS+6,3.2,14);ctx.fillRect(-13.5,yS+10.5,14.4,3.2);}
       else if(L.e==='chev'){ctx.beginPath();ctx.moveTo(-14,yS+8);ctx.lineTo(-7,yS+16);ctx.lineTo(0,yS+8);ctx.lineTo(0,yS+11);ctx.lineTo(-7,yS+19);ctx.lineTo(-14,yS+11);ctx.fill();}

@@ -472,12 +472,12 @@ function drawScene(cam){
   if(S.adv&&S.adv.bridge&&S.adv.bridge.collapsed){
     drawPerson(514-cam,GY,1,{...NPCS.ione,w:1,ph:S.t*.25});
     if(P.x<760)drawMounted(S.adv.bridge.to+118-cam,GY,-1,
-      {v:'charger',tk:'saddled',liv:'hearth',gait:'idle',ph:S.t*.2},
+      {v:'charger',tk:'knight',liv:'hearth',gait:'idle',ph:S.t*.2},
       {...NPCS.halv,mv:false,w:-1},null);
   }
   if(S.adv&&S.adv.mount&&!S.joust&&S.adv.mount.companion==='halv'){
     const h=S.adv.mount;
-    drawMounted(h.halvX-cam,GY,1,{v:'charger',tk:'saddled',liv:'hearth',
+    drawMounted(h.halvX-cam,GY,1,{v:'charger',tk:'knight',liv:'hearth',
       gait:gaitForSpeed(Math.max(25,h.speed)),ph:h.ph+.35},
       {...NPCS.halv,mv:true,w:-1},null);
   }

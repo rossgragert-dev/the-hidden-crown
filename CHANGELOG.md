@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.7.0 art & environment polish pass (development, not merged)
+
+- **Environments.** New hand-authored, layered scenes: Practice Ring (timber stable block, quintain, ring fence, castle wall and tournament roofs beyond), Training Yard (Elowen's ranger camp and fire, archery lane, hay butts, Halvard's stone wall and banners, sword yard, home gate), and the Broken Bridge storm gorge (lightning, gorge and river with foam/spray, wrecked cart, ancient arch and glowing garden, Dawn stepping stones, Dusk basalt causeway). The generic arch-and-window pillars that used to show behind chapter 7 are gone.
+- **Set dressing** (`src/48d_dressing.js`): dirt road with ruts, Halvard's keep gate, milestones, hedges, wayside shrine and the Hearthmoor inn facade (ch.1); plank floor, rugs, hanging herbs/hams, lanterns, casks, tables (ch.2); straw/cobble floor, tack wall, wheelbarrow, feed sacks, lantern (ch.3); heraldic shields on the barrier, banner poles and bunting (ch.4).
+- **Foreground props** (`src/48b_props.js`): every interactable (chests, keys, breastplate, helm, oil, saddle, lances, shield rack, doors, archery butt, training dummy, guard stand, weapons, reins post, rune stone, signs, benches, crates, barrels) redrawn with edge-lit bevels, wood grain and contact shadows. Platform tops, workbench tools and labels share the same language. Labels now sit on dark pills, stack when neighbours overlap and clamp to the screen.
+- **Horses.** Halvard's grey charger wears a navy-and-gold travelling caparison with chamfron (`tk:'knight'`); Corin's bay gelding keeps plain russet tack.
+- **Performance.** Static parallax layers (ridges, tree lines, walls, storm clouds) are cached offscreen (`vLayer`); worst chapter is about 1.7k rects/frame, down from the 4.4k first draft.
+- **Test shortcut.** `?chapter=N` (or `#chapter=N`) starts a fresh unsaved run at opening chapter N and never writes a save.
+- New `tests/art_pass.js`, `tests/chapter_shots.js` (before/after screenshots in `docs/evidence/v070-before|after`). See `docs/V0_7_0_ART_PASS.md`.
+
 ## v0.7.0 — The Road to Hearthmoor (development, not merged)
 
 - Replaced M0's previous five-area opening with **seven sequential chapters**: mounted ride to the Hearthmoor tournament; inn equipment room; visiting stables; armor preparation and tournament handoffs; Corin's practice joust against Halvard; ranger bow and knight sword/shield training; broken bridge and Ione's first magic.
