@@ -23,7 +23,7 @@ const fs=require('fs');
       assert.equal(story.id,'m0');
       assert.equal(story.area,'rideout');
       assert.equal(story.prologue,false,'The old narrated pre-armory prologue must not appear');
-      await page.evaluate(()=>window.__G.loadMissionArea(1));
+      await page.evaluate(()=>{const g=window.__G;g.loadMissionArea(1);g.S.talk=false;g.S.q=[];});
       const geom=await page.evaluate(()=>{
         const g=window.__G;
         const a=g.S.adv;
