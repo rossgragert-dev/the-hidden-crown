@@ -202,12 +202,14 @@ function adventureUpdate(dt){
 // Indoor architectural props share the same horizontal world space as the
 // platform collision surfaces and Corin's feet. Exterior lists may parallax.
 function interiorBackCam(cam,kind){
-  return kind==='armory'||kind==='stable'?Math.floor(cam):Math.floor(cam*.74);
+  return kind==='armory'||kind==='stable'||kind==='inn'?Math.floor(cam):Math.floor(cam*.74);
 }
 function adventureBackdrop(cam){
   const a=S.adv,kind=a&&a.scenery,y=GY;
-  if(!a||['armory','stable','lists'].indexOf(kind)<0)return false;
+  if(!a||['armory','stable','lists','inn','practice'].indexOf(kind)<0)return false;
   const backCam=interiorBackCam(cam,kind);
+  if(kind==='inn'){sceneInn(cam,y);return true;}
+  if(kind==='practice'){scenePractice(cam,y);return true;}
   if(kind==='armory'){
     R(0,0,W,H,'#141722');
     R(0,0,W,y+1,'#353643');
@@ -417,7 +419,7 @@ function adventureWorldDraw(cam){
   // Deterministic scenery per world segment, not a repeated painted strip.
   const first=Math.floor(Math.max(0,cam-100)/110),last=Math.ceil((cam+W+120)/110);
   for(let i=first;i<=last;i++){
-    if(a.scenery==='armory'||a.scenery==='stable'||a.scenery==='lists'||a.scenery==='magegarden')continue;
+    if(['armory','stable','lists','inn','practice','magegarden','trainingyard','returnroad'].includes(a.scenery))continue;
     const x=i*110+((i*79+seed*19)%33)-cam;
     const hash=(Math.imul(i+seed+111,16777619)^Math.imul(i+19,2246822519))>>>0;
     const v=(hash^(hash>>>13))%13;
@@ -486,6 +488,8 @@ function adventureWorldDraw(cam){
     }
   }
 
+  if(a.scenery==='trainingyard')sceneRangerRange(cam,y);
+  if(a.scenery==='brokenbridge'||a.scenery==='returnroad')sceneMysticGrove(cam,y);
   for(const p of a.platforms)drawSupportedPlatform(p,cam,y,a.scenery);
   for(const o of a.objects){
     if(o.done&&o.kind!=='horse')continue;
