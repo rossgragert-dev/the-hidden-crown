@@ -1,5 +1,7 @@
 # The Hidden Crown
 
+> **Current development (v0.7.0):** [The Road to Hearthmoor — seven playable opening chapters](docs/V0_7_0_SEVEN_CHAPTER_OPENING.md), branch `feature/v070-seven-chapter-squire`. Mounted horsemanship, visiting-knight inn/stables, tournament, Corin's first joust, Ranger Elowen's bow lesson, Halvard's sword-and-shield lesson and Ione's Dawn/Dusk bridge choice. Earlier versions and `main` are preserved.
+
 > **Current Claude development handoff (Nov 1, 2026):** [Horse / environment art + reusable jousting engine](docs/CLAUDE_HANDOFF_V0_6_1_VISUAL_JOUST.md). Start from the public branch `feature/claude-v061-visuals-joust`, which inherits the playable v0.6.0 squire platformer. This is a **handoff-only** branch until implementation begins; `main` is preserved.
 
 A medieval fantasy mobile action RPG in a single HTML file. A squire becomes a knight, then discovers he is the lost heir. Choose between a benevolent and a monstrous reign.
