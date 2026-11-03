@@ -10,6 +10,8 @@ function adventureBegin(area){
     platforms:(d.platforms||[]).map(p=>({x:p.x,w:p.w,y:p.y,kind:p.kind||null})),
     objects:(d.objects||[]).map((o,i)=>Object.assign({i,done:!S.replay&&!!(o.flag&&G.flags[o.flag])},o)),
     scenery:d.scenery||'castle',seed:d.seed||5,verticalCamera:!!d.verticalCamera,
+    mount:d.mount?{...d.mount,speed:0,ph:0,halvX:102}:null,
+    bridge:d.bridge?{...d.bridge,collapsed:false}:null,
     progress:0,combatAt:(d.combatAt||[]).map((w,i)=>Object.assign({i,done:false},w))
   };
   P.py=0;P.vy=0;P.grounded=true;S.camY=0;S.joust=null;
@@ -24,7 +26,7 @@ function adventureEnd(){
 }
 function adventureJump(){
   if(S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
-  P.vy=-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
+  P.vy=S.adv&&S.adv.mount?-235:-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
 }
 function adventureNear(){
   if(!S.adv||S.talk||S.arena||S.joust)return null;
@@ -42,6 +44,27 @@ function adventureUse(){
   const o=adventureNear();
   if(!o)return false;
   if(o.need&&!G.flags[o.need]){toast(o.locked||'A KEY OR TASK IS MISSING');sfx(110,.18,'square',.04);return true;}
+  if(o.needFlags&&o.needFlags.some(f=>!G.flags[f])&&o.kind!=='exit'){
+    toast('COMPLETE THE EARLIER LESSON FIRST');return true;
+  }
+  if(o.kind==='archerytarget'||o.kind==='swordtarget'){
+    toast(o.kind==='archerytarget'?'SELECT BOW AND FIRE AN ARROW':'SELECT SWORD AND STRIKE THE DUMMY');return true;
+  }
+  if(o.kind==='guardtest'&&!keys.block){
+    toast('HOLD GUARD WHILE YOU TAP USE');return true;
+  }
+  if(o.kind==='crossroads'){
+    if(G.flags.ionePathChoice){toast('SELECT STAFF AND CAST WITH ATK TO OPEN THE PATH');return true;}
+    choose('The bridge is broken. How will Corin use Ione’s new staff?',[
+      {label:'DAWN — reveal the hidden crossing',desc:'Illuminate the old stepping stones beneath the mist.',
+       fn:()=>{S.dusk=false;G.flags.ionePathChoice='dawn';o.done=true;save();
+         toast('DAWN CHOSEN — SELECT STAFF AND CAST AT THE BRIDGE');}},
+      {label:'DUSK — force a new crossing',desc:'Break the obstruction and pull a rough new road from the rock.',
+       fn:()=>{S.dusk=true;G.flags.ionePathChoice='dusk';o.done=true;shift(-3,'DUSK POWER');save();
+         toast('DUSK CHOSEN — SELECT STAFF AND CAST AT THE BRIDGE');}}
+    ]);
+    return true;
+  }
   if(o.kind==='exit'){
     if(o.needFlags&&o.needFlags.some(f=>!G.flags[f])){toast('FINISH YOUR TASKS FIRST');return true;}
     G.flags[o.flag||('exit'+S.areaIndex)]=1;
@@ -50,7 +73,7 @@ function adventureUse(){
   }
   if(o.kind==='joust'){
     joustPrebake();P.face=1;const rr=o.role==='rider';
-    S.joust=joustCreate(rr?{role:'rider',anchor:Math.round(o.x),object:o,lead:560,seed:5+Math.floor(S.t*7)%90}:{role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
+    S.joust=joustCreate(rr?{role:'rider',anchor:Math.round(o.x),object:o,lead:560,seed:5+Math.floor(S.t*7)%90,passes:o.passes||3,easy:!!o.easy,opponent:o.opponent}:{role:'squire',anchor:Math.round(P.x),object:o,lead:260,seed:7+(o.i||0)});
     S.joust.on=joustOn;toast(rr?'LOWER YOUR LANCE AS HE CHARGES':'OFFER THE LANCE AS THE RIDER REACHES YOUR HAND');return true;
   }
   o.done=true;
@@ -60,16 +83,28 @@ function adventureUse(){
     P.w=1;G.flags.ioneTaught=1;calc();hud(true);save();
     toast('ROWAN STAFF RECEIVED — SELECT STAFF AND CAST WITH ATK');
     say([L('Magister Ione','The staff listens to intention, not strength. Breathe, focus, then let the Dawn tide carry your light.'),L('Corin','Then this is not a weapon of force. It is a promise to aim well.')],()=>{});
+  }else if(o.kind==='bow'){
+    if(!G.eq.bow)G.eq.bow=fixedItem('bow','Elowen’s Field Bow',9,0,{gift:'elowen'});
+    P.w=2;calc();save();hud(true);
+    toast('FIRST BOW RECEIVED — SELECT BOW AND FIRE AT THE STRAW TARGET');
+    say([L('Ranger Elowen','It is yours. Let the string settle against your cheek. Do not chase the mark with your fingers.'),L('Corin','I shall loose the next arrow only when I am steady.')],()=>{});
+  }else if(o.kind==='reins'){
+    toast('REINS CHECKED — HOLD RIGHT TO CANTER; JUMP TO CLEAR AN OBSTACLE');
+  }else if(o.kind==='armor'){
+    toast('HALVARD’S ARMOR FASTENED');
+    say([L('Ser Halvard','Good. The breastplate is firm, and the helm sits square. Now keep three spare lances ready at the tilts.')],()=>{});
+  }else if(o.kind==='guardtest'){
+    toast('SHIELD GUARD LEARNED — HALVARD APPROVES');
+  }else if(o.kind==='sword'){
+    giveBluntSword();P.w=0;calc();hud(true);
+    toast('HALVARD’S BLUNT IRON SWORD RECEIVED');
+    say([L('Ser Halvard','That is the beginning of a true cut, lad. Take this blunted blade. You must earn a sharper one later.')],()=>{});
   }else if(o.kind==='shield'){
     G.shieldTier=Math.max(G.shieldTier||0,o.tier||0);
     toast('WOODEN SHIELD ACQUIRED — HOLD GUARD');
   }else if(o.kind==='key'){
     toast('KEY FOUND: '+(o.label||'IRON KEY'));
-  }else if(o.kind==='staff'){
-      R(x-2,py-34,4,30,'#8e6a45');R(x-3,py-35,6,4,'#e5ca80');
-      R(x-7,py-43,14,9,'rgba(175,235,255,.24)');
-      R(x-2,py-42,5,6,'#c9eaff');
-    }else if(o.kind==='chest'){
+  }else if(o.kind==='chest'){
     const item=genItem(S.ilvl+1,Math.max(1,o.rarity||1),o.slot||'armor');
     addItem(item,true);toast('CHEST OPENED: '+item.name);
   }else if(o.kind==='gear'){
@@ -91,11 +126,19 @@ function joustOn(k,v){
 function adventureJoustFinish(){
   const j=S.joust;if(!j)return;
   const o=j.object;
-  if(j.role==='rider'){S.joust=null;P.x=o.x-50;P.face=1;toast('LISTS ENDED — YOU '+j.score+'  FOE '+j.foe+(j.score>j.foe?'  YOU WIN':j.score<j.foe?'  FOE WINS':'  DRAW'));missionHud(true);return;}
+  if(j.role==='rider'){
+    if(o){o.done=true;G.flags[o.flag||'squirePracticeJoust']=1;save();}
+    S.joust=null;P.x=o.x-50;P.face=1;
+    toast('PRACTICE COMPLETE — YOU '+j.score+'  FOE '+j.foe);
+    if(o&&o.opponent==='halvard')say([
+      L('Ser Halvard','You found the seat and lowered the lance. Remember: the first victory is keeping balance, not unhorsing a friend.'),
+      L('Corin','I thought the horse might throw me before I even reached you.')],()=>{});
+    missionHud(true);return;
+  }
   if(o){o.done=true;G.flags[o.flag||'joustServed']=1;save();}
   S.joust=null;toast('TOURNAMENT COMPLETE: '+j.score+' / '+j.passes+' HANDOFFS');
   if(j.score>=2){G.gold+=35;if(S.rew)S.rew.gold+=35;}
-  if(giveBluntSword())say([L('Ser Halvard','You served well, lad. This blade is blunt, but it is iron. A squire should feel real weight in his hand.'),N('BLUNT IRON SWORD RECEIVED')],()=>{});
+  say([L('Ser Halvard','A good squire remembers every handoff. Tomorrow, I shall show you how the same pass feels from a saddle.')],()=>{});
   missionHud(true);
 }
 function adventureUpdate(dt){
