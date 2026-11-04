@@ -17,7 +17,8 @@ function layout(){
   SC=Math.max(2,Math.round(Math.min(vw,vh)/200));
   W=Math.ceil(vw/SC);H=Math.ceil(vh/SC);
   cv.width=W;cv.height=H;cv.style.width=W*SC+'px';cv.style.height=H*SC+'px';
-  const reserve=(portrait?186:96)/SC;
+  let sab=0;try{sab=parseFloat(getComputedStyle($('sabprobe')).paddingBottom)||0;}catch(e){}
+  const reserve=((portrait?186:96)+sab)/SC;
   GY=Math.max(Math.round(H*.55),Math.round(H-reserve-6));
   HZ=GY-70;
   g.imageSmoothingEnabled=false;

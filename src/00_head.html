@@ -45,22 +45,16 @@ button{font-family:inherit;touch-action:manipulation;-webkit-touch-callout:none}
 .opt b{display:block;color:#ffd34a;font-size:15px;-webkit-text-stroke:0}
 .opt small{display:block;font-size:12px;opacity:.85;margin-top:2px;font-weight:normal;-webkit-text-stroke:0}
 /* objective overlay: compact and readable on mobile */
-#objtrack{position:fixed;left:10px;top:max(63px,calc(env(safe-area-inset-top) + 53px));max-width:min(72vw,310px);z-index:6;pointer-events:none;background:rgba(16,13,18,.86);border:1px solid #b39b65;border-radius:7px;padding:5px 8px;color:#fff0c6;font:10px/1.35 "Courier New",monospace}
+#objtrack{position:fixed;left:10px;top:max(80px,calc(env(safe-area-inset-top) + 72px));max-width:min(72vw,310px);z-index:6;pointer-events:none;background:rgba(16,13,18,.86);border:1px solid #b39b65;border-radius:7px;padding:5px 8px;color:#fff0c6;font:10px/1.35 "Courier New",monospace}
 #objtrack strong{display:block;color:#ffd34a;font-size:10px;margin-bottom:2px}
 #objtrack span{display:block}
-#jumpbtn,#blockbtn{display:none;pointer-events:auto;width:52px;height:52px;font-size:11px}#jumpbtn{position:absolute;left:auto;right:112px;bottom:calc(14px + env(safe-area-inset-bottom));width:62px;height:62px;z-index:2}#jumpbtn{border-color:#a8eac2;background:#214b33}
-#ctl .combat-pad .wk{transform:translateY(-96px)}#blockbtn{border-color:#c5d8ff;background:#203850}#usebtn{pointer-events:auto;display:none;position:absolute;left:50%;bottom:calc(224px + env(safe-area-inset-bottom));transform:translateX(-50%);width:62px;height:62px;font-size:12px;border-color:#fff3b8;background:rgba(59,44,22,.9)}
 /* controls */
-#ctl{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:10px 12px calc(14px + env(safe-area-inset-bottom));pointer-events:none;z-index:5}
-.pad{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
 .btn{width:66px;height:66px;border-radius:50%;background:rgba(36,26,16,.74);border:2px solid #c9a24a;color:#f4e9c8;font:bold 17px "Courier New",monospace;display:flex;align-items:center;justify-content:center;touch-action:none;padding:0;position:relative;overflow:hidden}
 .btn.on,.btn.sel{background:#c9a24a;color:#241a0c}
 .btn.big{width:82px;height:82px;font-size:19px;border-color:#ffd34a}
 .btn.sm{width:46px;height:46px;font-size:10px;border-radius:12px}
 .btn.abl{width:56px;height:56px;font-size:10px;border-color:#9fd1ff}
 .btn.abl::after{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:conic-gradient(rgba(0,0,0,.72) calc(var(--p,0)*1%),transparent 0);pointer-events:none}
-.wk{display:grid;grid-template-columns:repeat(2,46px);gap:8px}
-.col{display:flex;flex-direction:column;gap:8px;align-items:center}
 #mode{background:#e8c84a;border-color:#fff3b8;color:#2a1c06}
 #mode.dusk{background:#5a2c88;border-color:#d27aff;color:#fff}
 body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-mode=play]) #boss{display:none}
@@ -111,15 +105,39 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 #boot{position:fixed;top:0;left:0;right:0;bottom:0;z-index:30;background:#0e0a14;color:#f4e9c8;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:15px;line-height:1.5}
 #boot b{display:block;font:900 26px Impact,'Arial Black',sans-serif;color:#ffd34a;margin-bottom:10px}
 #boot code{color:#ff9a8a;font-size:12px}
+/* ---- controls (v0.7.1): bottom-anchored clusters; everything sits below the ground line ---- */
+#sabprobe{position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-bottom) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#ctl{position:fixed;left:0;right:0;bottom:0;height:200px;pointer-events:none;z-index:5;--sab:env(safe-area-inset-bottom);--sal:env(safe-area-inset-left);--sar:env(safe-area-inset-right)}
+.pad,.combat-pad,.col{display:contents}
+#ctl>.pad .btn,#ctl .combat-pad>.btn,#ctl .col .btn{position:absolute;pointer-events:auto}
+#ctl [data-k=l]{left:calc(12px + var(--sal));bottom:calc(14px + var(--sab))}
+#ctl [data-k=r]{left:calc(88px + var(--sal));bottom:calc(14px + var(--sab))}
+#ctl [data-k=atk]{right:calc(12px + var(--sar));bottom:calc(14px + var(--sab))}
+#ctl #jumpbtn{right:calc(104px + var(--sar));bottom:calc(14px + var(--sab));width:62px;height:62px;font-size:11px;border-color:#a8eac2;background:#214b33}
+#ctl #blockbtn{right:calc(110px + var(--sar));bottom:calc(84px + var(--sab));width:52px;height:52px;font-size:10px;border-color:#c5d8ff;background:#203850}
+#ctl #abl{right:calc(19px + var(--sar));bottom:calc(104px + var(--sab))}
+#jumpbtn,#blockbtn{display:none}
+#usebtn{pointer-events:auto;display:none;position:absolute;left:50%;bottom:calc(224px + var(--sab));transform:translateX(-50%);width:62px;height:62px;font-size:12px;border-color:#fff3b8;background:rgba(59,44,22,.9)}
+/* weapon switcher: compact icon chips */
+.wk{position:absolute;left:calc(12px + var(--sal));bottom:calc(92px + var(--sab));display:flex;gap:6px;pointer-events:none}
+#ctl .wk .btn{position:relative;pointer-events:auto;width:44px;height:44px;font-size:9px;padding:0}
+.wk svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#hud .bars{width:140px}
+.bar{height:11px}.bar.thin{height:6px}
+.bar .bv{position:absolute;left:0;right:0;top:0;text-align:center;font:bold 8px/9px "Courier New",monospace;color:#fff;letter-spacing:0}
+#hb button{position:relative;padding:8px 9px}
+#hb button::after{content:"";position:absolute;left:-3px;right:-3px;top:-8px;bottom:-8px}
 @media (orientation:landscape){
- #usebtn{width:44px;height:44px;font-size:10px;bottom:calc(72px + env(safe-area-inset-bottom))}
- #objtrack{top:max(46px,calc(env(safe-area-inset-top) + 38px));max-width:45vw}
- .btn{width:54px;height:54px;font-size:14px}.btn.big{width:68px;height:68px}.btn.sm{width:40px;height:40px;font-size:9px}.btn.abl{width:46px;height:46px}
- .wk{grid-template-columns:repeat(2,40px);gap:6px}
- #jumpbtn{right:94px;bottom:calc(8px + env(safe-area-inset-bottom));width:54px;height:54px;font-size:10px}
- #ctl .combat-pad .wk{transform:translateY(-78px)}
- #usebtn{bottom:calc(188px + env(safe-area-inset-bottom));width:50px;height:50px;font-size:10px}
- #ctl{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+ #ctl{height:110px}
+ .btn{width:54px;height:54px;font-size:14px}.btn.big{width:68px;height:68px}.btn.abl{width:48px;height:48px;font-size:10px}
+ #ctl [data-k=l]{bottom:calc(8px + var(--sab))}#ctl [data-k=r]{left:calc(76px + var(--sal));bottom:calc(8px + var(--sab))}
+ #ctl [data-k=atk]{bottom:calc(8px + var(--sab))}
+ #ctl #jumpbtn{right:calc(92px + var(--sar));bottom:calc(8px + var(--sab));width:54px;height:54px;font-size:10px}
+ #ctl #abl{right:calc(154px + var(--sar));bottom:calc(8px + var(--sab))}
+ #ctl #blockbtn{right:calc(210px + var(--sar));bottom:calc(8px + var(--sab));width:48px;height:48px}
+ .wk{left:calc(146px + var(--sal));bottom:calc(8px + var(--sab))}
+ #usebtn{width:50px;height:50px;font-size:10px;bottom:calc(188px + var(--sab))}
+ #objtrack{top:max(70px,calc(env(safe-area-inset-top) + 64px));max-width:38vw}
  #panel{top:max(58px,calc(env(safe-area-inset-top) + 52px));width:min(64vw,560px)}
  #cap{font-size:clamp(14px,2.7vw,20px);-webkit-text-stroke:3px #000}
  #toast{top:30%}
@@ -129,7 +147,7 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 <body data-mode="title">
 <canvas id="cv"></canvas>
 <div id="hud">
-  <div class="bars"><div class="lv" id="lv">Lv 1</div><div class="bar"><i id="hp"></i></div><div class="bar"><i id="mp"></i></div><div class="bar thin"><i id="xp"></i></div></div>
+  <div class="bars"><div class="lv" id="lv">Lv 1</div><div class="bar"><i id="hp"></i><b class="bv" id="hpv"></b></div><div class="bar"><i id="mp"></i><b class="bv" id="mpv"></b></div><div class="bar thin"><i id="xp"></i></div></div>
   <div><div id="cmp"><span id="ctitle">The Wanderer</span><div class="cb"><u></u><em id="cm"></em></div></div>
   <div id="hb"><button data-m="bag">BAG</button><button data-m="skills">SKILLS</button><button data-m="menu">MENU</button></div></div>
 </div>
@@ -142,16 +160,16 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
   <button class="btn" id="usebtn" data-k="use" aria-label="Use nearby object">USE</button>
   <div class="pad combat-pad">
     <div class="wk">
-      <button class="btn sm sel" data-w="0">SWORD</button>
-      <button class="btn sm" data-w="1">STAFF</button>
-      <button class="btn sm" data-w="2">BOW</button>
-      <button class="btn sm" id="mode">DAWN</button>
+      <button class="btn sm sel" data-w="0" aria-label="Sword"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M14 4h6v6M7 14l3 3M4 20l3-3"/></svg></button>
+      <button class="btn sm" data-w="1" aria-label="Staff"><svg viewBox="0 0 24 24"><path d="M6 20 16 10"/><circle cx="17.5" cy="6.5" r="3.2"/></svg></button>
+      <button class="btn sm" data-w="2" aria-label="Bow"><svg viewBox="0 0 24 24"><path d="M7 3c8 3 8 15 0 18M7 3v18M4 12h14M15 9l3 3-3 3"/></svg></button>
+      <button class="btn sm" id="mode" aria-label="Dawn or Dusk">DAWN</button>
     </div>
     <button class="btn" id="jumpbtn" data-k="jump" aria-label="Jump">JUMP</button>
     <div class="col"><button class="btn" id="blockbtn" data-k="block">GUARD</button><button class="btn abl" data-k="abl" id="abl">SKILL</button><button class="btn big" data-k="atk">ATK</button></div>
   </div>
 </div>
-<div id="savewarn"></div>
+<div id="savewarn"></div><div id="sabprobe"></div>
 <div id="modal"><div class="mw" id="mw"></div></div>
 <div id="title"><h1>THE HIDDEN CROWN</h1><p>A saga of sword, staff and bow</p><div id="tbtns"></div></div>
 <div id="fade"></div>

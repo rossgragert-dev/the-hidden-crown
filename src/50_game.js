@@ -550,7 +550,7 @@ function hud(force){
   if(key===hudK&&!force)return;hudK=key;
   document.querySelectorAll('[data-w]').forEach(x=>{x.style.display=G.eq[TN[+x.dataset.w]]?'':'none';});$('mode').style.display=G.eq.staff?'':'none';
   $('hp').style.width=clamp(P.hp/P.max,0,1)*100+'%';$('mp').style.width=clamp(P.mp/P.mmax,0,1)*100+'%';$('xp').style.width=clamp(G.xp/xpNeed(G.lvl),0,1)*100+'%';
-  $('lv').textContent='Lv '+G.lvl+(G.pts?'  ★'+G.pts:'');
+  $('lv').textContent='Lv '+G.lvl+'  XP '+Math.floor(clamp(G.xp/xpNeed(G.lvl),0,1)*100)+'%'+(G.pts?'  ★'+G.pts:'');$('hpv').textContent=Math.ceil(P.hp)+'/'+P.max;$('mpv').textContent=Math.floor(P.mp)+'/'+P.mmax;
   $('cm').style.left=(G.c+100)/200*100+'%';
   const t=$('ctitle');t.textContent='♛ '+tier(G.c);t.style.color=G.c>=30?'#ffd34a':G.c<=-30?'#ff6a4a':'#e9e2c4';
   const ab=abilityId(),b=$('abl');b.textContent=ab?ABN[ab]:'LOCK';b.style.setProperty('--p',P.ab>0?Math.round(P.ab/P.abMax*100):0);b.style.opacity=ab?1:.5;
