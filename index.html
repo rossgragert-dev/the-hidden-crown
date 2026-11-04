@@ -117,6 +117,8 @@ body[data-mode=play] #savewarn.on{display:block}
 #ctl #blockbtn{right:calc(110px + var(--sar));bottom:calc(84px + var(--sab));width:52px;height:52px;font-size:10px;border-color:#c5d8ff;background:#203850}
 #ctl #abl{right:calc(19px + var(--sar));bottom:calc(104px + var(--sab))}
 #jumpbtn,#blockbtn{display:none}
+#ctl #dodgebtn{right:calc(172px + var(--sar));bottom:calc(14px + var(--sab));width:56px;height:56px;font-size:11px;border-color:#e6c690;background:#4a3a22}
+@media (max-width:380px){#ctl [data-k=l],#ctl [data-k=r]{width:58px;height:58px}#ctl [data-k=r]{left:calc(76px + var(--sal))}}
 #usebtn{pointer-events:auto;display:none;position:absolute;left:50%;bottom:calc(224px + var(--sab));transform:translateX(-50%);width:62px;height:62px;font-size:12px;border-color:#fff3b8;background:rgba(59,44,22,.9)}
 /* weapon switcher: compact icon chips */
 .wk{position:absolute;left:calc(12px + var(--sal));bottom:calc(92px + var(--sab));display:flex;gap:6px;pointer-events:none}
@@ -135,6 +137,7 @@ body[data-mode=play] #savewarn.on{display:block}
  #ctl #jumpbtn{right:calc(92px + var(--sar));bottom:calc(8px + var(--sab));width:54px;height:54px;font-size:10px}
  #ctl #abl{right:calc(154px + var(--sar));bottom:calc(8px + var(--sab))}
  #ctl #blockbtn{right:calc(210px + var(--sar));bottom:calc(8px + var(--sab));width:48px;height:48px}
+ #ctl #dodgebtn{right:calc(266px + var(--sar));bottom:calc(8px + var(--sab));width:48px;height:48px;font-size:10px}
  .wk{left:calc(146px + var(--sal));bottom:calc(8px + var(--sab))}
  #usebtn{width:50px;height:50px;font-size:10px;bottom:calc(188px + var(--sab))}
  #objtrack{top:max(70px,calc(env(safe-area-inset-top) + 64px));max-width:38vw}
@@ -166,6 +169,7 @@ body[data-mode=play] #savewarn.on{display:block}
       <button class="btn sm" id="mode" aria-label="Dawn or Dusk">DAWN</button>
     </div>
     <button class="btn" id="jumpbtn" data-k="jump" aria-label="Jump">JUMP</button>
+    <button class="btn" id="dodgebtn" data-k="dodge" aria-label="Dodge roll">ROLL</button>
     <div class="col"><button class="btn" id="blockbtn" data-k="block">GUARD</button><button class="btn abl" data-k="abl" id="abl">SKILL</button><button class="btn big" data-k="atk">ATK</button></div>
   </div>
 </div>
@@ -313,9 +317,9 @@ function importCode(code){
 newG();
 
 /* ---------- runtime state ---------- */
-const keys={l:0,r:0,atk:0,abl:0,use:0,jump:0,block:0};
+const keys={l:0,r:0,atk:0,abl:0,use:0,jump:0,block:0,dodge:0};
 const S={mode:'title',t:0,cam:0,talk:false,choosing:false,q:[],qcb:null,arena:false,arenaL:0,arenaR:0,spawnQ:[],spawnT:0,curList:null,waveCb:null,dusk:false,blight:.08,npc:null,shake:0,mission:null,replay:false,beats:[],bi:0,chests:[],pal:'day',paused:false,pro:{x:60},rew:null,tm:[],m:{},ilvl:1,boost:0};
-const P={x:30,face:1,hp:100,max:100,mp:30,mmax:30,w:0,cd:0,atk:0,atkMax:.2,inv:0,hurt:0,vx:0,mv:false,ab:0,abMax:6,shield:0,lastHeal:0,py:0,vy:0,grounded:true,guard:100};
+const P={x:30,face:1,hp:100,max:100,mp:30,mmax:30,w:0,cd:0,atk:0,atkMax:.2,inv:0,hurt:0,vx:0,mv:false,ab:0,abMax:6,shield:0,lastHeal:0,py:0,vy:0,grounded:true,guard:100,guardT:0,roll:0,rollMax:.26,rollDir:1,rollCd:0,combo:0,comboT:0,counter:0,atkBuf:0,atkEdge:false,atkPrev:false,coyote:0,jbuf:0,jcut:0,land:0,wasAir:false,stage:0};
 const FOL=[{x:0,face:1,mv:false,k:'halv'},{x:0,face:1,mv:false,k:'lysa'}];
 let enemies=[],proj=[],parts=[],drops=[],fxs=[];
 const later=(s,fn)=>S.tm.push({t:s,fn});
@@ -719,6 +723,16 @@ function drawRegionCreature(e,px,py,def){
   }
 }
 function drawEnemy(e,cam,def){
+  drawEnemyBody(e,cam,def);
+  if(e.dead)return;
+  const px=Math.round(e.x-cam),top=GY-(def.h?60:def.rat?22:def.big?56:40)-(def.k?Math.round(14*(def.k-1)):0);
+  // Telegraphs: a blinking "!" while an attack winds up, a red lane for lunges and thrown fire, stars when staggered.
+  if(e.wind>0){const on=Math.floor(S.t*14)%2===0;R(px-4,top-10,9,11,on?'#ff3a2a':'#b02418');R(px-1,top-9,3,6,'#fff');R(px-1,top-2,3,2,'#fff');
+    if(e.dashPend||e.throwPend)R(e.face>0?px:px-44,GY-2,44,2,'rgba(255,58,42,.55)');}
+  if(e.stun>.15){for(let i=0;i<3;i++)R(px-9+Math.floor((S.t*26+i*6)%18),top-3+(i%2)*3,2,2,'#ffe27a');}
+  if(def.shield&&e.recov<=0&&e.stun<=0&&!(e.wind>0))R(px+(e.face>0?12:-13),GY-37,2,27,'#bfe0ff');
+}
+function drawEnemyBody(e,cam,def){
   const px=e.x-cam,py=GY,k=def.k||1,hit=e.hurt>0&&Math.floor(S.t*30)%2;
   if(def.rat){drawRat(e,px,py,hit);return;}
   if(def.creature){drawRegionCreature(e,px,py,def);return;}
@@ -899,15 +913,17 @@ function gainXP(n){
 const KNIGHT_MISSION='m11'; // Halvard knights Corin as Act I's story peaks; change here to move the knighting
 const EN={
  scout:{n:'Greenmarch Scout',hp:25,dmg:8,spd:52,rng:115,xp:13,g:[2,6],drop:.17,h:1,w:2,ranged:1,sp:{col:'#547052',trim:'#9bbf82',metal:'#51645b',hair:'#47392d',crest:'hood',leg:'#596c55',quiver:1,w:2,look:0}},
- spearman:{n:'Regency Spearman',hp:42,dmg:12,spd:34,rng:33,xp:21,g:[5,10],drop:.22,h:1,w:0,weapon:'spear',sp:{col:'#6a4d58',trim:'#b9a7a7',metal:'#85878e',leg:'#453b4b',helm:'#92959d',look:1,w:0}},
- torchraider:{n:'Torch Raider',hp:29,dmg:10,spd:48,rng:17,xp:18,g:[3,7],drop:.16,h:1,w:4,dash:1,weapon:'torch',sp:{col:'#783e2d',trim:'#de8a42',metal:'#5a4641',leg:'#5b3a2d',crest:'hood',look:0,w:4}},
+ spearman:{n:'Regency Spearman',hp:42,dmg:12,spd:34,rng:33,spear:1,windT:.55,xp:21,g:[5,10],drop:.22,h:1,w:0,weapon:'spear',sp:{col:'#6a4d58',trim:'#b9a7a7',metal:'#85878e',leg:'#453b4b',helm:'#92959d',look:1,w:0}},
+ torchraider:{n:'Torch Raider',hp:29,dmg:10,spd:48,rng:17,xp:18,g:[3,7],drop:.16,h:1,w:4,dash:1,torch:1,weapon:'torch',sp:{col:'#783e2d',trim:'#de8a42',metal:'#5a4641',leg:'#5b3a2d',crest:'hood',look:0,w:4}},
  crossbow:{n:'Regency Crossbowman',hp:32,dmg:13,spd:19,rng:170,xp:24,g:[6,13],drop:.22,h:1,w:2,ranged:1,weapon:'crossbow',sp:{col:'#494e62',trim:'#b49b78',metal:'#8c90a0',leg:'#444853',helm:'#858b9b',look:1,quiver:1,w:2}},
  sapper:{n:'Gate Sapper',hp:48,dmg:14,spd:35,rng:16,xp:27,g:[6,14],drop:.22,h:1,w:4,weapon:'sapper',sp:{col:'#715f42',trim:'#d3b371',metal:'#75736c',leg:'#5b4e3f',crest:'hood',look:1,w:4}},
  wisp:{n:'Fen Wisp',hp:19,dmg:8,spd:28,rng:140,xp:16,g:[2,7],drop:.08,creature:'wisp',ranged:1},
  boglurker:{n:'Bog Lurker',hp:72,dmg:17,spd:26,rng:25,xp:37,g:[6,12],drop:.35,creature:'bog',k:1.3,big:1},
  acolyte:{n:'Ashen Acolyte',hp:31,dmg:12,spd:37,rng:145,xp:23,g:[4,11],drop:.21,h:1,w:1,ranged:1,weapon:'staff',sp:{col:'#382e4b',trim:'#9c67ad',metal:'#655272',leg:'#2c283d',crest:'hood',mask:1,w:1,look:0}},
- sentry:{n:'Regency Shield Guard',hp:64,dmg:14,spd:19,rng:22,xp:28,g:[5,13],drop:.25,h:1,w:0,weapon:'shield',sp:{col:'#454c60',trim:'#c9b38b',metal:'#a3a6b5',leg:'#444653',helm:'#aeb6c0',look:2,w:0}},
+ sentry:{n:'Regency Shield Guard',hp:64,dmg:14,spd:19,rng:22,shield:1,xp:28,g:[5,13],drop:.25,h:1,w:0,weapon:'shield',sp:{col:'#454c60',trim:'#c9b38b',metal:'#a3a6b5',leg:'#444653',helm:'#aeb6c0',look:2,w:0}},
  rat:{n:'Cellar Rat',hp:8,dmg:3,spd:62,rng:11,xp:3,g:[0,1],drop:.04,rat:1},
+ warhound:{n:'Warhound',hp:30,dmg:9,spd:58,rng:16,xp:17,g:[2,6],drop:.12,k:1.05,dash:1,windT:.38,dashSpd:300,dashT:.3},
+ sparrer:{n:'Training Sparrer',hp:46,dmg:5,spd:30,rng:20,xp:0,g:[0,0],drop:0,h:1,w:0,shield:1,windT:.6,sp:{col:'#6b7b9a',trim:'#d8c9a0',metal:'#b8bcc6',leg:'#4a5068',helm:'#b8bcc6',look:2,w:0}},
  blight:{n:'Blightling',hp:22,dmg:8,spd:40,rng:15,xp:10,g:[1,4],drop:.14},
  hound:{n:'Blight Hound',hp:90,dmg:16,spd:28,rng:30,xp:55,g:[12,22],drop:.7,k:1.7,big:1},
  bandit:{n:'Reaver',hp:34,dmg:9,spd:36,rng:18,xp:15,g:[3,9],drop:.2,h:1,w:0,sp:{col:'#8a3a2a',metal:'#6a6e78',trim:'#d0802a',hair:'#222',look:1,cape:'#3a2a22',helm:'#6a6e78',crest:'horns',leg:'#3a3036',scar:1,iris:'#8a2a1a',nosh:1,w:0}},
@@ -1015,6 +1031,7 @@ const MISSIONS=[
   {id:'trainingyard',title:'The Ranger and the Sword',reg:'hearth',explore:{
     length:1230,scenery:'trainingyard',seed:36,
     platforms:[],
+    combatAt:[{x:985,flag:'squireSpar',list:[{k:'sparrer',s:-1,d:0}]}],
     objects:[
       {kind:'bow',label:'RANGER ELOWEN’S FIRST BOW',x:220,y:0,flag:'squireFirstBow'},
       {kind:'archerytarget',label:'ARCHERY BUTT — SHOOT WITH BOW',x:432,y:0,flag:'squireArcheryHit'},
@@ -1023,19 +1040,21 @@ const MISSIONS=[
       {kind:'guardtest',label:'BRACE AND GUARD',x:773,y:0,need:'squireShield',flag:'squireGuardLearned'},
       {kind:'swordtarget',label:'STRIKE THE STRAW DUMMY',x:913,y:0,need:'squireGuardLearned',
         flag:'squireSwordHit'},
-      {kind:'sword',label:'HALVARD’S BLUNT IRON BLADE',x:1040,y:0,need:'squireSwordHit',
+      {kind:'sword',label:'HALVARD’S BLUNT IRON BLADE',x:1090,y:0,need:'squireSpar',
         flag:'squireSwordAward'},
       {kind:'exit',label:'RIDE HOME',x:1171,y:0,
-        needFlags:['squireFirstBow','squireArcheryHit','squireGuardLearned','squireSwordHit','squireSwordAward']}
+        needFlags:['squireFirstBow','squireArcheryHit','squireGuardLearned','squireSwordHit','squireSpar','squireSwordAward']}
     ]
-  },steps:[{t:'explore',goal:'Receive a bow; shoot the target, guard and strike the sword dummy',intro:[
+  },steps:[{t:'explore',goal:'Receive a bow; shoot the target, guard, strike the dummy and win a sparring bout',intro:[
     N('Chapter 6 — Under the castle walls, targets stand among straw dummies. A cloaked ranger leans on her unstrung bow beside Ser Halvard.'),
     L('Ser Halvard','Corin, meet Ranger Elowen. She watched my back on the southern marches long before you were born.'),
     L('Ranger Elowen','And he still holds a bow like a broomstick. Try mine. Stand, draw, breathe out and let the arrow go when the target is still.'),
     L('Corin','I have never owned a bow.'),
     L('Ranger Elowen','You do now. Shoot the straw butt ahead using BOW and ATK. Then ask Halvard about the wooden shield.'),
+    L('Ser Halvard','She is the reason I came home from the marches. I would rather you hear that from me than guess it.'),
+    L('Corin','Then I will not waste what you are teaching me.'),
     L('Ser Halvard','First, raise GUARD to turn a blow. Then take your wooden practice sword and strike the dummy before I hand you iron.'),
-    N('Take the bow and fire at the archery butt. Collect the shield; hold GUARD while using the brace marker. Strike the sword dummy with SWORD and ATK.')
+    N('Take the bow and fire at the archery butt. Collect the shield; hold GUARD while using the brace marker. Strike the sword dummy with SWORD and ATK, then spar: chain ATK for a combo, GUARD just as a blow lands to turn it, or roll with DODGE.')
   ]}]},
   {id:'returnroad',title:'The Broken Bridge and Ione’s Garden',reg:'green',explore:{
     length:1270,scenery:'brokenbridge',seed:41,weather:'storm',time:'dusk',
@@ -1116,7 +1135,7 @@ const MISSIONS=[
  {t:'chest',boost:.4}
 ]},
 {id:'m6',type:'main',act:1,title:'The Relic Hums',reg:'night',lvl:4,req:'m5',desc:'A mage in the library knows what Corin carries.',steps:[
- {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. Corin returns to Magister Ione, who first taught him to wield his rowan staff in the rune garden.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
+ {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. Corin returns to Magister Ione, who first taught him to wield his rowan staff in the rune garden.'),L('Magister Ione','You came back wet, frightened and still standing. Good. Fear is honest. Now hold out your hand: the Dawn will mend what the Dusk breaks, and the Dusk will answer faster than the Dawn ever will.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
  {t:'wave',list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.6},{k:'wisp',s:1,d:1.4},{k:'blight',s:-1,d:2.2},{k:'blight',s:1,d:3}],outro:[L('Magister Ione','Dawn heals. Dusk hits hard. Both answer to *you*. That is what troubles me.')]},
  {t:'choice',prompt:'Which tide does Corin trust first?',opts:[
   {label:'Dawn',desc:'Light, healing, and the long road.',c:6,cl:'Dawn',flag:'dawnFirst',xp:40,lines:[L('Magister Ione','A healer\'s instinct. It will serve you, and cost you *speed*.')]},
@@ -1172,7 +1191,7 @@ const MISSIONS=[
 ]},
 {id:'s5',type:'side',act:1,title:'The Armorer\'s Debt',reg:'hearth',lvl:4,after:'m5',desc:'Three Reavers took Tobren\'s forge over a debt he never owed.',steps:[
  {t:'say',npc:{k:'armorer',face:-1},lines:[L('Tobren','They took my forge. Three Reavers, a *debt* I never owed.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'bandit',s:-1,d:.7},{k:'bandit',s:1,d:1.4}],outro:[L('Tobren','You have my thanks, Ser. And my *gratitude*.')]},
+ {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'sentry',s:-1,d:.7},{k:'bandit',s:1,d:1.4}],outro:[L('Tobren','You have my thanks, Ser. And my *gratitude*.')]},
  {t:'choice',prompt:'Tobren offers to repay the favor.',opts:[
   {label:'Forgive his debt',desc:'He has lost enough.',c:8,cl:'Kindness',loot:{slot:'armor',rar:2},lines:[L('Tobren','Take this. I made it for my *son*.')]},
   {label:'Collect what he owes',desc:'A fair wage for a fair fight.',c:-4,cl:'Cold',gold:90,lines:[N('Tobren counts the coins in silence.')]}]}
@@ -1263,7 +1282,7 @@ const MISSIONS=[
 ]},
 {id:'m12',type:'main',act:1,title:'The Southern Road',reg:'road',lvl:9,req:'m11',loc:'green',endLoc:'road',desc:'Act I finale. The road south leads to the truth, and the Ashen Hand is already waiting.',steps:[
  {t:'say',lines:()=>G.flags.halvardStands?[N('Dawn on the Southern Road. Three travelers, one fewer than set out.'),L('Magister Ione','He asked me to tell you something, Ser Corin. Not yet. *Not yet*.')]:[N('Dawn on the Southern Road. Halvard walks with a crutch of broken spear-shaft.'),L('Ser Halvard','Corin... there is something I should have told you. About the *fire*. About the night you came to Hearthmoor.'),L('Corin','Tell me.'),L('Ser Halvard','...Not yet. When we are *safe*.')]},
- {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.5},{k:'ashen',s:1,d:1},{k:'ashen',s:-1,d:1.5}]},
+ {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'torchraider',s:-1,d:.5},{k:'ashen',s:1,d:1},{k:'sentry',s:-1,d:1.5}]},
  {t:'say',npc:{k:'veska',face:-1},lines:[L('Veska','Such a long way to run, little knight. And all for a *trinket*.'),L('Lysa','Corin, behind me!')]},
  {t:'wave',list:[{k:'ashen',s:1,d:0,boss:1,name:'Veska, Mistress of Knives',hpm:7,dmgm:1.3,sp:{col:'#3a2030',metal:'#4a3844',trim:'#c0402a',hair:'#d8d0e0',crest:'hood',mask:1,leg:'#2a1a24',look:0,w:4}},{k:'ashen',s:-1,d:2},{k:'ashen',s:1,d:3.5},{k:'ashen',s:-1,d:5}],outro:[N('Veska staggers, then vanishes into the smoke of a thrown vial.'),L('Veska','Prince *Corwen*. Lord Vane sends his regards. And his *patience* ends.'),L('Corin','What did she call me?'),L('Lysa','Corin...'),L('Magister Ione','Not here. Not yet.')]},
  {t:'chest',boost:2.5,out:.4},
@@ -1319,6 +1338,36 @@ MBY.joustlab={id:'joustlab',type:'lab',act:0,title:'Joust Lab',reg:'hearth',lvl:
  {id:'lab',title:'Joust Lab: The Lists',reg:'hearth',explore:{length:1030,scenery:'lists',seed:18,platforms:[],
   objects:[{kind:'joust',role:'rider',label:'RIDE THE LISTS',x:527,y:0},{kind:'exit',label:'LEAVE LAB',x:956,y:0}]},
   steps:[{t:'explore',goal:'Walk to the marker and ride three passes',intro:[N('Preview: Corin rides his own horse. Lower your lance as the foe lowers his.')]}]}]};
+/* ================= COMBAT TUNING (v0.8.0) =================
+   Every number that shapes combat feel lives here so it can be tuned in one place. Times are seconds, distances px. */
+const COMBAT_CFG={
+  // Sword: a three-stage combo by timing alone. Press ATK again as the swing ends (inside comboWindow) to chain.
+  // Pressing inside the first `perfect` seconds after the cooldown opens adds a timing bonus.
+  sword:[
+    {cd:.30,act:.20,mul:1.00,reach:34,kb:80, stop:.045,shake:0,  snd:[210,.07,'sawtooth'],arc:.9},
+    {cd:.30,act:.20,mul:1.15,reach:36,kb:95, stop:.050,shake:0,  snd:[260,.07,'sawtooth'],arc:-.9},
+    {cd:.56,act:.28,mul:1.75,reach:42,kb:190,stop:.095,shake:.14,snd:[140,.13,'square'],  arc:1.3,heavy:1}
+  ],
+  comboWindow:.30, perfect:.10, perfectMul:1.15,
+  // Weapon identities. Sword = fast/short/combos; staff = slow, piercing magic, costs mana; bow = long reach, slow, light impact.
+  staff:{cd:.62,act:.26,kb:25},
+  bow:{cd:.52,act:.18,kb:40},
+  // Dodge roll: a short burst with limited invulnerability and a recovery where the hero is open.
+  roll:{dist:64,time:.26,iframes:.20,recover:.16,cd:.80},
+  // Timed guard: pressing GUARD just before a hit deflects it and opens the attacker to a counter.
+  parry:{window:.20,stagger:1.0,counterMul:1.8,counterTime:.9,guardRefund:25},
+  // Platforming feel
+  coyote:.10,jumpBuffer:.12,jumpCut:.5,jumpCutV:-230,landSquash:.12,
+  // Hit stop: world time scale while frozen
+  hitStopScale:.04,
+  // Archetypes
+  shield:{frontMul:.2,breakStun:1.2,recover:.7},
+  torch:{fireTime:2.4,radius:13,tick:.55,dmgMul:.5,throwMin:70,throwMax:135,windT:.55},
+  spear:{windT:.55,keepAway:22},
+  hound:{windT:.38,dashSpeed:300,dashTime:.3,recover:.9},
+  // Defeat: encounter resets, rewards earned inside it are forfeited, nothing permanent is lost.
+  defeat:{keepLevelUps:true}
+};
 /* ================= SOLO ADVENTURE / PLATFORM ROOMS =================
    Data-driven exploration for new missions; old side-scrolling combat remains valid.
    Coordinates are world X and platform height (0 = ground, negative = above ground).
@@ -1346,7 +1395,9 @@ function adventureEnd(){
   const b=$('jumpbtn');if(b)b.style.display='none';
 }
 function adventureJump(){
-  if(S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
+  if(S.talk||S.mode!=='play'||S.joust||P.roll>0)return false;
+  if(!P.grounded&&!(P.coyote>0)){P.jbuf=COMBAT_CFG.jumpBuffer;return false;} // remembered, fires on landing
+  P.coyote=0;P.jbuf=0;P.jcut=0;
   P.vy=S.adv&&S.adv.mount?-235:-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
 }
 function adventureNear(){
@@ -1514,7 +1565,7 @@ function adventureUpdate(dt){
   // per checkpoint and distinct region-specific composition.
   for(const w of a.combatAt){
     if(!w.done&&P.x>=w.x&&!S.arena&&!S.talk){
-      w.done=true;wave(w.list,()=>{missionHud(true);});break;
+      w.done=true;wave(w.list,()=>{if(w.flag)G.flags[w.flag]=1;if(w.after)toast(w.after);missionHud(true);});break;
     }
   }
 }
@@ -3841,7 +3892,7 @@ function shift(d,label){G.c=clamp(G.c+d,-100,100);if(label)toast(label+'  '+(d>0
 function fade(cb){const f=$('fade');f.classList.add('on');setTimeout(()=>{cb();setTimeout(()=>f.classList.remove('on'),250);},850);}
 
 /* ================= MISSION FLOW ================= */
-function resetField(){adventureEnd();enemies=[];proj=[];drops=[];fxs=[];parts=[];S.chests=[];S.npc=null;S.arena=false;S.activeInteract=null;S.guard=null;S.choiceCam=null;S.choiceActor=null;keys.use=0;S.talk=false;S.choosing=false;S.q=[];line=null;S.tm=[];cap.classList.remove('show');chb.innerHTML='';}
+function resetField(){adventureEnd();enemies=[];proj=[];drops=[];fxs=[];parts=[];S.chests=[];S.npc=null;S.arena=false;S.activeInteract=null;S.guard=null;S.choiceCam=null;S.choiceActor=null;keys.use=0;S.talk=false;S.choosing=false;S.q=[];line=null;S.tm=[];S.haz=[];S.encSnap=null;S.hitStop=0;S.flash=0;P.roll=0;P.combo=0;P.comboT=0;P.counter=0;cap.classList.remove('show');chb.innerHTML='';}
 function startMission(id,resume){
   const m=MBY[id];if(!m)return;
   S.resultsBackdrop=null;
@@ -3988,12 +4039,14 @@ function wave(list,cb){
   // It can be drawn kneeling instead of disappearing before the decision.
   const boss=list.find(o=>o.boss&&EN[o.k]&&EN[o.k].h);
   S.choiceActor=boss?{k:boss.k,style:boss.sp||EN[boss.k].sp}:null;
-  S.npc=null;S.arena=true;S.arenaL=Math.max(0,P.x-W*.5);S.arenaR=S.arenaL+W;S.curList=list;S.spawnQ=list.map(o=>({...o}));S.spawnT=0;S.waveCb=cb;S.blight=Math.min(.3,S.blight+.03);
+  S.npc=null;S.arena=true;S.arenaL=Math.max(0,P.x-W*.5);S.arenaR=S.arenaL+W;S.curList=list;S.spawnQ=list.map(o=>({...o}));S.spawnT=0;S.waveCb=cb;
+  S.encSnap={xp:G.xp,lvl:G.lvl,gold:G.gold,kills:G.kills,rewGold:S.rew?S.rew.gold:0,rewXp:S.rew?S.rew.xp:0,items:[]}; // defeat forfeits what this encounter paid out
+  S.blight=Math.min(.3,S.blight+.03);
 }
 function spawn(o){
   const def={...EN[o.k]};if(o.sp&&def.sp)def.sp={...def.sp,...o.sp};if(o.name)def.n=o.name;
   const lv=S.ilvl,hp=def.hp*(1+.16*(lv-1))*(o.hpm||1);
-  enemies.push({k:o.k,def,x:o.s>0?S.arenaR+16:S.arenaL-16,face:-o.s,hp,max:hp,dmg:def.dmg*(1+.1*(lv-1))*(o.dmgm||1),cd:.8+rnd(),wind:0,hurt:0,fear:0,stun:0,vx:0,t:rnd()*3,mv:false,dead:false,boss:!!o.boss,xpm:o.hpm?Math.sqrt(o.hpm):1,atkA:0,dashT:0});
+  enemies.push({k:o.k,def,x:o.s>0?S.arenaR+16:S.arenaL-16,face:-o.s,hp,max:hp,dmg:def.dmg*(1+.1*(lv-1))*(o.dmgm||1),cd:.8+rnd(),wind:0,hurt:0,fear:0,stun:0,vx:0,t:rnd()*3,mv:false,dead:false,boss:!!o.boss,xpm:o.hpm?Math.sqrt(o.hpm):1,atkA:0,dashT:0,recov:0,throwPend:false});
 }
 function completeMission(){
   const m=S.mission;if(!m||S.mode!=='play')return;S.mode='done';
@@ -4014,9 +4067,21 @@ function completeMission(){
 function wBase(t){const it=G.eq[t];return it&&it.dmg?it.dmg:6;}
 const TN=['sword','staff','bow'];
 function rollHit(w,mul){const m=S.m,t=TN[w];let d=wBase(t)*(1+(m.dmg+m.allDmg+(m[t+'Dmg']||0))/100)*(mul||1)*(.92+rnd()*.16);const crit=rnd()*100<m.crit;if(crit)d*=m.critMul;return [Math.max(1,Math.round(d)),crit];}
-function hitEnemy(e,n,crit,dir,kb){
-  if(e.dead)return;e.hp-=n;e.hurt=.15;e.vx=dir*(kb+(S.m.kb?70:0));if(e.wind>0&&!e.dashPend&&rnd()<.4)e.wind=0;
-  floatTxt(e.x,GY-(e.def.h?54:34)-(e.def.k?18:0),String(n),crit?'#ffd34a':'#fff',crit);burst(e.x,GY-10,'#cfe35a',5,90);sfx(e.hp<=0?80:150,.09,'square',.04);
+function hitEnemy(e,n,crit,dir,kb,opt){
+  if(e.dead)return;opt=opt||{};
+  // Shield guards turn aside frontal blows unless the swing is a heavy finisher or they are mid-attack / recovering.
+  if(e.def.shield&&e.recov<=0&&e.stun<=0&&!(e.wind>0)&&dir===-e.face&&(opt.melee||opt.arrow)){
+    if(opt.brk){e.stun=COMBAT_CFG.shield.breakStun;e.wind=0;floatTxt(e.x,GY-62,'GUARD BREAK','#ffd34a',true);ring(e.x,GY-24,28,'#ffd34a');S.hitStop=Math.max(S.hitStop||0,.1);sfx(90,.2,'square',.06);}
+    else{n=Math.max(1,Math.round(n*COMBAT_CFG.shield.frontMul));kb*=.25;floatTxt(e.x,GY-56,'BLOCKED','#a5d4ff');burst(e.x-dir*6,GY-26,'#dfe8ff',4,70);sfx(260,.06,'square',.04);}
+  }
+  e.hp-=n;e.hurt=.15;e.vx=dir*(kb+(S.m.kb?70:0));
+  if(e.wind>0&&!e.dashPend&&(opt.heavy||rnd()<.4)){e.wind=0;e.throwPend=false;}
+  if(opt.heavy&&!e.def.big)e.stun=Math.max(e.stun,.3);
+  if(opt.stop)S.hitStop=Math.max(S.hitStop||0,opt.stop);
+  if(opt.shake)S.shake=Math.max(S.shake,opt.shake);
+  floatTxt(e.x,GY-(e.def.h?54:34)-(e.def.k?18:0),String(n),crit?'#ffd34a':'#fff',crit||!!opt.heavy);
+  burst(e.x,GY-10,'#cfe35a',opt.heavy?12:5,opt.heavy?140:90);if(opt.heavy)ring(e.x,GY-18,22,'#ffe9a0');
+  sfx(e.hp<=0?80:(opt.heavy?110:150),opt.heavy?.12:.09,'square',.04);
   if(S.m.leech)P.hp=Math.min(P.max,P.hp+n*S.m.leech/100);
   if(e.hp<=0)killEnemy(e);
 }
@@ -4053,9 +4118,18 @@ function projectileHitsEnemy(pr,e){
   const ey=(e.py||0),y=pr.y-GY;
   return y>=ey-enemyCombatHeight(e)&&y<=ey-1;
 }
-function hurtPlayer(n,dir){
+function parry(src){
+  const C=COMBAT_CFG.parry;P.inv=.3;P.counter=C.counterTime;P.guard=Math.min(100,P.guard+C.guardRefund);
+  S.hitStop=Math.max(S.hitStop||0,.12);S.shake=Math.max(S.shake,.1);S.parries=(S.parries||0)+1;
+  ring(P.x+P.face*10,GY+(P.py||0)-26,30,'#ffffff');burst(P.x+P.face*12,GY-28,'#fff6c0',10,110);
+  floatTxt(P.x,GY-62,'PARRY!','#ffffff',true);sfx(820,.12,'triangle',.06);sfx(300,.08,'square',.04);
+  if(src&&!src.dead&&!src.hazard){src.stun=C.stagger;src.wind=0;src.dashPend=false;src.dashT=0;src.throwPend=false;src.recov=0;src.vx=P.face*110;}
+  if(S.adv&&S.adv.scenery==='trainingyard')G.flags.squireParry=1;
+}
+function hurtPlayer(n,dir,src){
   if(P.inv>0||S.mode!=='play')return;
-  if(keys.block&&G.shieldTier>=0&&P.guard>0&&dir===-P.face){
+  if(keys.block&&G.shieldTier>=0&&P.guard>0&&dir===-P.face&&!(src&&src.hazard)){
+    if(P.guardT<=COMBAT_CFG.parry.window){parry(src);return;}
     const strength=G.shieldTier>=1?.85:.65;
     const absorbed=Math.max(1,Math.round(n*strength));P.guard=Math.max(0,P.guard-absorbed*3);
     n=Math.max(0,n-absorbed);floatTxt(P.x,GY+(P.py||0)-58,'BLOCK','#a5d4ff');
@@ -4065,7 +4139,7 @@ function hurtPlayer(n,dir){
   let d=Math.max(1,Math.round(n*(100/(100+S.m.def))*(1-S.m.dmgRed/100)));
   if(P.shield>0){const a=Math.min(P.shield,d);P.shield-=a;d-=a;}
   if(d>0){P.hp-=d;floatTxt(P.x,GY-58,'-'+d,'#ff7a6a');}
-  P.inv=.7;P.hurt=.25;P.vx=dir*90;S.shake=.15;sfx(100,.15,'sawtooth',.06);
+  P.inv=.7;P.hurt=.25;P.vx=dir*90;S.shake=.2;S.hitStop=Math.max(S.hitStop||0,.07);S.flash=.22;P.combo=0;P.comboT=0;sfx(100,.15,'sawtooth',.06);
 }
 function fireProj(w,type,mul,vx,pierce){const [d,c]=rollHit(w,mul);proj.push({x:P.x+P.face*10,y:GY+(P.py||0)-30,vx:P.face*vx,type,dmg:d,crit:c,life:1.6,face:P.face,pierce:pierce||0,hits:[]});}
 function trainingTargetComplete(o){
@@ -4076,6 +4150,15 @@ function trainingTargetComplete(o){
   burst(o.x,GY-37,bow?'#eacb82':'#e8d7a0',10,48);
   sfx(bow?460:220,.12,'triangle',.045);
   missionHud(true);return true;
+}
+function dodge(){
+  const C=COMBAT_CFG.roll;
+  if(S.mode!=='play'||S.talk||S.joust||(S.adv&&S.adv.mount)||P.rollCd>0||P.roll>0||!P.grounded||P.hp<=0)return false;
+  const dir=(keys.r?1:0)-(keys.l?1:0)||P.face;
+  P.roll=P.rollMax=C.time;P.rollDir=dir;P.rollCd=C.cd;P.inv=Math.max(P.inv,C.iframes);P.atk=0;P.cd=Math.max(P.cd,C.time+C.recover);P.comboT=0;P.combo=0;P.face=dir;
+  burst(P.x-dir*6,GY-4,'#d8c8a0',7,60);sfx(180,.12,'triangle',.04);
+  if(S.adv&&S.adv.scenery==='trainingyard')P.rollsTaught=(P.rollsTaught||0)+1;
+  return true;
 }
 function attack(){
   if(P.cd>0||S.talk||S.mode!=='play')return;
@@ -4102,13 +4185,23 @@ function attack(){
       (o.x-P.x)*P.face>0&&Math.abs(o.x-P.x)<43);
     if(target)trainingTargetComplete(target);
   }
-  if(P.w===0){P.cd=.36;P.atk=P.atkMax=.22;sfx(200,.08,'sawtooth');
-    for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-8&&dx<(e.def.k?44:34)&&heroEnemyOverlap(e)){const [d,c]=rollHit(0,1);hitEnemy(e,d,c,P.face,80);}}}
+  if(P.w===0){
+    const C=COMBAT_CFG,last=C.sword.length-1,st=P.comboT>0?(P.combo%C.sword.length):0,sw=C.sword[st];
+    const timed=st>0&&(P.atkEdge||P.atkBuf>0);let mul=sw.mul*(timed?C.perfectMul:1),counter=false;
+    if(P.counter>0){mul*=C.parry.counterMul;P.counter=0;counter=true;}
+    P.cd=sw.cd;P.atk=P.atkMax=sw.act;P.combo=st>=last?0:st+1;P.comboT=st>=last?0:sw.cd+C.comboWindow;P.atkBuf=0;P.stage=st;
+    P.vx+=P.face*(st===last?70:28); // each swing steps into the target
+    sfx(sw.snd[0],sw.snd[1],sw.snd[2]);
+    fxs.push({k:'sl',x:P.x+P.face*14,y:GY+(P.py||0)-24,face:P.face,life:.15,max:.15,arc:sw.arc,heavy:!!sw.heavy,r:0});
+    let hits=0;
+    for(const e of enemies){const dx=(e.x-P.x)*P.face;if(dx>-8&&dx<(e.def.k?sw.reach+10:sw.reach)&&heroEnemyOverlap(e)){const [d,c]=rollHit(0,mul);hitEnemy(e,d,c,P.face,sw.kb,{melee:1,heavy:sw.heavy,brk:sw.heavy,stop:sw.stop,shake:sw.shake});hits++;}}
+    if(hits&&counter)floatTxt(P.x,GY-70,'COUNTER','#ffd34a',true);else if(hits&&timed)floatTxt(P.x,GY-64,'TIMED','#9fe8ff',false);
+    if(hits&&S.adv&&S.adv.scenery==='trainingyard'&&st>=last)G.flags.squireComboHit=1;}
   else if(P.w===1){const cost=S.dusk?3:2;if(P.mp<cost){toast('Not enough mana');P.cd=.3;return;}
-    P.mp-=cost;P.cd=.6;P.atk=P.atkMax=.26;
+    P.mp-=cost;P.cd=COMBAT_CFG.staff.cd;P.atk=P.atkMax=COMBAT_CFG.staff.act;
     fireProj(1,S.dusk?'dusk':'dawn',S.dusk?1.25*(1+S.m.duskDmg/100):.85,150,S.m.staffPierce?1:0);
     sfx(S.dusk?110:520,.2,'triangle',.05);}
-  else{P.cd=.5*S.m.bowCd;P.atk=P.atkMax=.18;fireProj(2,'arrow',1,240,S.m.arrowPierce);sfx(320,.07,'square');}
+  else{P.cd=COMBAT_CFG.bow.cd*S.m.bowCd;P.atk=P.atkMax=COMBAT_CFG.bow.act;fireProj(2,'arrow',1,240,S.m.arrowPierce);sfx(320,.07,'square');}
 }
 function abilityId(){const w=P.w;if(w===0)return rank('whirl')?'whirl':rank('bash')?'bash':null;if(w===1)return rank('nova')?'nova':null;return rank('volley')?'volley':null;}
 const ABN={bash:'BASH',whirl:'SPIN',nova:'NOVA',volley:'VOLLEY'};
@@ -4128,41 +4221,49 @@ function useAbility(){
 }
 function updateCombat(dt){
   for(const e of enemies){
-    e.t+=dt;if(e.hurt>0)e.hurt-=dt;if(e.fear>0)e.fear-=dt;if(e.stun>0)e.stun-=dt;e.cd-=dt;if(e.atkA>0)e.atkA-=dt*4;
+    e.t+=dt;if(e.recov>0)e.recov-=dt;if(e.hurt>0)e.hurt-=dt;if(e.fear>0)e.fear-=dt;if(e.stun>0)e.stun-=dt;e.cd-=dt;if(e.atkA>0)e.atkA-=dt*4;
     e.x+=e.vx*dt;e.vx*=Math.pow(.02,dt);
     if(S.arena){if(!e.in&&e.x>S.arenaL+8&&e.x<S.arenaR-8)e.in=true;if(e.in)e.x=clamp(e.x,S.arenaL+6,S.arenaR-6);}
     const targetGuard=!!S.guard&&Math.abs(e.x-S.guard.x)<Math.abs(e.x-P.x)+38;const d=(targetGuard?S.guard.x:P.x)-e.x,ad=Math.abs(d),def=e.def,sp=def.spd;e.face=d>=0?1:-1;e.mv=false;
     if(e.stun>0)continue;
     if(e.wind>0){e.wind-=dt;if(e.wind<=0){
-      if(e.dashPend){e.dashPend=false;e.vx=e.face*270;e.dashT=.22;e.cd=1.3;e.dashHit=0;e.dashGuard=targetGuard;}
+      if(e.dashPend){e.dashPend=false;e.vx=e.face*(def.dashSpd||270);e.dashT=def.dashT||.22;e.cd=1.3;e.dashHit=0;e.dashGuard=targetGuard;}
+      else if(e.throwPend){e.throwPend=false;const T=COMBAT_CFG.torch,ft=.7,g0=400,vx=clamp((P.x-e.x)/ft,-150,150);
+        proj.push({x:e.x+e.face*10,y:GY-34,vx:vx,vy:(34-.5*g0*ft*ft)/ft,g:g0,lob:1,type:'torch',dmg:e.dmg,hostile:1,life:3,face:e.face,hits:[]});e.cd=1.9;e.atkA=1;sfx(260,.1,'triangle',.04);}
       else if(def.ranged){proj.push({x:e.x+e.face*10,y:GY-30,vx:e.face*130,type:(e.k==='wisp'||e.k==='acolyte'?'dusk':'arrow'),dmg:e.dmg,hostile:1,life:2.2,face:e.face,guard:targetGuard,originGround:(e.py||0)>=-2});e.cd=1.8+rnd()*.6;e.atkA=1;}
-      else{e.atkA=1;if(ad<def.rng+10){if(targetGuard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}e.cd=1.2+rnd()*.4;}}
+      else{e.atkA=1;if(ad<def.rng+10){if(targetGuard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face,e);}e.cd=1.2+rnd()*.4;if(def.shield)e.recov=COMBAT_CFG.shield.recover;}}
       continue;}
-    if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;if(e.dashGuard&&S.guard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face);}continue;}
+    if(e.dashT>0){e.dashT-=dt;if(ad<16&&!e.dashHit){e.dashHit=1;if(e.dashGuard&&S.guard)hurtGuard(e.dmg);else if(heroEnemyOverlap(e))hurtPlayer(e.dmg,e.face,e);}continue;}
     if(S.arena&&!e.in){e.x+=Math.sign(d)*sp*1.3*dt;e.mv=true;continue;}
     if(e.fear>0){e.x-=Math.sign(d)*sp*dt;e.mv=true;continue;}
     if(def.ranged){const room=e.x>S.arenaL+22&&e.x<S.arenaR-22;if(ad<60&&room){e.x-=Math.sign(d)*sp*dt;e.mv=true;}else if(ad>135){e.x+=Math.sign(d)*sp*dt;e.mv=true;}else if(e.cd<=0)e.wind=.5;continue;}
-    if(def.dash&&ad>36&&ad<130&&e.cd<=0){e.wind=.4;e.dashPend=true;continue;}
-    if(ad>def.rng){e.x+=Math.sign(d)*sp*dt;e.mv=true;}else if(e.cd<=0)e.wind=.35;
+    if(def.torch&&ad>COMBAT_CFG.torch.throwMin&&ad<COMBAT_CFG.torch.throwMax&&e.cd<=0){e.wind=COMBAT_CFG.torch.windT;e.throwPend=true;continue;} // fire from range, rush when close
+    if(def.dash&&ad>36&&ad<130&&e.cd<=0){e.wind=def.windT||.4;e.dashPend=true;continue;}
+    if(def.spear&&ad<COMBAT_CFG.spear.keepAway&&e.cd>.3){e.x-=Math.sign(d)*sp*.9*dt;e.mv=true;continue;}
+    if(ad>def.rng){e.x+=Math.sign(d)*sp*dt;e.mv=true;}else if(e.cd<=0)e.wind=def.windT||.35;
   }
   for(const pr of proj){
     pr.x+=pr.vx*dt;pr.life-=dt;
+    if(pr.lob){pr.vy+=pr.g*dt;pr.y+=pr.vy*dt;if(pr.y>=GY-2){pr.life=0;S.haz.push({x:pr.x,t:COMBAT_CFG.torch.fireTime,tick:0,dmg:pr.dmg,hazard:1});burst(pr.x,GY-6,'#ff9b2a',10,80);sfx(120,.15,'sawtooth',.04);}continue;}
     if(!pr.hostile&&pr.type==='arrow'&&S.adv&&S.adv.scenery==='trainingyard'){
       const target=S.adv.objects.find(o=>o.kind==='archerytarget'&&!o.done&&
         Math.abs(pr.x-o.x)<14&&Math.abs(pr.y-GY+30)<20);
       if(target){trainingTargetComplete(target);pr.life=0;continue;}
     }
     if(pr.hostile){if(!pr.guard&&keys.block&&G.shieldTier>=0&&P.guard>=10&&pr.face===-P.face&&hostileProjectileHitsHero(pr)){
+      if(P.guardT<=COMBAT_CFG.parry.window){parry(null);pr.hostile=0;pr.vx=-pr.vx;pr.face=-pr.face;pr.hits=[];pr.pierce=0;pr.life=2;pr.dmg=Math.round(pr.dmg*1.3);continue;}
       P.guard=Math.max(0,P.guard-13);
       if(G.shieldTier>=2){pr.hostile=0;pr.vx=-pr.vx;pr.face=-pr.face;pr.hits=[];pr.pierce=0;pr.life=2;pr.dmg=Math.round(pr.dmg*1.3);toast('WARD REFLECT');sfx(740,.14,'triangle',.04);continue;}
       pr.life=0;toast('SHIELD BLOCK');sfx(140,.1,'square',.04);continue;
     }if(pr.guard&&S.guard){if(Math.abs(pr.x-S.guard.x)<8){hurtGuard(pr.dmg);pr.life=0;}}else if(hostileProjectileHitsHero(pr)){hurtPlayer(pr.dmg,pr.face);pr.life=0;}continue;}
     for(const e of enemies){if(e.dead||pr.hits.includes(e))continue;if(projectileHitsEnemy(pr,e)){
-      pr.hits.push(e);hitEnemy(e,pr.dmg,pr.crit,pr.face,pr.type==='arrow'?40:25);
+      pr.hits.push(e);hitEnemy(e,pr.dmg,pr.crit,pr.face,pr.type==='arrow'?COMBAT_CFG.bow.kb:COMBAT_CFG.staff.kb,{arrow:pr.type==='arrow'});
       if(pr.type==='dawn'){P.hp=Math.min(P.max,P.hp+S.m.dawnHeal);burst(P.x,GY-24,'#fff6b0',4,50);if(S.m.shieldPer)P.shield=Math.min(40,P.shield+S.m.shieldPer);}
       if(pr.type==='dusk')e.fear=S.m.fear;
       if(pr.pierce>0)pr.pierce--;else{pr.life=0;break;}}}
   }
+  for(const h of S.haz){h.t-=dt;h.tick-=dt;if(h.tick<=0&&Math.abs(P.x-h.x)<COMBAT_CFG.torch.radius&&(P.py||0)>-10&&!(P.roll>0)){h.tick=COMBAT_CFG.torch.tick;hurtPlayer(Math.max(1,Math.round(h.dmg*COMBAT_CFG.torch.dmgMul)),P.x>=h.x?1:-1,h);}}
+  S.haz=S.haz.filter(h=>h.t>0);
   proj=proj.filter(p=>p.life>0&&p.x>S.cam-30&&p.x<S.cam+W+30);
   enemies=enemies.filter(e=>!e.dead);
 }
@@ -4170,8 +4271,9 @@ function updateCombat(dt){
 /* ================= UPDATE ================= */
 let smokeT=0;
 function update(dt){
-  S.t+=dt;typeTick(dt);if(S.shake>0)S.shake-=dt;
+  S.t+=dt;typeTick(dt);if(S.shake>0)S.shake-=dt;if(S.flash>0)S.flash-=dt;
   if(S.paused)return;
+  if(S.hitStop>0){S.hitStop-=dt;dt*=COMBAT_CFG.hitStopScale;} // brief freeze on heavy contact
   for(const t of S.tm)t.t-=dt;const due=S.tm.filter(t=>t.t<=0);S.tm=S.tm.filter(t=>t.t>0);due.forEach(t=>t.fn());
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.k==='s')p.vy+=260*dt;p.life-=dt;}parts=parts.filter(p=>p.life>0);
   for(const f of fxs){f.life-=dt;if(f.k==='t')f.y+=f.vy*dt;else f.r=lerp(4,f.max,1-f.life/.45);}fxs=fxs.filter(f=>f.life>0);
@@ -4198,29 +4300,49 @@ function update(dt){
     P.mv=Math.abs(horse.speed)>5;
     P.x=clamp(P.x+horse.speed*dt+P.vx*dt,minX,maxX);
   }else{
-    P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);
+    if(P.roll>0){P.face=P.rollDir;P.x=clamp(P.x+P.rollDir*(COMBAT_CFG.roll.dist/COMBAT_CFG.roll.time)*dt,minX,maxX);}
+    else P.x=clamp(P.x+dir*(P.atk>0?32:64)*dt+P.vx*dt,minX,maxX);
   }
   P.vx*=Math.pow(.02,dt);
   if(!S.adv&&G.shieldTier>=0)P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);
   if(P.cd>0)P.cd-=dt;if(P.atk>0)P.atk-=dt;if(P.inv>0)P.inv-=dt;if(P.hurt>0)P.hurt-=dt;if(P.ab>0)P.ab-=dt;if(P.shield>0)P.shield=Math.max(0,P.shield-dt*1.5);
   P.mp=Math.min(P.mmax,P.mp+dt*S.m.mpRegen);if(S.m.regen)P.hp=Math.min(P.max,P.hp+S.m.regen*dt);
-  if(keys.atk)attack();if(keys.abl)useAbility();if(keys.use)useMissionObject();
+  if(P.comboT>0)P.comboT-=dt;if(P.atkBuf>0)P.atkBuf-=dt;if(P.roll>0)P.roll-=dt;if(P.rollCd>0)P.rollCd-=dt;if(P.counter>0)P.counter-=dt;
+  P.atkEdge=!!keys.atk&&!P.atkPrev;P.atkPrev=!!keys.atk;if(P.atkEdge&&P.cd>0)P.atkBuf=.18; // a press just before the cooldown ends is remembered
+  P.guardT=(keys.block&&G.shieldTier>=0)?(P.guardT||0)+dt:0;
+  if(keys.atk&&!(P.roll>0))attack();if(keys.abl)useAbility();if(keys.use)useMissionObject();
   if(S.adv){adventureUpdate(dt);P.guard=Math.min(100,P.guard+(keys.block?4:19)*dt);}
   else if(!P.grounded){
     P.vy=Math.min(460,(P.vy||0)+620*dt);
     P.py+=P.vy*dt;
     if(P.py>=0){P.py=0;P.vy=0;P.grounded=true;}
   }
+  // Platforming feel: coyote time, jump buffering, variable jump height, landing squash.
+  {const C=COMBAT_CFG,gnd=!!P.grounded;
+   if(gnd){P.coyote=C.coyote;P.jcut=0;if(P.wasAir){P.land=C.landSquash;burst(P.x,GY+(P.py||0)-2,'#d8c8a0',5,50);}}
+   else{if(P.coyote>0)P.coyote-=dt;if(!keys.jump&&P.vy<C.jumpCutV&&!P.jcut){P.vy=C.jumpCutV;P.jcut=1;}}
+   P.wasAir=!gnd;
+   if(P.jbuf>0){P.jbuf-=dt;if(gnd&&!S.talk)adventureJump();}
+   if(P.land>0)P.land-=dt;}
   if(!S.adv)FOL.forEach((f,i)=>{const tx=P.x-(i?46:28),d=tx-f.x;f.mv=Math.abs(d)>3;f.x+=d*Math.min(1,dt*2.6);f.face=P.face;});
   if(S.arena){S.spawnT+=dt;S.spawnQ=S.spawnQ.filter(o=>{if(S.spawnT>=o.d){spawn(o);return false;}return true;});}
   updateCombat(dt);
   // drops
   for(const d of drops){d.t+=dt;if(!d.g){d.vy+=320*dt;d.y+=d.vy*dt;if(d.y>=GY-6){d.y=GY-6;d.g=true;d.vy=0;}}
     else if(Math.abs(d.x-P.x)<80)d.x+=Math.sign(P.x-d.x)*90*dt;
-    if(d.g&&Math.abs(d.x-P.x)<12){d.pick=1;addItem(d.it);if(d.it.rar<3)floatTxt(P.x,GY-64,d.it.name,itemCol(d.it),false);sfx(500+d.it.rar*120,.2,'triangle',.05);if(d.it.rar>=3){burst(P.x,GY-20,itemCol(d.it),18,140);toast(RAR[d.it.rar].n.toUpperCase()+'!  '+d.it.name);}}}
+    if(d.g&&Math.abs(d.x-P.x)<12){d.pick=1;addItem(d.it);if(S.encSnap)S.encSnap.items.push(d.it.id);if(d.it.rar<3)floatTxt(P.x,GY-64,d.it.name,itemCol(d.it),false);sfx(500+d.it.rar*120,.2,'triangle',.05);if(d.it.rar>=3){burst(P.x,GY-20,itemCol(d.it),18,140);toast(RAR[d.it.rar].n.toUpperCase()+'!  '+d.it.name);}}}
   drops=drops.filter(d=>!d.pick);
   // death
-  if(P.hp<=0){toast('Corin falls... and rises again');P.hp=P.max;P.mp=P.mmax;P.inv=1.2;P.shield=0;
+  if(P.hp<=0){
+    // Defeat resets the encounter and forfeits what it paid out (no farming by dying); nothing permanent is lost.
+    const sn=S.encSnap;let lost='';
+    if(S.arena&&sn){
+      if(G.lvl===sn.lvl||!COMBAT_CFG.defeat.keepLevelUps)G.xp=sn.xp;G.gold=sn.gold;G.kills=sn.kills;
+      if(S.rew){S.rew.gold=sn.rewGold;S.rew.xp=sn.rewXp;if(sn.items.length)S.rew.items=S.rew.items.filter(i=>sn.items.indexOf(i.id)<0);}
+      if(sn.items.length)G.inv=G.inv.filter(i=>sn.items.indexOf(i.id)<0);
+      drops=[];lost=' - rewards from this fight are lost';
+    }
+    toast('Corin falls... and rises again'+lost);P.hp=P.max;P.mp=P.mmax;P.inv=1.2;P.shield=0;P.roll=0;P.combo=0;P.comboT=0;S.haz=[];
     if(S.arena){enemies=[];proj=[];S.spawnQ=S.curList.map(o=>({...o}));S.spawnT=-1;P.x=S.arenaL+30;}}
   if(S.arena&&!S.spawnQ.length&&!enemies.length){S.arena=false;const cb=S.waveCb;S.waveCb=null;if(cb)cb();}
   if(!S.talk&&!S.arena&&!S.activeInteract&&S.bi<S.beats.length&&P.x>=S.beats[S.bi].x){const b=S.beats[S.bi++];runStep(b);}
@@ -4230,6 +4352,7 @@ function update(dt){
     use.style.display=S.joust||S.activeInteract||ob?'flex':'none';
     use.textContent=S.joust?(S.joust.role==='rider'?'COUCH':'OFFER'):'USE';
     const guard=$('blockbtn');if(guard)guard.style.display=G.shieldTier>=0?'flex':'none';
+    const dg=$('dodgebtn');if(dg){dg.style.display=(S.joust||(S.adv&&S.adv.mount))?'none':'flex';dg.style.opacity=P.rollCd>0?'.5':'1';}
     use.style.opacity=near?'1':'.45';
   }
   missionHud(false);
@@ -4302,7 +4425,12 @@ function drawScene(cam){
        gait:gaitForSpeed(h.speed),ph:h.ph},
       {...heroOpts(),mv:false,w:-1},null);
   }else if(!(S.joust&&S.joust.role==='rider')){
-    drawPerson(P.x-cam,GY+(P.py||0),P.face,heroOpts());
+    {const hx=Math.round(P.x-cam),hy=GY+(P.py||0);let sx=1,sy=1,tilt=0,al=1;
+     if(P.roll>0){const pr=1-P.roll/P.rollMax;sy=.62;tilt=P.face*(.25+pr*.35);if(P.inv>0)al=.7;if(Math.floor(pr*10)%2===0)parts.push({k:'s',x:P.x-P.face*8,y:GY-3,vx:-P.face*20,vy:-10,life:.3,max:.3,c:'#d8c8a0'});}
+     else if(P.land>0){const k=P.land/COMBAT_CFG.landSquash;sy=1-.16*k;sx=1+.1*k;}
+     else if(!P.grounded&&P.vy<-60){sy=1.05;sx=.96;}
+     if(sx!==1||sy!==1||tilt||al!==1){g.save();g.translate(hx,hy);g.scale(sx,sy);if(tilt)g.rotate(tilt);g.translate(-hx,-hy);g.globalAlpha=al;drawPerson(P.x-cam,hy,P.face,heroOpts());g.restore();}
+     else drawPerson(P.x-cam,hy,P.face,heroOpts());}
   }
   if(keys.block&&G.shieldTier>=0){
     const x=Math.round(P.x-cam+P.face*10),y=Math.round(GY+(P.py||0)-27);
@@ -4311,8 +4439,10 @@ function drawScene(cam){
     if(G.shieldTier>=2){g.strokeStyle='#9feaff';g.strokeRect(x-8,y-13,16,27);}
   }
   if(P.shield>0){g.strokeStyle='rgba(159,209,255,.7)';g.lineWidth=1;g.strokeRect(Math.round(P.x-cam)-10.5,GY-50.5,21,52);}
+  for(const h of S.haz){const hx=Math.round(h.x-cam),fl=Math.floor(S.t*14+h.x)%3,a=Math.min(1,h.t*1.5);g.globalAlpha=a;R(hx-12,GY-3,24,3,'#a8321a');R(hx-9,GY-8-fl,5,8+fl,'#e47f32');R(hx-1,GY-12+fl,5,12-fl,'#f3bd55');R(hx+5,GY-7-(fl+1)%3,5,7+(fl+1)%3,'#e47f32');g.globalAlpha=1;}
   for(const pr of proj){const x=Math.round(pr.x-cam),y=pr.y,f=pr.face;
     if(pr.type==='arrow'){R(x-4,y,9,1,'#d8c8a0');R(f>0?x+5:x-6,y-1,2,3,'#ccc');R(f>0?x-5:x+4,y-1,1,3,pr.hostile?'#a33':'#e0e0e0');}
+    else if(pr.type==='torch'){R(x-3,y-3,7,7,'#e47f32');R(x-1,y-6-Math.floor(S.t*20)%2,4,5,'#f3bd55');R(x-1,y-1,2,2,'#fff2b8');}
     else if(pr.type==='dawn'){R(x-4,y-3,9,7,'rgba(255,230,120,.3)');R(x-3,y-2,7,5,'#ffe27a');R(x-2,y-1,5,3,'#fff');R(x-7*f,y,4,1,'rgba(255,240,150,.6)');}
     else{R(x-4,y-3,9,7,'rgba(180,90,255,.3)');R(x-3,y-2,7,5,'#6a22b0');R(x-2,y-1,5,3,'#d27aff');R(x-7*f,y,4,1,'rgba(180,90,255,.6)');}}
   g.restore();
@@ -4342,8 +4472,12 @@ function draw(){
     else{g.fillStyle='rgba(20,30,80,.12)';g.fillRect(0,0,W,H);}
   }
   storyWeatherOverlay(cam);
+  if(S.flash>0){g.fillStyle='rgba(210,30,20,'+Math.min(.35,S.flash*1.4).toFixed(2)+')';g.fillRect(0,0,W,H);}
   for(const f of fxs){
     if(f.k==='t'){g.font=(f.big?'bold 10px':'bold 8px')+' "Courier New",monospace';g.textAlign='center';g.lineWidth=2;g.strokeStyle='#000';g.globalAlpha=Math.min(1,f.life*2);{const tx=clamp(Math.round(f.x-cam),34,W-34);g.strokeText(f.txt,tx,Math.round(f.y));g.fillStyle=f.col;g.fillText(f.txt,tx,Math.round(f.y));}g.globalAlpha=1;}
+    else if(f.k==='sl'){const a=f.life/f.max,sg=f.arc>0?1:-1,r=f.heavy?26:19,cx=Math.round(f.x-cam),cy=Math.round(f.y);
+      g.save();g.translate(cx,cy);g.scale(f.face,1);g.globalAlpha=Math.min(1,a*1.8);g.strokeStyle=f.heavy?'#ffe9a0':'#ffffff';g.lineWidth=f.heavy?3:2;
+      g.beginPath();g.arc(-6,0,r,-1.15*sg,(-1.15+2.3*(1-a))*sg,sg<0);g.stroke();g.restore();g.globalAlpha=1;}
     else{g.strokeStyle=f.col;g.globalAlpha=Math.min(1,f.life*2.5);g.lineWidth=2;g.beginPath();g.ellipse(Math.round(f.x-cam),Math.round(f.y),f.r,f.r*.45,0,0,7);g.stroke();g.globalAlpha=1;}
   }
   g.restore();
@@ -4756,20 +4890,20 @@ function showTitle(){
 /* ================= INPUT ================= */
 document.querySelectorAll('[data-k]').forEach(b=>{
   const k=b.dataset.k,up=()=>{keys[k]=0;b.classList.remove('on');};
-  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use'){if(!adventureUse())useMissionObject();keys.use=0;}if(k==='jump')adventureJump();try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();initAudio();keys[k]=1;b.classList.add('on');if(k==='use'){if(!adventureUse())useMissionObject();keys.use=0;}if(k==='jump')adventureJump();if(k==='dodge')dodge();try{b.setPointerCapture(e.pointerId);}catch(_){}});
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
 });
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();setW(+b.dataset.w);}));
 $('mode').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();toggleMode();});
 $('panel').addEventListener('pointerdown',e=>{if(e.target.closest('.opt'))return;adv();});
 cv.addEventListener('pointerdown',()=>{if(S.talk)adv();});
-const KM={ArrowUp:'jump',w:'jump',W:'jump',Shift:'block',x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl'};
+const KM={ArrowUp:'jump',w:'jump',W:'jump',Shift:'block',x:'use',X:'use',ArrowLeft:'l',a:'l',A:'l',ArrowRight:'r',d:'r',D:'r',j:'atk',J:'atk',z:'atk',Z:'atk',e:'abl',E:'abl',f:'abl',F:'abl',c:'dodge',C:'dodge'};
 addEventListener('keydown',e=>{
   if(modal.classList.contains('on')){if(e.key==='Escape'&&S.mode==='play')hideModal();return;}
   if(S.mode!=='play'&&S.mode!=='prologue')return;
   if(e.key==='Enter'||(e.key===' '&&S.talk)){adv();e.preventDefault();return;}
   if(e.key===' '){keys.atk=1;e.preventDefault();return;}
-  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use'&&!e.repeat){if(!adventureUse())useMissionObject();keys.use=0;}if(KM[e.key]==='jump'&&!e.repeat)adventureJump();e.preventDefault();}
+  if(KM[e.key]){keys[KM[e.key]]=1;if(KM[e.key]==='use'&&!e.repeat){if(!adventureUse())useMissionObject();keys.use=0;}if(KM[e.key]==='jump'&&!e.repeat)adventureJump();if(KM[e.key]==='dodge'&&!e.repeat)dodge();e.preventDefault();}
   if(e.key==='1')setW(0);if(e.key==='2')setW(1);if(e.key==='3')setW(2);if(e.key==='q'||e.key==='Q')toggleMode();
   if(e.key==='b'||e.key==='B')ACT.bag();if(e.key==='k'||e.key==='K')ACT.skills();if(e.key==='Escape')renderMenu();
 });
@@ -4784,7 +4918,7 @@ layout();storageProbe();if(hasSave())load();calc();showTitle();
 function startChapter(n){NOSAVE=true;newG();startGear();calc();$('title').style.display='none';hideModal();startMission('m0');if(n>1)loadMissionArea(n-1);}
 try{const cm=/[?&#]chapter=([1-7])\b/.exec((location.search||'')+(location.hash||''));if(cm)startChapter(+cm[1]);}catch(e){}
 requestAnimationFrame(frame);
-window.__G={itemStatText,S,P,G,gaitForSpeed,MOUNT_CFG,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={update,itemStatText,COMBAT_CFG,dodge,parry,hurtPlayer,hitEnemy,spawn,wave,S,P,G,gaitForSpeed,MOUNT_CFG,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
 })();
 </script>
 </body>

@@ -115,6 +115,7 @@ const {pathToFileURL}=require('url'),path=require('path');
       facing:g.P.face,weapon:g.P.w,x:g.P.x,targetX:o.x};
   });
   assert.ok(sword.flag,'Sword practice target: '+JSON.stringify(sword));assert.ok(sword.done);
+  await page.evaluate(()=>{window.__G.G.flags.squireSpar=1;}); /* sparring is covered by golden_path and combat tests */
   assert.ok((await obj('sword')).flag);
   assert.equal(await page.evaluate(()=>window.__G.G.eq.sword.name),'Blunt Iron Sword');
   await advance('returnroad');

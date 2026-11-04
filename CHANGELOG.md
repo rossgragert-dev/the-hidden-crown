@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.8.0 Combat Reborn (development, not merged; stacked on v0.7.1)
+
+Details, test results and known limits in `docs/V0_8_0_COMBAT_REBORN.md`. All tuning lives in `COMBAT_CFG` (`src/44_combat_cfg.js`).
+
+- **Sword combo.** Three timed stages (light, light, heavy finisher) with a buffered input window and a small bonus for well-timed follow-ups; slash arcs, hit-stop, knockback and screen shake scale with the stage.
+- **Dodge / roll.** New ROLL button (key C): short invulnerable roll with a cooldown, on foot only. A button was chosen over a swipe gesture because it cannot collide with the fixed camera or on-screen cluster; a gesture remains untested.
+- **Timed guard.** A block raised just before impact deflects the hit, staggers the attacker and opens a counter strike; late blocks only reduce damage. Hazards (fire) ignore guard.
+- **Enemy archetypes.** Shield guard (front hits mostly blocked, back and counters break it), spearman (telegraphed thrust, keeps distance), torch raider (throws torches that leave a fire hazard you can jump), hound, and a training sparrer. Telegraph marks, stun stars and shield glints make the states readable. Several mission waves now mix archetypes.
+- **Platform feel.** Coyote time (0.10 s), jump buffer (0.12 s), variable jump height and landing squash. Camera and platforms are unchanged.
+- **Defeat.** Losing an encounter forfeits only what that encounter paid out (xp, gold, loot) and restores the snapshot taken at its start. No permadeath, no inventory loss, and no way to farm rewards by dying.
+- **Chapter 6.** Adds a sparring bout after the straw dummy; the iron blade is awarded after winning it. Small narrative additions for Halvard, Corin and Ione.
+- **Tests / CI.** New `combat` suite (combo, hit-stop, shield, spear, fire, dodge, parry, coyote/buffer, defeat, four-archetype encounter) added to `run_all`; golden path now plays the sparring bout.
+
 ## v0.7.1 Foundations Reforged (development, not merged)
 
 Stability, saves and touch controls. No new combat or story content (that is v0.8.0). Details and test results in `docs/V0_7_1_FOUNDATIONS_REFORGED.md`.

@@ -1,7 +1,7 @@
 // Runs the fast regression suite sequentially and prints a summary. Exit 1 if any script fails.
 // (golden_path.js and bot.js are slower and run as separate CI jobs: npm run test:golden / test:bot)
 const { spawnSync } = require('child_process'); const path = require('path');
-const LIST = ['smoke', 'boot', 'save', 'layout', 'riding', 'jump_consistency', 'fixes', 'adventure', 'magic_paths', 'opening_platforms', 'grounding', 'squire', 'polish', 'world', 'pixel_art', 'quest', 'zoom', 'joust', 'lab', 'art_pass'];
+const LIST = ['smoke', 'boot', 'save', 'layout', 'riding', 'jump_consistency', 'fixes', 'adventure', 'magic_paths', 'opening_platforms', 'grounding', 'squire', 'polish', 'world', 'pixel_art', 'quest', 'zoom', 'joust', 'lab', 'art_pass', 'combat'];
 let failed = [];
 for (const t of LIST) {
   const t0 = Date.now(); const env = Object.assign({}, process.env, t === 'layout' ? { STRICT: '1' } : {});
