@@ -21,6 +21,8 @@ const HGAIT={idle:{n:10,stride:0,lift:0,duty:1},walk:{n:12,stride:15,lift:5,duty
  halt:{n:6,stride:0,lift:0,duty:1},recoil:{n:8,stride:0,lift:0,duty:1},groom:{n:10,stride:0,lift:0,duty:1}};
 const HPH={walk:{bl:0,fl:.25,br:.5,fr:.75},trot:{fl:0,br:0,fr:.5,bl:.5},canter:{bl:0,br:.14,fl:.34,fr:.46},gallop:{bl:0,br:.12,fl:.3,fr:.42},charge:{bl:0,br:.12,fl:.3,fr:.42}};
 // Speed in px/s -> gait name; used by the joust engine and by roaming horses.
+/* Free-riding speeds (px/s). 'canter' sits inside gaitForSpeed's canter band (95-150) so holding forward really reaches it. */
+const MOUNT_CFG={canter:124,accel:1.3,canterHold:1.0};
 function gaitForSpeed(v){v=Math.abs(v);return v<8?'idle':v<50?'walk':v<95?'trot':v<150?'canter':'gallop';}
 // Stride cycles per second for a gait at a given speed (keeps hooves roughly planted).
 function strideRate(gait,v){const g=HGAIT[gait];if(!g||!g.stride)return 1.1;return clamp(Math.abs(v)/(g.stride*1.35),.7,5.2);}

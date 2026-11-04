@@ -41,32 +41,35 @@ button{font-family:inherit;touch-action:manipulation;-webkit-touch-callout:none}
 #cap b{color:#ffd34a;font-weight:900}
 #cap .tip{display:block;margin-top:5px;font:12px "Courier New",monospace;-webkit-text-stroke:0;color:#ccc}
 #ch{display:flex;flex-direction:column;gap:7px;margin-top:8px}
-.opt{font:inherit;text-align:left;background:rgba(20,14,8,.95);color:#f4e9c8;border:2px solid #c9a24a;border-radius:10px;padding:9px 12px;cursor:pointer}
+.opt{min-height:48px;font:inherit;text-align:left;background:rgba(20,14,8,.95);color:#f4e9c8;border:2px solid #c9a24a;border-radius:10px;padding:9px 12px;cursor:pointer}
 .opt b{display:block;color:#ffd34a;font-size:15px;-webkit-text-stroke:0}
 .opt small{display:block;font-size:12px;opacity:.85;margin-top:2px;font-weight:normal;-webkit-text-stroke:0}
 /* objective overlay: compact and readable on mobile */
-#objtrack{position:fixed;left:10px;top:max(63px,calc(env(safe-area-inset-top) + 53px));max-width:min(72vw,310px);z-index:6;pointer-events:none;background:rgba(16,13,18,.86);border:1px solid #b39b65;border-radius:7px;padding:5px 8px;color:#fff0c6;font:10px/1.35 "Courier New",monospace}
+#objtrack{position:fixed;left:10px;top:max(80px,calc(env(safe-area-inset-top) + 72px));max-width:min(72vw,310px);z-index:6;pointer-events:none;background:rgba(16,13,18,.86);border:1px solid #b39b65;border-radius:7px;padding:5px 8px;color:#fff0c6;font:10px/1.35 "Courier New",monospace}
 #objtrack strong{display:block;color:#ffd34a;font-size:10px;margin-bottom:2px}
 #objtrack span{display:block}
-#jumpbtn,#blockbtn{display:none;pointer-events:auto;width:52px;height:52px;font-size:11px}#jumpbtn{position:absolute;left:auto;right:112px;bottom:calc(14px + env(safe-area-inset-bottom));width:62px;height:62px;z-index:2}#jumpbtn{border-color:#a8eac2;background:#214b33}
-#ctl .combat-pad .wk{transform:translateY(-96px)}#blockbtn{border-color:#c5d8ff;background:#203850}#usebtn{pointer-events:auto;display:none;position:absolute;left:50%;bottom:calc(224px + env(safe-area-inset-bottom));transform:translateX(-50%);width:62px;height:62px;font-size:12px;border-color:#fff3b8;background:rgba(59,44,22,.9)}
 /* controls */
-#ctl{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;padding:10px 12px calc(14px + env(safe-area-inset-bottom));pointer-events:none;z-index:5}
-.pad{display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
 .btn{width:66px;height:66px;border-radius:50%;background:rgba(36,26,16,.74);border:2px solid #c9a24a;color:#f4e9c8;font:bold 17px "Courier New",monospace;display:flex;align-items:center;justify-content:center;touch-action:none;padding:0;position:relative;overflow:hidden}
 .btn.on,.btn.sel{background:#c9a24a;color:#241a0c}
 .btn.big{width:82px;height:82px;font-size:19px;border-color:#ffd34a}
 .btn.sm{width:46px;height:46px;font-size:10px;border-radius:12px}
 .btn.abl{width:56px;height:56px;font-size:10px;border-color:#9fd1ff}
 .btn.abl::after{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:conic-gradient(rgba(0,0,0,.72) calc(var(--p,0)*1%),transparent 0);pointer-events:none}
-.wk{display:grid;grid-template-columns:repeat(2,46px);gap:8px}
-.col{display:flex;flex-direction:column;gap:8px;align-items:center}
 #mode{background:#e8c84a;border-color:#fff3b8;color:#2a1c06}
 #mode.dusk{background:#5a2c88;border-color:#d27aff;color:#fff}
 body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-mode=play]) #boss{display:none}
 /* modal */
 #modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:12;background:rgba(10,8,14,.94);display:none;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 #modal.on{display:block}
+#modal.over{z-index:30}
+.card.warn{border-color:#c0392b;background:rgba(70,20,16,.92)}
+.card textarea{width:100%;box-sizing:border-box;margin:6px 0;background:#150f09;color:#f4e9c8;border:2px solid #4a3a28;border-radius:8px;padding:6px;font:11px "Courier New",monospace;word-break:break-all;-webkit-user-select:text;user-select:text;touch-action:manipulation}
+.card input[type=file]{width:100%;font-size:12px;color:#d8cfae;margin:4px 0}
+.row2{display:flex;gap:8px}.row2 .bt{flex:1}
+.msg{min-height:16px;margin-top:6px;font-size:12px;color:#ff9c8a}
+.twarn{max-width:300px;margin:0 auto 8px;padding:8px 10px;border:2px solid #c0392b;border-radius:9px;background:rgba(70,20,16,.9);font-size:12px;line-height:1.35;color:#ffd9d2}
+#savewarn{pointer-events:none;position:fixed;left:50%;transform:translateX(-50%);top:max(6px,env(safe-area-inset-top));z-index:16;width:68px;padding:3px 2px;border:2px solid #c0392b;border-radius:8px;background:rgba(70,20,16,.95);color:#ffd9d2;font:bold 9px/1.15 "Courier New",monospace;text-align:center;display:none}
+body[data-mode=play] #savewarn.on{display:block}
 .mw{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 14px 50px}
 .mh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .mh h2{margin:0;font:900 24px Impact,"Arial Black",sans-serif;color:#ffd34a;letter-spacing:1px}
@@ -102,15 +105,39 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 #boot{position:fixed;top:0;left:0;right:0;bottom:0;z-index:30;background:#0e0a14;color:#f4e9c8;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:15px;line-height:1.5}
 #boot b{display:block;font:900 26px Impact,'Arial Black',sans-serif;color:#ffd34a;margin-bottom:10px}
 #boot code{color:#ff9a8a;font-size:12px}
+/* ---- controls (v0.7.1): bottom-anchored clusters; everything sits below the ground line ---- */
+#sabprobe{position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-bottom) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#ctl{position:fixed;left:0;right:0;bottom:0;height:200px;pointer-events:none;z-index:5;--sab:env(safe-area-inset-bottom);--sal:env(safe-area-inset-left);--sar:env(safe-area-inset-right)}
+.pad,.combat-pad,.col{display:contents}
+#ctl>.pad .btn,#ctl .combat-pad>.btn,#ctl .col .btn{position:absolute;pointer-events:auto}
+#ctl [data-k=l]{left:calc(12px + var(--sal));bottom:calc(14px + var(--sab))}
+#ctl [data-k=r]{left:calc(88px + var(--sal));bottom:calc(14px + var(--sab))}
+#ctl [data-k=atk]{right:calc(12px + var(--sar));bottom:calc(14px + var(--sab))}
+#ctl #jumpbtn{right:calc(104px + var(--sar));bottom:calc(14px + var(--sab));width:62px;height:62px;font-size:11px;border-color:#a8eac2;background:#214b33}
+#ctl #blockbtn{right:calc(110px + var(--sar));bottom:calc(84px + var(--sab));width:52px;height:52px;font-size:10px;border-color:#c5d8ff;background:#203850}
+#ctl #abl{right:calc(19px + var(--sar));bottom:calc(104px + var(--sab))}
+#jumpbtn,#blockbtn{display:none}
+#usebtn{pointer-events:auto;display:none;position:absolute;left:50%;bottom:calc(224px + var(--sab));transform:translateX(-50%);width:62px;height:62px;font-size:12px;border-color:#fff3b8;background:rgba(59,44,22,.9)}
+/* weapon switcher: compact icon chips */
+.wk{position:absolute;left:calc(12px + var(--sal));bottom:calc(92px + var(--sab));display:flex;gap:6px;pointer-events:none}
+#ctl .wk .btn{position:relative;pointer-events:auto;width:44px;height:44px;font-size:9px;padding:0}
+.wk svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#hud .bars{width:140px}
+.bar{height:11px}.bar.thin{height:6px}
+.bar .bv{position:absolute;left:0;right:0;top:0;text-align:center;font:bold 8px/9px "Courier New",monospace;color:#fff;letter-spacing:0}
+#hb button{position:relative;padding:8px 9px}
+#hb button::after{content:"";position:absolute;left:-3px;right:-3px;top:-8px;bottom:-8px}
 @media (orientation:landscape){
- #usebtn{width:44px;height:44px;font-size:10px;bottom:calc(72px + env(safe-area-inset-bottom))}
- #objtrack{top:max(46px,calc(env(safe-area-inset-top) + 38px));max-width:45vw}
- .btn{width:54px;height:54px;font-size:14px}.btn.big{width:68px;height:68px}.btn.sm{width:40px;height:40px;font-size:9px}.btn.abl{width:46px;height:46px}
- .wk{grid-template-columns:repeat(2,40px);gap:6px}
- #jumpbtn{right:94px;bottom:calc(8px + env(safe-area-inset-bottom));width:54px;height:54px;font-size:10px}
- #ctl .combat-pad .wk{transform:translateY(-78px)}
- #usebtn{bottom:calc(188px + env(safe-area-inset-bottom));width:50px;height:50px;font-size:10px}
- #ctl{padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+ #ctl{height:110px}
+ .btn{width:54px;height:54px;font-size:14px}.btn.big{width:68px;height:68px}.btn.abl{width:48px;height:48px;font-size:10px}
+ #ctl [data-k=l]{bottom:calc(8px + var(--sab))}#ctl [data-k=r]{left:calc(76px + var(--sal));bottom:calc(8px + var(--sab))}
+ #ctl [data-k=atk]{bottom:calc(8px + var(--sab))}
+ #ctl #jumpbtn{right:calc(92px + var(--sar));bottom:calc(8px + var(--sab));width:54px;height:54px;font-size:10px}
+ #ctl #abl{right:calc(154px + var(--sar));bottom:calc(8px + var(--sab))}
+ #ctl #blockbtn{right:calc(210px + var(--sar));bottom:calc(8px + var(--sab));width:48px;height:48px}
+ .wk{left:calc(146px + var(--sal));bottom:calc(8px + var(--sab))}
+ #usebtn{width:50px;height:50px;font-size:10px;bottom:calc(188px + var(--sab))}
+ #objtrack{top:max(70px,calc(env(safe-area-inset-top) + 64px));max-width:38vw}
  #panel{top:max(58px,calc(env(safe-area-inset-top) + 52px));width:min(64vw,560px)}
  #cap{font-size:clamp(14px,2.7vw,20px);-webkit-text-stroke:3px #000}
  #toast{top:30%}
@@ -120,7 +147,7 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 <body data-mode="title">
 <canvas id="cv"></canvas>
 <div id="hud">
-  <div class="bars"><div class="lv" id="lv">Lv 1</div><div class="bar"><i id="hp"></i></div><div class="bar"><i id="mp"></i></div><div class="bar thin"><i id="xp"></i></div></div>
+  <div class="bars"><div class="lv" id="lv">Lv 1</div><div class="bar"><i id="hp"></i><b class="bv" id="hpv"></b></div><div class="bar"><i id="mp"></i><b class="bv" id="mpv"></b></div><div class="bar thin"><i id="xp"></i></div></div>
   <div><div id="cmp"><span id="ctitle">The Wanderer</span><div class="cb"><u></u><em id="cm"></em></div></div>
   <div id="hb"><button data-m="bag">BAG</button><button data-m="skills">SKILLS</button><button data-m="menu">MENU</button></div></div>
 </div>
@@ -133,15 +160,16 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
   <button class="btn" id="usebtn" data-k="use" aria-label="Use nearby object">USE</button>
   <div class="pad combat-pad">
     <div class="wk">
-      <button class="btn sm sel" data-w="0">SWORD</button>
-      <button class="btn sm" data-w="1">STAFF</button>
-      <button class="btn sm" data-w="2">BOW</button>
-      <button class="btn sm" id="mode">DAWN</button>
+      <button class="btn sm sel" data-w="0" aria-label="Sword"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M14 4h6v6M7 14l3 3M4 20l3-3"/></svg></button>
+      <button class="btn sm" data-w="1" aria-label="Staff"><svg viewBox="0 0 24 24"><path d="M6 20 16 10"/><circle cx="17.5" cy="6.5" r="3.2"/></svg></button>
+      <button class="btn sm" data-w="2" aria-label="Bow"><svg viewBox="0 0 24 24"><path d="M7 3c8 3 8 15 0 18M7 3v18M4 12h14M15 9l3 3-3 3"/></svg></button>
+      <button class="btn sm" id="mode" aria-label="Dawn or Dusk">DAWN</button>
     </div>
     <button class="btn" id="jumpbtn" data-k="jump" aria-label="Jump">JUMP</button>
     <div class="col"><button class="btn" id="blockbtn" data-k="block">GUARD</button><button class="btn abl" data-k="abl" id="abl">SKILL</button><button class="btn big" data-k="atk">ATK</button></div>
   </div>
 </div>
+<div id="savewarn"></div><div id="sabprobe"></div>
 <div id="modal"><div class="mw" id="mw"></div></div>
 <div id="title"><h1>THE HIDDEN CROWN</h1><p>A saga of sword, staff and bow</p><div id="tbtns"></div></div>
 <div id="fade"></div>
@@ -169,7 +197,8 @@ function layout(){
   SC=Math.max(2,Math.round(Math.min(vw,vh)/200));
   W=Math.ceil(vw/SC);H=Math.ceil(vh/SC);
   cv.width=W;cv.height=H;cv.style.width=W*SC+'px';cv.style.height=H*SC+'px';
-  const reserve=(portrait?186:96)/SC;
+  let sab=0;try{sab=parseFloat(getComputedStyle($('sabprobe')).paddingBottom)||0;}catch(e){}
+  const reserve=((portrait?186:96)+sab)/SC;
   GY=Math.max(Math.round(H*.55),Math.round(H-reserve-6));
   HZ=GY-70;
   g.imageSmoothingEnabled=false;
@@ -183,13 +212,104 @@ function sfx(f,d,type,v){if(!AC)return;try{const t=AC.currentTime,o=AC.createOsc
 /* ---------- persistent game data ---------- */
 const SAVEKEY='hiddencrown.save.v2';
 const G={};
-function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null,shieldTier:-1,sq:1,stash:[]});}
+function defaultsG(){return {lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null,shieldTier:-1,sq:1,stash:[]};}
+function newG(){Object.assign(G,defaultsG());}
 let NOSAVE=false; // set by the ?chapter=N test shortcut so a preview never overwrites a real save
-function save(){if(NOSAVE)return;try{localStorage.setItem(SAVEKEY,JSON.stringify(G));}catch(e){}}
-function load(){try{const s=localStorage.getItem(SAVEKEY);if(!s)return false;newG();const p=JSON.parse(s);Object.assign(G,p);
-  // Saves from before the squire-kit change keep their gear and look (treated as already knighted).
-  if(!p.sq){G.sq=0;G.stash=[];G.flags=G.flags||{};G.flags.knighted=1;}return true;}catch(e){return false;}}
+/* ---------- save system (v0.7.1) ----------
+   Key stays 'hiddencrown.save.v2' so existing progress keeps loading. Format changes are additive only:
+   a 'ver' field is stamped on every write and old saves are migrated forward in memory. */
+const SAVE_VER=3,BAKKEY='hiddencrown.save.v2.bak',PROBEKEY='hiddencrown.probe';
+const SAVESTAT={ok:true,checked:false,err:'',lastOk:0,mem:'',notice:'',onFail:null};
+function storageProbe(){
+  try{localStorage.setItem(PROBEKEY,'1');const r=localStorage.getItem(PROBEKEY)==='1';localStorage.removeItem(PROBEKEY);SAVESTAT.ok=r;SAVESTAT.err=r?'':'storage returned no data';}
+  catch(e){SAVESTAT.ok=false;SAVESTAT.err=String(e&&e.name||e||'blocked');}
+  SAVESTAT.checked=true;return SAVESTAT.ok;
+}
+function noteFail(e){const was=SAVESTAT.ok;SAVESTAT.ok=false;SAVESTAT.err=String(e&&e.name||e||'blocked');if((was||!SAVESTAT.warned)&&SAVESTAT.onFail){SAVESTAT.warned=true;SAVESTAT.onFail();}}
+function save(){
+  if(NOSAVE)return false;
+  G.ver=SAVE_VER;let str;
+  try{str=JSON.stringify(G);}catch(e){noteFail(e);return false;}
+  SAVESTAT.mem=str; // always keep the latest state so it can still be exported when storage is blocked
+  try{localStorage.setItem(SAVEKEY,str);SAVESTAT.ok=true;SAVESTAT.err='';SAVESTAT.lastOk=Date.now();return true;}
+  catch(e){noteFail(e);return false;}
+}
+const isObj=v=>v&&typeof v==='object'&&!Array.isArray(v);
+const numOr=(v,d,lo,hi)=>{v=typeof v==='number'&&isFinite(v)?v:d;if(lo!==undefined)v=Math.max(lo,v);if(hi!==undefined)v=Math.min(hi,v);return v;};
+function fixItem(it,slotHint){
+  const o=Object.assign({},it);
+  o.id=(typeof o.id==='string'||typeof o.id==='number')?String(o.id):'fx'+Math.floor(Math.random()*1e9).toString(36);
+  o.slot=typeof o.slot==='string'?o.slot:(slotHint||'trinket');
+  o.name=typeof o.name==='string'?o.name:'Worn Relic';
+  o.rar=Math.floor(numOr(o.rar,0,0,4));o.ilvl=Math.floor(numOr(o.ilvl,1,1,99));
+  if('dmg' in o)o.dmg=numOr(o.dmg,0,0);if('def' in o)o.def=numOr(o.def,0,0);
+  o.aff=Array.isArray(o.aff)?o.aff.filter(a=>isObj(a)&&typeof a.k==='string'&&typeof a.v==='number'&&isFinite(a.v)):[];
+  return o;
+}
+/* Validate + repair a parsed save. Returns {g,notes} or null when it is not a recognisable save. */
+function sanitizeSave(p){
+  if(!isObj(p))return null;
+  if(!('lvl' in p||'inv' in p||'flags' in p||'loc' in p))return null;
+  const d=defaultsG();
+  const notes=[],o=Object.assign({},d,p);
+  o.sq=p.sq?1:0; // a missing marker means a pre-squire-kit save, NOT the new-game default (migrateSave then treats it as knighted)
+  const fix=(k,v)=>{if(o[k]!==v){notes.push(k);o[k]=v;}};
+  fix('lvl',Math.floor(numOr(o.lvl,1,1,99)));fix('xp',numOr(o.xp,0,0));fix('pts',Math.floor(numOr(o.pts,0,0)));fix('gold',Math.floor(numOr(o.gold,0,0)));
+  fix('day',Math.floor(numOr(o.day,1,1)));fix('kills',Math.floor(numOr(o.kills,0,0)));fix('c',numOr(o.c,0,-100,100));
+  if(!isObj(o.sk))fix('sk',{});if(!isObj(o.flags))fix('flags',{});if(!isObj(o.done))fix('done',{});
+  if(!isObj(o.eq))fix('eq',Object.assign({},d.eq));
+  o.eq=Object.assign({},o.eq);
+  ['sword','staff','bow','armor','trinket','outfit'].forEach(k=>{if(!(k in o.eq))o.eq[k]=null;else if(o.eq[k]&&!isObj(o.eq[k])){o.eq[k]=null;notes.push('eq.'+k);}else if(o.eq[k])o.eq[k]=fixItem(o.eq[k],k);});
+  ['inv','stash'].forEach(k=>{if(!Array.isArray(o[k]))fix(k,[]);else{const n=o[k].filter(isObj);if(n.length!==o[k].length)notes.push(k);o[k]=n.map(x=>fixItem(x));}});
+  if(typeof o.loc!=='string')fix('loc','hearth');
+  if(o.checkpoint&&!isObj(o.checkpoint))fix('checkpoint',null);
+  if(!isObj(o.opts)&&o.opts!==undefined)fix('opts',{});
+  return {g:o,notes};
+}
+/* Bring an older save forward. Never drops fields; only adds/derives what newer builds expect. */
+function migrateSave(o){
+  const from=o.ver||2;
+  if(!o.sq){o.sq=0;o.stash=o.stash||[];o.flags=o.flags||{};o.flags.knighted=1;} // pre-squire-kit saves: already knighted
+  o.hasSave=1;o.ver=SAVE_VER;return from;
+}
+function applySave(o){Object.keys(G).forEach(k=>delete G[k]);newG();Object.assign(G,o);}
+/* parse raw text → {ok,g,notes,from} or {ok:false,err} */
+function parseSave(str){
+  let p;try{p=JSON.parse(str);}catch(e){return {ok:false,err:'not valid save data'};}
+  const r=sanitizeSave(p);if(!r)return {ok:false,err:'not a Hidden Crown save'};
+  const from=migrateSave(r.g);return {ok:true,g:r.g,notes:r.notes,from:from};
+}
+const LOADINFO={src:'',notes:[],from:0,err:''};
+function load(){
+  LOADINFO.src='';LOADINFO.notes=[];LOADINFO.err='';
+  let raw=null;try{raw=localStorage.getItem(SAVEKEY);}catch(e){}
+  if(!raw&&SAVESTAT.mem&&!SAVESTAT.ok)raw=SAVESTAT.mem; // blocked storage: resume from this session's in-memory copy
+  if(!raw)return false;
+  let r=parseSave(raw);
+  if(!r.ok){ // damaged primary → try the pre-overwrite backup
+    LOADINFO.err=r.err;let bak=null;try{bak=localStorage.getItem(BAKKEY);}catch(e){}
+    r=bak?parseSave(bak):r;if(!r.ok)return false;LOADINFO.src='backup';
+  }else LOADINFO.src='save';
+  LOADINFO.notes=r.notes;LOADINFO.from=r.from;applySave(r.g);return true;
+}
 function hasSave(){try{return !!localStorage.getItem(SAVEKEY);}catch(e){return false;}}
+function hasBackup(){try{return !!localStorage.getItem(BAKKEY);}catch(e){return false;}}
+/* Copy whatever is currently stored to the backup slot (called before a New Game or an import overwrites it). */
+function backupSave(){try{const cur=localStorage.getItem(SAVEKEY);if(cur){localStorage.setItem(BAKKEY,cur);return true;}}catch(e){}
+  if(SAVESTAT.mem){try{localStorage.setItem(BAKKEY,SAVESTAT.mem);return true;}catch(e){}}return false;}
+function restoreBackup(){try{const b=localStorage.getItem(BAKKEY);if(!b)return false;const r=parseSave(b);if(!r.ok)return false;const cur=localStorage.getItem(SAVEKEY);applySave(r.g);save();if(cur)localStorage.setItem(BAKKEY,cur);return true;}catch(e){return false;}}
+/* ---------- export / import: HC3-<base64 json>-<fnv1a hex> ---------- */
+function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return ('00000000'+h.toString(16)).slice(-8);}
+function exportCode(){G.ver=SAVE_VER;const j=JSON.stringify(G);const b=btoa(unescape(encodeURIComponent(j)));return 'HC3-'+b+'-'+fnv(b);}
+function importCode(code){
+  code=String(code||'').replace(/\s+/g,'');
+  const m=/^HC(\d)-([A-Za-z0-9+/=]+)-([0-9a-f]{8})$/.exec(code);
+  if(!m)return {ok:false,err:'That is not a Hidden Crown save code.'};
+  if(fnv(m[2])!==m[3])return {ok:false,err:'The code is damaged or incomplete (checksum mismatch).'};
+  let j;try{j=decodeURIComponent(escape(atob(m[2])));}catch(e){return {ok:false,err:'The code could not be decoded.'};}
+  const r=parseSave(j);if(!r.ok)return {ok:false,err:'The code does not contain a valid save.'};
+  return r;
+}
 newG();
 
 /* ---------- runtime state ---------- */
@@ -945,7 +1065,7 @@ const MISSIONS=[
   {t:'say',lines:[
     L('Ser Halvard','You made it back from the broken bridge, Corin. I feared you lost. The watchmen have now spotted blighted creatures near the northern gate.'),
     L('Corin','I found a path with Ione’s magic. The blight is on the roads too, and it is moving toward our village.'),
-    L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
+    L('Ser Halvard','Then take your shield and the iron blade from our training in the yard. Keep them away from the castle walls.')
   ]},
   {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'scout',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
     L('Corin','They came all this way. There must be more of them on the Greenmarch.')
@@ -1347,7 +1467,9 @@ function adventureUpdate(dt){
   if(a.mount){
     a.mount.ph+=dt*strideRate(gaitForSpeed(a.mount.speed),a.mount.speed);
     a.mount.halvX=lerp(a.mount.halvX,Math.max(94,P.x+86),Math.min(1,dt*1.8));
-    if(P.x>340&&a.mount.speed>66&&!G.flags.squireCanter){
+    const gait=gaitForSpeed(a.mount.speed);
+    a.mount.canterT=(gait==='canter'||gait==='gallop')?(a.mount.canterT||0)+dt:0; // a real canter gait held steadily
+    if(P.x>340&&a.mount.canterT>=MOUNT_CFG.canterHold&&!G.flags.squireCanter){
       G.flags.squireCanter=1;toast('HORSEMANSHIP: STEADY CANTER LEARNED');save();
     }
   }
@@ -1744,6 +1866,8 @@ const HGAIT={idle:{n:10,stride:0,lift:0,duty:1},walk:{n:12,stride:15,lift:5,duty
  halt:{n:6,stride:0,lift:0,duty:1},recoil:{n:8,stride:0,lift:0,duty:1},groom:{n:10,stride:0,lift:0,duty:1}};
 const HPH={walk:{bl:0,fl:.25,br:.5,fr:.75},trot:{fl:0,br:0,fr:.5,bl:.5},canter:{bl:0,br:.14,fl:.34,fr:.46},gallop:{bl:0,br:.12,fl:.3,fr:.42},charge:{bl:0,br:.12,fl:.3,fr:.42}};
 // Speed in px/s -> gait name; used by the joust engine and by roaming horses.
+/* Free-riding speeds (px/s). 'canter' sits inside gaitForSpeed's canter band (95-150) so holding forward really reaches it. */
+const MOUNT_CFG={canter:124,accel:1.3,canterHold:1.0};
 function gaitForSpeed(v){v=Math.abs(v);return v<8?'idle':v<50?'walk':v<95?'trot':v<150?'canter':'gallop';}
 // Stride cycles per second for a gait at a given speed (keeps hooves roughly planted).
 function strideRate(gait,v){const g=HGAIT[gait];if(!g||!g.stride)return 1.1;return clamp(Math.abs(v)/(g.stride*1.35),.7,5.2);}
@@ -3740,6 +3864,7 @@ function loadMissionArea(idx){
   S.pal=REG[area&&area.reg?area.reg:m.reg].pal;
   S.blight=S.pal==='fen'?.1:.06+.012*m.lvl;
   P.x=30;P.face=1;P.vx=0;P.inv=1;S.cam=0;P.guard=100;
+  P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0; // each area starts with the sword drawn, not whatever the last scene left equipped
   S.beats=(area?area.steps:m.steps).map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
   S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
   FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});const jump=$('jumpbtn');if(jump)jump.style.display='flex';buildLayers(S.pal);hud(true);missionHud(true);
@@ -3911,14 +4036,13 @@ function heroAboveEnemyFloor(e){
   return !!(S.adv&&P.grounded&&(P.py||0)<-12&&(e.py||0)>=-2);
 }
 function heroEnemyOverlap(e){
-  if(!S.adv)return true; // keep old flat missions unchanged
+  // v0.7.1: flat missions use the same airborne rules as the adventure engine (a jump clears low ground hits)
   if(heroAboveEnemyFloor(e))return false;
   const feet=P.py||0,ef=e.py||0;
   return feet-1>ef-enemyCombatHeight(e)+2&&feet-44<ef-2;
 }
 function hostileProjectileHitsHero(pr){
   if(Math.abs(pr.x-P.x)>=8)return false;
-  if(!S.adv)return true;
   if(P.grounded&&(P.py||0)<-12&&pr.originGround!==false)return false;
   const y=pr.y-GY,feet=P.py||0;
   return y>=feet-43&&y<=feet-2;
@@ -3983,7 +4107,7 @@ function attack(){
   else if(P.w===1){const cost=S.dusk?3:2;if(P.mp<cost){toast('Not enough mana');P.cd=.3;return;}
     P.mp-=cost;P.cd=.6;P.atk=P.atkMax=.26;
     fireProj(1,S.dusk?'dusk':'dawn',S.dusk?1.25*(1+S.m.duskDmg/100):.85,150,S.m.staffPierce?1:0);
-    if(S.dusk)G.c=clamp(G.c-1.5,-100,100);else G.c=clamp(G.c+.5,-100,100);sfx(S.dusk?110:520,.2,'triangle',.05);}
+    sfx(S.dusk?110:520,.2,'triangle',.05);}
   else{P.cd=.5*S.m.bowCd;P.atk=P.atkMax=.18;fireProj(2,'arrow',1,240,S.m.arrowPierce);sfx(320,.07,'square');}
 }
 function abilityId(){const w=P.w;if(w===0)return rank('whirl')?'whirl':rank('bash')?'bash':null;if(w===1)return rank('nova')?'nova':null;return rank('volley')?'volley':null;}
@@ -3998,7 +4122,7 @@ function useAbility(){
   else if(a==='nova'){if(P.mp<8){toast('Not enough mana');return;}P.mp-=8;P.ab=P.abMax=8;P.atk=P.atkMax=.3;sfx(S.dusk?90:620,.4,'triangle',.07);
     ring(P.x,GY-18,78,S.dusk?'#c070ff':'#ffe27a');
     for(const e of enemies){if(Math.abs(e.x-P.x)<80&&heroEnemyOverlap(e)){const [d,c]=rollHit(1,1.4*(S.dusk?1+S.m.duskDmg/100:1));hitEnemy(e,d,c,e.x>=P.x?1:-1,90);if(S.dusk)e.fear=S.m.fear+1.5;}}
-    if(!S.dusk){P.hp=Math.min(P.max,P.hp+P.max*.12);burst(P.x,GY-20,'#fff6b0',10,100);}else G.c=clamp(G.c-3,-100,100);}
+    if(!S.dusk){P.hp=Math.min(P.max,P.hp+P.max*.12);burst(P.x,GY-20,'#fff6b0',10,100);}}
   else if(a==='volley'){P.ab=P.abMax=8;sfx(340,.1,'square',.05);
     for(let i=0;i<5;i++)later(i*.1,()=>{if(S.mode!=='play')return;P.atk=P.atkMax=.14;fireProj(2,'arrow',.9,260,S.m.arrowPierce);sfx(320+i*20,.06,'square');});}
 }
@@ -4069,8 +4193,8 @@ function update(dt){
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
   if(S.adv&&S.adv.mount&&!S.joust){
-    const horse=S.adv.mount,target=dir>0?94:dir<0?-43:0;
-    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir?1.8:2.5)));
+    const horse=S.adv.mount,target=dir>0?MOUNT_CFG.canter:dir<0?-43:0;
+    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir>0?MOUNT_CFG.accel:dir<0?1.8:2.5)));
     P.mv=Math.abs(horse.speed)>5;
     P.x=clamp(P.x+horse.speed*dt+P.vx*dt,minX,maxX);
   }else{
@@ -4234,7 +4358,7 @@ function hud(force){
   if(key===hudK&&!force)return;hudK=key;
   document.querySelectorAll('[data-w]').forEach(x=>{x.style.display=G.eq[TN[+x.dataset.w]]?'':'none';});$('mode').style.display=G.eq.staff?'':'none';
   $('hp').style.width=clamp(P.hp/P.max,0,1)*100+'%';$('mp').style.width=clamp(P.mp/P.mmax,0,1)*100+'%';$('xp').style.width=clamp(G.xp/xpNeed(G.lvl),0,1)*100+'%';
-  $('lv').textContent='Lv '+G.lvl+(G.pts?'  ★'+G.pts:'');
+  $('lv').textContent='Lv '+G.lvl+'  XP '+Math.floor(clamp(G.xp/xpNeed(G.lvl),0,1)*100)+'%'+(G.pts?'  ★'+G.pts:'');$('hpv').textContent=Math.ceil(P.hp)+'/'+P.max;$('mpv').textContent=Math.floor(P.mp)+'/'+P.mmax;
   $('cm').style.left=(G.c+100)/200*100+'%';
   const t=$('ctitle');t.textContent='♛ '+tier(G.c);t.style.color=G.c>=30?'#ffd34a':G.c<=-30?'#ff6a4a':'#e9e2c4';
   const ab=abilityId(),b=$('abl');b.textContent=ab?ABN[ab]:'LOCK';b.style.setProperty('--p',P.ab>0?Math.round(P.ab/P.abMax*100):0);b.style.opacity=ab?1:.5;
@@ -4246,7 +4370,7 @@ function toggleMode(){S.dusk=!S.dusk;const m=$('mode');m.textContent=S.dusk?'DUS
 /* ================= MODALS ================= */
 const modal=$('modal'),mw=$('mw');
 const UI={tab:'knight',sel:null,selSk:null};
-function showModal(h){mw.innerHTML=h;modal.classList.add('on');modal.scrollTop=0;S.paused=true;}
+function showModal(h){mw.innerHTML=h;modal.classList.toggle('over',S.mode==='title');modal.classList.add('on');modal.scrollTop=0;S.paused=true;}
 function hideModal(){modal.classList.remove('on');S.paused=false;}
 const hdr=(t,r)=>'<div class="mh"><h2>'+t+'</h2><span>'+(r||'')+'</span><button class="xb" data-a="close">&#10005;</button></div>';
 const goldStr=()=>'Lv '+G.lvl+' &middot; '+G.gold+'g';
@@ -4488,13 +4612,14 @@ function openResults(m,first){
   let h='<div class="mh"><h2>'+(first?'MISSION COMPLETE':'MISSION REPLAYED')+'</h2></div><div class="card"><h4>'+m.title+'</h4>';
   h+='<div class="stat">+'+r.xp+' XP &middot; +'+r.gold+' gold'+(r.lv?' &middot; <b style="color:#ffd34a">LEVEL UP x'+r.lv+'</b>':'')+'</div>';
   const dc=Math.round(G.c-r.c0);h+='<div class="stat">Compass: '+(dc>0?'+':'')+dc+' &rarr; '+tier(G.c)+'</div></div>';
-  h+='<div class="sec">LOOT ('+r.items.length+')</div>'+(r.items.length?r.items.map(it=>'<div class="card" style="border-color:'+itemCol(it)+';padding:6px 10px"><b style="color:'+itemCol(it)+'">'+it.name+'</b> <span class="stat">'+RAR[it.rar].n+' '+SLOTN[it.slot]+' &middot; '+(it.dmg?it.dmg+' dmg':it.def?it.def+' def':'trinket')+'</span></div>').join(''):'<div class="stat">None.</div>');
+  h+='<div class="sec">LOOT ('+r.items.length+')</div>'+(r.items.length?r.items.map(it=>'<div class="card" style="border-color:'+itemCol(it)+';padding:6px 10px"><b style="color:'+itemCol(it)+'">'+it.name+'</b> <span class="stat">'+RAR[it.rar].n+' '+SLOTN[it.slot]+' &middot; '+itemStatText(it)+'</span></div>').join(''):'<div class="stat">None.</div>');
   h+='<div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="bt go" data-a="board" style="flex:1">CONTINUE</button><button class="bt" data-a="bag" style="flex:1">BAG</button>'+(G.pts?'<button class="bt" data-a="skills" style="flex:1">SKILLS &#9733;'+G.pts+'</button>':'')+'</div>';
   showModal(h);
 }
+function itemStatText(it){return it.dmg?it.dmg+' dmg':it.def?it.def+' def':(it.slot==='outfit'?'cosmetic':'trinket');}
 function renderMenu(){
-  let h=hdr('MENU',goldStr());
-  h+='<button class="bt go" data-a="close" style="width:100%;margin-bottom:8px">RESUME</button><button class="bt" data-a="bag" style="width:100%;margin-bottom:8px">BAG</button><button class="bt" data-a="skills" style="width:100%;margin-bottom:8px">SKILLS</button><button class="bt" data-a="savegame" style="width:100%;margin-bottom:8px">SAVE GAME</button>';
+  let h=hdr('MENU',goldStr())+saveWarnHtml();
+  h+='<button class="bt go" data-a="close" style="width:100%;margin-bottom:8px">RESUME</button><button class="bt" data-a="bag" style="width:100%;margin-bottom:8px">BAG</button><button class="bt" data-a="skills" style="width:100%;margin-bottom:8px">SKILLS</button><button class="bt" data-a="savegame" style="width:100%;margin-bottom:8px">SAVE GAME</button><button class="bt" data-a="savecode" style="width:100%;margin-bottom:8px">EXPORT / IMPORT SAVE</button>';
   if(S.mode==='play')h+='<button class="bt" data-a="abandon" style="width:100%;margin-bottom:8px">ABANDON MISSION</button>';
   if(S.mode!=='play')h+='<button class="bt" data-a="joustlab" style="width:100%;margin-bottom:8px">JOUST LAB (PREVIEW)</button>';
   h+='<button class="bt" data-a="jousteasy" style="width:100%;margin-bottom:8px">EASY JOUSTING: '+((G.opts&&G.opts.joustEasy)?'ON':'OFF')+'</button>';
@@ -4524,7 +4649,17 @@ const ACT={
   equip(v){const it=G.inv.find(x=>x.id===v);if(it){equipItem(it);UI.sel={loc:'eq',id:it.id};}renderBag();hud(true);},
   sell(v){const it=G.inv.find(x=>x.id===v);if(it)sellItem(it);UI.sel=null;renderBag();},
   sellcommon(){G.inv.filter(i=>i.rar===0).forEach(sellItem);UI.sel=null;renderBag();},
-  savegame(){save();toast('Game saved');},
+  savegame(){if(save())toast('Game saved');else{toast('COULD NOT SAVE - use EXPORT SAVE');renderMenu();}},
+  savecode(){renderSaveCode('');},
+  scclose(){hideModal();if(S.mode==='title')showTitle();else renderMenu();},
+  sccopy(){const t=$('sccode');if(!t)return;t.focus();t.select();try{t.setSelectionRange(0,t.value.length);}catch(e){}let ok=false;
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(()=>toast('Code copied'),()=>toast('Press and hold the code to copy'));return;}}catch(e){}
+    try{ok=document.execCommand('copy');}catch(e){}toast(ok?'Code copied':'Press and hold the code to copy');},
+  scfile(){try{const b=new Blob([$('sccode').value],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hidden-crown-save.txt';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);toast('Save file created');}catch(e){toast('Download unavailable - copy the code instead');}},
+  scimport(){importFlow($('scin').value);},
+  scconfirm(){doImport();},
+  scbackup(){if(restoreBackup()){calc();hideModal();toast('Backup restored');if(S.mode==='title')showTitle();else renderMenu();}else toast('No usable backup found');},
+  newyes(){hideModal();startNewGame();},
   joustlab(){hideModal();fade(()=>startMission('joustlab'));},
   jousteasy(){G.opts=G.opts||{};G.opts.joustEasy=!G.opts.joustEasy;save();renderMenu();},
   abandon(){hideModal();fade(()=>openBoard());},
@@ -4533,15 +4668,62 @@ const ACT={
 mw.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;initAudio();const a=t.dataset.a;if(ACT[a])ACT[a](t.dataset.v);});
 document.querySelectorAll('#hb [data-m]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const k=b.dataset.m;if(S.mode!=='play')return;if(k==='bag')ACT.bag();else if(k==='skills')ACT.skills();else renderMenu();}));
 
+/* ================= SAVE UI (v0.7.1) ================= */
+function saveWarnHtml(){return SAVESTAT.ok?'':'<div class="card warn"><h4>PROGRESS CANNOT BE SAVED</h4><p>This browser is blocking storage (private mode or an embedded page). You can keep playing, but closing the page loses progress. Use EXPORT / IMPORT SAVE to keep a code.</p></div>';}
+function saveBanner(){const e=$('savewarn');if(e){e.innerHTML='&#9888; NOT SAVING';e.classList.add('on');}toast('PROGRESS CAN\u2019T BE SAVED HERE - MENU > EXPORT SAVE');}
+SAVESTAT.onFail=saveBanner;
+const saveSummary=g=>'Level '+g.lvl+' \u00B7 '+(g.gold||0)+' gold \u00B7 '+Object.keys(g.done||{}).length+' missions done';
+function renderSaveCode(msg){
+  const code=exportCode();
+  let h=hdr('SAVE CODE','')+saveWarnHtml();
+  h+='<div class="card"><h4>EXPORT</h4><p>Copy this code or save it as a file. It holds your inventory, character, missions and story choices.</p><textarea id="sccode" readonly rows="4" onclick="this.select()">'+code+'</textarea><div class="row2"><button class="bt go" data-a="sccopy">COPY CODE</button><button class="bt" data-a="scfile">SAVE AS FILE</button></div></div>';
+  h+='<div class="card"><h4>IMPORT</h4><p>Paste a code (or choose a saved file) to replace the current game. Your current progress is backed up first.</p><textarea id="scin" rows="3" placeholder="HC3-..."></textarea><input type="file" id="scfileIn" accept=".txt,text/plain"><div class="row2"><button class="bt go" data-a="scimport">IMPORT</button></div><div id="scmsg" class="msg">'+(msg||'')+'</div></div>';
+  if(hasBackup())h+='<div class="card"><h4>BACKUP</h4><p>A backup of the previous game is kept when you start a new game or import.</p><button class="bt" data-a="scbackup">RESTORE BACKUP</button></div>';
+  h+='<button class="bt" data-a="scclose" style="width:100%">BACK</button>';
+  showModal(h);
+  const f=$('scfileIn');if(f)f.onchange=()=>{const fl=f.files&&f.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{$('scin').value=String(rd.result||'').trim();};rd.readAsText(fl);};
+}
+let PENDING=null;
+function importFlow(text){
+  const r=importCode(text);const m=$('scmsg');
+  if(!r.ok){if(m)m.textContent=r.err;return;}
+  PENDING=r;
+  let h=hdr('IMPORT SAVE','')+'<div class="card"><h4>REPLACE CURRENT GAME?</h4><p>The code contains: '+saveSummary(r.g)+'.</p>'+((hasSave()||SAVESTAT.mem)?'<p>Your current progress will be backed up first.</p>':'')+'</div><button class="bt go" data-a="scconfirm" style="width:100%;margin-bottom:8px">IMPORT AND REPLACE</button><button class="bt" data-a="savecode" style="width:100%">CANCEL</button>';
+  showModal(h);
+}
+function doImport(){
+  if(!PENDING)return;const r=PENDING;PENDING=null;
+  backupSave();applySave(r.g);calc();const ok=save();hideModal();
+  toast(ok?'Save imported':'Imported (storage blocked - not stored)');
+  if(S.mode==='title')showTitle();else{S.paused=false;fade(()=>openBoard());}
+}
+function startNewGame(){
+  initAudio();backupSave();newG();startGear();calc();save();$('title').style.display='none';fade(()=>startMission('m0'));
+}
+
 /* ================= TITLE / NEW GAME ================= */
 function showTitle(){
   S.resultsBackdrop=null;
   S.mode='title';document.body.dataset.mode='title';S.pal='day';buildLayers('day');$('boot').style.display='none';
   $('title').style.display='flex';let h='';
-  if(hasSave())h+='<button class="bt go" id="bcont">CONTINUE</button>';h+='<button class="bt" id="bnew">NEW GAME</button>';
-  $('tbtns').innerHTML=h;let armed=false;
-  const c=$('bcont');if(c)c.onclick=()=>{initAudio();if(load()){calc();$('title').style.display='none';openBoard();}};
-  $('bnew').onclick=function(){if(hasSave()&&!armed){armed=true;this.textContent='TAP AGAIN TO ERASE SAVE';return;}initAudio();newG();startGear();calc();save();$('title').style.display='none';fade(()=>startMission('m0'));};
+  if(!SAVESTAT.checked)storageProbe();
+  if(!SAVESTAT.ok)h+='<div class="twarn">\u26A0 This browser is blocking storage, so progress cannot be saved. Use EXPORT / IMPORT SAVE to keep a code.</div>';
+  else if(LOADINFO.src==='backup')h+='<div class="twarn">Your save was damaged; the backup copy was loaded.</div>';
+  if(hasSave()||(!SAVESTAT.ok&&SAVESTAT.mem))h+='<button class="bt go" id="bcont">CONTINUE</button>';
+  h+='<button class="bt" id="bnew">NEW GAME</button><button class="bt" id="bcode">EXPORT / IMPORT SAVE</button>';
+  if(hasBackup()&&!hasSave())h+='<button class="bt" id="bbak">RESTORE BACKUP</button>';
+  $('tbtns').innerHTML=h;
+  const c=$('bcont');if(c)c.onclick=()=>{initAudio();if(load()){calc();$('title').style.display='none';openBoard();}else{toast('Save could not be read');}};
+  $('bcode').onclick=()=>{initAudio();renderSaveCode('');};
+  const bk=$('bbak');if(bk)bk.onclick=()=>ACT.scbackup();
+  $('bnew').onclick=function(){
+    if(hasSave()||(!SAVESTAT.ok&&SAVESTAT.mem)){
+      let sum='';try{const r=parseSave(localStorage.getItem(SAVEKEY)||SAVESTAT.mem);if(r.ok)sum=saveSummary(r.g);}catch(e){}
+      showModal(hdr('START A NEW GAME?','')+'<div class="card"><h4>A SAVED GAME EXISTS</h4>'+(sum?'<p>'+sum+'</p>':'')+'<p>Starting over replaces it. A backup copy is kept so it can be restored from the title screen or the save-code menu.</p></div><button class="bt go" data-a="newyes" style="width:100%;margin-bottom:8px">START NEW GAME</button><button class="bt" data-a="scclose" style="width:100%">KEEP MY GAME</button>');
+      return;
+    }
+    startNewGame();
+  };
 }
 // New games begin in the Hearthmoor armory, inside Corin's lived experience.
 // The former narrated Night of Ash prologue is intentionally not played.
@@ -4597,12 +4779,12 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 /* ================= LOOP ================= */
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
-layout();if(hasSave())load();calc();showTitle();
+layout();storageProbe();if(hasSave())load();calc();showTitle();
 // Test shortcut: index.html?chapter=4 (or #chapter=4) starts a fresh, unsaved run at opening chapter 4.
 function startChapter(n){NOSAVE=true;newG();startGear();calc();$('title').style.display='none';hideModal();startMission('m0');if(n>1)loadMissionArea(n-1);}
 try{const cm=/[?&#]chapter=([1-7])\b/.exec((location.search||'')+(location.hash||''));if(cm)startChapter(+cm[1]);}catch(e){}
 requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={itemStatText,S,P,G,gaitForSpeed,MOUNT_CFG,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
 })();
 </script>
 </body>

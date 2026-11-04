@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.7.1 Foundations Reforged (development, not merged)
+
+Stability, saves and touch controls. No new combat or story content (that is v0.8.0). Details and test results in `docs/V0_7_1_FOUNDATIONS_REFORGED.md`.
+
+- **Saves.** Storage is probed at boot; when the browser blocks it the title screen, a banner and the menu all say progress cannot be saved, and SAVE GAME reports failure instead of "Game saved". NEW GAME now asks before replacing an existing game and copies the old one to a backup slot first (RESTORE BACKUP on the title or in the save-code menu). New EXPORT / IMPORT SAVE screen: checksummed text code (copy or file), import validates and previews before replacing. Loaded data is validated and repaired (bad types, broken items) instead of crashing; a damaged save falls back to the backup. A `ver` field is stamped on writes and older saves migrate in memory. The key `hiddencrown.save.v2` is unchanged.
+- **Controls / HUD.** Right-thumb cluster rebuilt bottom-up (ATK, JUMP, GUARD, SKILL) and a compact icon weapon row (sword / staff / bow / Dawn-Dusk) on the left above the move pad, all below the combat ground line. Landscape puts everything in one low row. All buttons are 44 px or larger; BAG / SKILLS / MENU get 44 px hit areas; the objective tracker no longer covers BAG/SKILLS (portrait) or the health bars (landscape); HP, MP and XP show numbers; choice buttons are at least 48 px; the ground line accounts for the iPhone home-indicator inset.
+- **Horse.** Holding forward now accelerates through walk, trot and a true canter (it used to top out in a trot, so the canter animation was unreachable). The canter lesson needs a sustained canter past the marker. Speeds are in `MOUNT_CFG`.
+- **Jumping.** Flat missions now use the same airborne rules as the adventure engine: a jump clears low ground hits and projectiles in both.
+- **Fixes.** Each area starts with the sword drawn (no staff carry-over into the next mission); Halvard's "iron blade" line now refers to the training yard; outfits show "cosmetic" in the results list; casting Dusk or Dawn no longer moves the compass; `tests/bot.js` choice clicking (`page.$$`).
+- **Tests / CI.** New `save`, `layout`, `riding`, `jump_consistency`, `fixes` and `golden_path` (seven chapters through on-screen buttons, portrait and landscape) tests, `npm test` runner, `tools/check_syntax.js`, and one consolidated `.github/workflows/ci.yml` for every branch and PR. `docs/INTEGRATION_PLAN.md` proposes (does not perform) a safe merge of the stack.
+
 ## v0.7.0 art & environment polish pass (development, not merged)
 
 - **Environments.** New hand-authored, layered scenes: Practice Ring (timber stable block, quintain, ring fence, castle wall and tournament roofs beyond), Training Yard (Elowen's ranger camp and fire, archery lane, hay butts, Halvard's stone wall and banners, sword yard, home gate), and the Broken Bridge storm gorge (lightning, gorge and river with foam/spray, wrecked cart, ancient arch and glowing garden, Dawn stepping stones, Dusk basalt causeway). The generic arch-and-window pillars that used to show behind chapter 7 are gone.

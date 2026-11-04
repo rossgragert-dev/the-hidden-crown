@@ -146,7 +146,9 @@ function adventureUpdate(dt){
   if(a.mount){
     a.mount.ph+=dt*strideRate(gaitForSpeed(a.mount.speed),a.mount.speed);
     a.mount.halvX=lerp(a.mount.halvX,Math.max(94,P.x+86),Math.min(1,dt*1.8));
-    if(P.x>340&&a.mount.speed>66&&!G.flags.squireCanter){
+    const gait=gaitForSpeed(a.mount.speed);
+    a.mount.canterT=(gait==='canter'||gait==='gallop')?(a.mount.canterT||0)+dt:0; // a real canter gait held steadily
+    if(P.x>340&&a.mount.canterT>=MOUNT_CFG.canterHold&&!G.flags.squireCanter){
       G.flags.squireCanter=1;toast('HORSEMANSHIP: STEADY CANTER LEARNED');save();
     }
   }

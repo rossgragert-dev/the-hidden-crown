@@ -56,6 +56,7 @@ function loadMissionArea(idx){
   S.pal=REG[area&&area.reg?area.reg:m.reg].pal;
   S.blight=S.pal==='fen'?.1:.06+.012*m.lvl;
   P.x=30;P.face=1;P.vx=0;P.inv=1;S.cam=0;P.guard=100;
+  P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0; // each area starts with the sword drawn, not whatever the last scene left equipped
   S.beats=(area?area.steps:m.steps).map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
   S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
   FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});const jump=$('jumpbtn');if(jump)jump.style.display='flex';buildLayers(S.pal);hud(true);missionHud(true);
@@ -227,14 +228,13 @@ function heroAboveEnemyFloor(e){
   return !!(S.adv&&P.grounded&&(P.py||0)<-12&&(e.py||0)>=-2);
 }
 function heroEnemyOverlap(e){
-  if(!S.adv)return true; // keep old flat missions unchanged
+  // v0.7.1: flat missions use the same airborne rules as the adventure engine (a jump clears low ground hits)
   if(heroAboveEnemyFloor(e))return false;
   const feet=P.py||0,ef=e.py||0;
   return feet-1>ef-enemyCombatHeight(e)+2&&feet-44<ef-2;
 }
 function hostileProjectileHitsHero(pr){
   if(Math.abs(pr.x-P.x)>=8)return false;
-  if(!S.adv)return true;
   if(P.grounded&&(P.py||0)<-12&&pr.originGround!==false)return false;
   const y=pr.y-GY,feet=P.py||0;
   return y>=feet-43&&y<=feet-2;
@@ -299,7 +299,7 @@ function attack(){
   else if(P.w===1){const cost=S.dusk?3:2;if(P.mp<cost){toast('Not enough mana');P.cd=.3;return;}
     P.mp-=cost;P.cd=.6;P.atk=P.atkMax=.26;
     fireProj(1,S.dusk?'dusk':'dawn',S.dusk?1.25*(1+S.m.duskDmg/100):.85,150,S.m.staffPierce?1:0);
-    if(S.dusk)G.c=clamp(G.c-1.5,-100,100);else G.c=clamp(G.c+.5,-100,100);sfx(S.dusk?110:520,.2,'triangle',.05);}
+    sfx(S.dusk?110:520,.2,'triangle',.05);}
   else{P.cd=.5*S.m.bowCd;P.atk=P.atkMax=.18;fireProj(2,'arrow',1,240,S.m.arrowPierce);sfx(320,.07,'square');}
 }
 function abilityId(){const w=P.w;if(w===0)return rank('whirl')?'whirl':rank('bash')?'bash':null;if(w===1)return rank('nova')?'nova':null;return rank('volley')?'volley':null;}
@@ -314,7 +314,7 @@ function useAbility(){
   else if(a==='nova'){if(P.mp<8){toast('Not enough mana');return;}P.mp-=8;P.ab=P.abMax=8;P.atk=P.atkMax=.3;sfx(S.dusk?90:620,.4,'triangle',.07);
     ring(P.x,GY-18,78,S.dusk?'#c070ff':'#ffe27a');
     for(const e of enemies){if(Math.abs(e.x-P.x)<80&&heroEnemyOverlap(e)){const [d,c]=rollHit(1,1.4*(S.dusk?1+S.m.duskDmg/100:1));hitEnemy(e,d,c,e.x>=P.x?1:-1,90);if(S.dusk)e.fear=S.m.fear+1.5;}}
-    if(!S.dusk){P.hp=Math.min(P.max,P.hp+P.max*.12);burst(P.x,GY-20,'#fff6b0',10,100);}else G.c=clamp(G.c-3,-100,100);}
+    if(!S.dusk){P.hp=Math.min(P.max,P.hp+P.max*.12);burst(P.x,GY-20,'#fff6b0',10,100);}}
   else if(a==='volley'){P.ab=P.abMax=8;sfx(340,.1,'square',.05);
     for(let i=0;i<5;i++)later(i*.1,()=>{if(S.mode!=='play')return;P.atk=P.atkMax=.14;fireProj(2,'arrow',.9,260,S.m.arrowPierce);sfx(320+i*20,.06,'square');});}
 }
@@ -385,8 +385,8 @@ function update(dt){
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
   if(S.adv&&S.adv.mount&&!S.joust){
-    const horse=S.adv.mount,target=dir>0?94:dir<0?-43:0;
-    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir?1.8:2.5)));
+    const horse=S.adv.mount,target=dir>0?MOUNT_CFG.canter:dir<0?-43:0;
+    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir>0?MOUNT_CFG.accel:dir<0?1.8:2.5)));
     P.mv=Math.abs(horse.speed)>5;
     P.x=clamp(P.x+horse.speed*dt+P.vx*dt,minX,maxX);
   }else{
@@ -550,7 +550,7 @@ function hud(force){
   if(key===hudK&&!force)return;hudK=key;
   document.querySelectorAll('[data-w]').forEach(x=>{x.style.display=G.eq[TN[+x.dataset.w]]?'':'none';});$('mode').style.display=G.eq.staff?'':'none';
   $('hp').style.width=clamp(P.hp/P.max,0,1)*100+'%';$('mp').style.width=clamp(P.mp/P.mmax,0,1)*100+'%';$('xp').style.width=clamp(G.xp/xpNeed(G.lvl),0,1)*100+'%';
-  $('lv').textContent='Lv '+G.lvl+(G.pts?'  ★'+G.pts:'');
+  $('lv').textContent='Lv '+G.lvl+'  XP '+Math.floor(clamp(G.xp/xpNeed(G.lvl),0,1)*100)+'%'+(G.pts?'  ★'+G.pts:'');$('hpv').textContent=Math.ceil(P.hp)+'/'+P.max;$('mpv').textContent=Math.floor(P.mp)+'/'+P.mmax;
   $('cm').style.left=(G.c+100)/200*100+'%';
   const t=$('ctitle');t.textContent='♛ '+tier(G.c);t.style.color=G.c>=30?'#ffd34a':G.c<=-30?'#ff6a4a':'#e9e2c4';
   const ab=abilityId(),b=$('abl');b.textContent=ab?ABN[ab]:'LOCK';b.style.setProperty('--p',P.ab>0?Math.round(P.ab/P.abMax*100):0);b.style.opacity=ab?1:.5;

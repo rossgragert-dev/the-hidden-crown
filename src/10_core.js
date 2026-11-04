@@ -17,7 +17,8 @@ function layout(){
   SC=Math.max(2,Math.round(Math.min(vw,vh)/200));
   W=Math.ceil(vw/SC);H=Math.ceil(vh/SC);
   cv.width=W;cv.height=H;cv.style.width=W*SC+'px';cv.style.height=H*SC+'px';
-  const reserve=(portrait?186:96)/SC;
+  let sab=0;try{sab=parseFloat(getComputedStyle($('sabprobe')).paddingBottom)||0;}catch(e){}
+  const reserve=((portrait?186:96)+sab)/SC;
   GY=Math.max(Math.round(H*.55),Math.round(H-reserve-6));
   HZ=GY-70;
   g.imageSmoothingEnabled=false;
@@ -31,13 +32,104 @@ function sfx(f,d,type,v){if(!AC)return;try{const t=AC.currentTime,o=AC.createOsc
 /* ---------- persistent game data ---------- */
 const SAVEKEY='hiddencrown.save.v2';
 const G={};
-function newG(){Object.assign(G,{lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null,shieldTier:-1,sq:1,stash:[]});}
+function defaultsG(){return {lvl:1,xp:0,pts:0,gold:0,sk:{},inv:[],eq:{sword:null,staff:null,bow:null,armor:null,trinket:null,outfit:null},loc:'hearth',day:1,c:0,flags:{},done:{},kills:0,ng:0,hasSave:1,checkpoint:null,shieldTier:-1,sq:1,stash:[]};}
+function newG(){Object.assign(G,defaultsG());}
 let NOSAVE=false; // set by the ?chapter=N test shortcut so a preview never overwrites a real save
-function save(){if(NOSAVE)return;try{localStorage.setItem(SAVEKEY,JSON.stringify(G));}catch(e){}}
-function load(){try{const s=localStorage.getItem(SAVEKEY);if(!s)return false;newG();const p=JSON.parse(s);Object.assign(G,p);
-  // Saves from before the squire-kit change keep their gear and look (treated as already knighted).
-  if(!p.sq){G.sq=0;G.stash=[];G.flags=G.flags||{};G.flags.knighted=1;}return true;}catch(e){return false;}}
+/* ---------- save system (v0.7.1) ----------
+   Key stays 'hiddencrown.save.v2' so existing progress keeps loading. Format changes are additive only:
+   a 'ver' field is stamped on every write and old saves are migrated forward in memory. */
+const SAVE_VER=3,BAKKEY='hiddencrown.save.v2.bak',PROBEKEY='hiddencrown.probe';
+const SAVESTAT={ok:true,checked:false,err:'',lastOk:0,mem:'',notice:'',onFail:null};
+function storageProbe(){
+  try{localStorage.setItem(PROBEKEY,'1');const r=localStorage.getItem(PROBEKEY)==='1';localStorage.removeItem(PROBEKEY);SAVESTAT.ok=r;SAVESTAT.err=r?'':'storage returned no data';}
+  catch(e){SAVESTAT.ok=false;SAVESTAT.err=String(e&&e.name||e||'blocked');}
+  SAVESTAT.checked=true;return SAVESTAT.ok;
+}
+function noteFail(e){const was=SAVESTAT.ok;SAVESTAT.ok=false;SAVESTAT.err=String(e&&e.name||e||'blocked');if((was||!SAVESTAT.warned)&&SAVESTAT.onFail){SAVESTAT.warned=true;SAVESTAT.onFail();}}
+function save(){
+  if(NOSAVE)return false;
+  G.ver=SAVE_VER;let str;
+  try{str=JSON.stringify(G);}catch(e){noteFail(e);return false;}
+  SAVESTAT.mem=str; // always keep the latest state so it can still be exported when storage is blocked
+  try{localStorage.setItem(SAVEKEY,str);SAVESTAT.ok=true;SAVESTAT.err='';SAVESTAT.lastOk=Date.now();return true;}
+  catch(e){noteFail(e);return false;}
+}
+const isObj=v=>v&&typeof v==='object'&&!Array.isArray(v);
+const numOr=(v,d,lo,hi)=>{v=typeof v==='number'&&isFinite(v)?v:d;if(lo!==undefined)v=Math.max(lo,v);if(hi!==undefined)v=Math.min(hi,v);return v;};
+function fixItem(it,slotHint){
+  const o=Object.assign({},it);
+  o.id=(typeof o.id==='string'||typeof o.id==='number')?String(o.id):'fx'+Math.floor(Math.random()*1e9).toString(36);
+  o.slot=typeof o.slot==='string'?o.slot:(slotHint||'trinket');
+  o.name=typeof o.name==='string'?o.name:'Worn Relic';
+  o.rar=Math.floor(numOr(o.rar,0,0,4));o.ilvl=Math.floor(numOr(o.ilvl,1,1,99));
+  if('dmg' in o)o.dmg=numOr(o.dmg,0,0);if('def' in o)o.def=numOr(o.def,0,0);
+  o.aff=Array.isArray(o.aff)?o.aff.filter(a=>isObj(a)&&typeof a.k==='string'&&typeof a.v==='number'&&isFinite(a.v)):[];
+  return o;
+}
+/* Validate + repair a parsed save. Returns {g,notes} or null when it is not a recognisable save. */
+function sanitizeSave(p){
+  if(!isObj(p))return null;
+  if(!('lvl' in p||'inv' in p||'flags' in p||'loc' in p))return null;
+  const d=defaultsG();
+  const notes=[],o=Object.assign({},d,p);
+  o.sq=p.sq?1:0; // a missing marker means a pre-squire-kit save, NOT the new-game default (migrateSave then treats it as knighted)
+  const fix=(k,v)=>{if(o[k]!==v){notes.push(k);o[k]=v;}};
+  fix('lvl',Math.floor(numOr(o.lvl,1,1,99)));fix('xp',numOr(o.xp,0,0));fix('pts',Math.floor(numOr(o.pts,0,0)));fix('gold',Math.floor(numOr(o.gold,0,0)));
+  fix('day',Math.floor(numOr(o.day,1,1)));fix('kills',Math.floor(numOr(o.kills,0,0)));fix('c',numOr(o.c,0,-100,100));
+  if(!isObj(o.sk))fix('sk',{});if(!isObj(o.flags))fix('flags',{});if(!isObj(o.done))fix('done',{});
+  if(!isObj(o.eq))fix('eq',Object.assign({},d.eq));
+  o.eq=Object.assign({},o.eq);
+  ['sword','staff','bow','armor','trinket','outfit'].forEach(k=>{if(!(k in o.eq))o.eq[k]=null;else if(o.eq[k]&&!isObj(o.eq[k])){o.eq[k]=null;notes.push('eq.'+k);}else if(o.eq[k])o.eq[k]=fixItem(o.eq[k],k);});
+  ['inv','stash'].forEach(k=>{if(!Array.isArray(o[k]))fix(k,[]);else{const n=o[k].filter(isObj);if(n.length!==o[k].length)notes.push(k);o[k]=n.map(x=>fixItem(x));}});
+  if(typeof o.loc!=='string')fix('loc','hearth');
+  if(o.checkpoint&&!isObj(o.checkpoint))fix('checkpoint',null);
+  if(!isObj(o.opts)&&o.opts!==undefined)fix('opts',{});
+  return {g:o,notes};
+}
+/* Bring an older save forward. Never drops fields; only adds/derives what newer builds expect. */
+function migrateSave(o){
+  const from=o.ver||2;
+  if(!o.sq){o.sq=0;o.stash=o.stash||[];o.flags=o.flags||{};o.flags.knighted=1;} // pre-squire-kit saves: already knighted
+  o.hasSave=1;o.ver=SAVE_VER;return from;
+}
+function applySave(o){Object.keys(G).forEach(k=>delete G[k]);newG();Object.assign(G,o);}
+/* parse raw text → {ok,g,notes,from} or {ok:false,err} */
+function parseSave(str){
+  let p;try{p=JSON.parse(str);}catch(e){return {ok:false,err:'not valid save data'};}
+  const r=sanitizeSave(p);if(!r)return {ok:false,err:'not a Hidden Crown save'};
+  const from=migrateSave(r.g);return {ok:true,g:r.g,notes:r.notes,from:from};
+}
+const LOADINFO={src:'',notes:[],from:0,err:''};
+function load(){
+  LOADINFO.src='';LOADINFO.notes=[];LOADINFO.err='';
+  let raw=null;try{raw=localStorage.getItem(SAVEKEY);}catch(e){}
+  if(!raw&&SAVESTAT.mem&&!SAVESTAT.ok)raw=SAVESTAT.mem; // blocked storage: resume from this session's in-memory copy
+  if(!raw)return false;
+  let r=parseSave(raw);
+  if(!r.ok){ // damaged primary → try the pre-overwrite backup
+    LOADINFO.err=r.err;let bak=null;try{bak=localStorage.getItem(BAKKEY);}catch(e){}
+    r=bak?parseSave(bak):r;if(!r.ok)return false;LOADINFO.src='backup';
+  }else LOADINFO.src='save';
+  LOADINFO.notes=r.notes;LOADINFO.from=r.from;applySave(r.g);return true;
+}
 function hasSave(){try{return !!localStorage.getItem(SAVEKEY);}catch(e){return false;}}
+function hasBackup(){try{return !!localStorage.getItem(BAKKEY);}catch(e){return false;}}
+/* Copy whatever is currently stored to the backup slot (called before a New Game or an import overwrites it). */
+function backupSave(){try{const cur=localStorage.getItem(SAVEKEY);if(cur){localStorage.setItem(BAKKEY,cur);return true;}}catch(e){}
+  if(SAVESTAT.mem){try{localStorage.setItem(BAKKEY,SAVESTAT.mem);return true;}catch(e){}}return false;}
+function restoreBackup(){try{const b=localStorage.getItem(BAKKEY);if(!b)return false;const r=parseSave(b);if(!r.ok)return false;const cur=localStorage.getItem(SAVEKEY);applySave(r.g);save();if(cur)localStorage.setItem(BAKKEY,cur);return true;}catch(e){return false;}}
+/* ---------- export / import: HC3-<base64 json>-<fnv1a hex> ---------- */
+function fnv(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return ('00000000'+h.toString(16)).slice(-8);}
+function exportCode(){G.ver=SAVE_VER;const j=JSON.stringify(G);const b=btoa(unescape(encodeURIComponent(j)));return 'HC3-'+b+'-'+fnv(b);}
+function importCode(code){
+  code=String(code||'').replace(/\s+/g,'');
+  const m=/^HC(\d)-([A-Za-z0-9+/=]+)-([0-9a-f]{8})$/.exec(code);
+  if(!m)return {ok:false,err:'That is not a Hidden Crown save code.'};
+  if(fnv(m[2])!==m[3])return {ok:false,err:'The code is damaged or incomplete (checksum mismatch).'};
+  let j;try{j=decodeURIComponent(escape(atob(m[2])));}catch(e){return {ok:false,err:'The code could not be decoded.'};}
+  const r=parseSave(j);if(!r.ok)return {ok:false,err:'The code does not contain a valid save.'};
+  return r;
+}
 newG();
 
 /* ---------- runtime state ---------- */

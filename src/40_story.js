@@ -168,7 +168,7 @@ const MISSIONS=[
   {t:'say',lines:[
     L('Ser Halvard','You made it back from the broken bridge, Corin. I feared you lost. The watchmen have now spotted blighted creatures near the northern gate.'),
     L('Corin','I found a path with Ione’s magic. The blight is on the roads too, and it is moving toward our village.'),
-    L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
+    L('Ser Halvard','Then take your shield and the iron blade from our training in the yard. Keep them away from the castle walls.')
   ]},
   {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'scout',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
     L('Corin','They came all this way. There must be more of them on the Greenmarch.')
