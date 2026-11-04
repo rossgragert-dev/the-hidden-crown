@@ -243,10 +243,11 @@ function openResults(m,first){
   let h='<div class="mh"><h2>'+(first?'MISSION COMPLETE':'MISSION REPLAYED')+'</h2></div><div class="card"><h4>'+m.title+'</h4>';
   h+='<div class="stat">+'+r.xp+' XP &middot; +'+r.gold+' gold'+(r.lv?' &middot; <b style="color:#ffd34a">LEVEL UP x'+r.lv+'</b>':'')+'</div>';
   const dc=Math.round(G.c-r.c0);h+='<div class="stat">Compass: '+(dc>0?'+':'')+dc+' &rarr; '+tier(G.c)+'</div></div>';
-  h+='<div class="sec">LOOT ('+r.items.length+')</div>'+(r.items.length?r.items.map(it=>'<div class="card" style="border-color:'+itemCol(it)+';padding:6px 10px"><b style="color:'+itemCol(it)+'">'+it.name+'</b> <span class="stat">'+RAR[it.rar].n+' '+SLOTN[it.slot]+' &middot; '+(it.dmg?it.dmg+' dmg':it.def?it.def+' def':'trinket')+'</span></div>').join(''):'<div class="stat">None.</div>');
+  h+='<div class="sec">LOOT ('+r.items.length+')</div>'+(r.items.length?r.items.map(it=>'<div class="card" style="border-color:'+itemCol(it)+';padding:6px 10px"><b style="color:'+itemCol(it)+'">'+it.name+'</b> <span class="stat">'+RAR[it.rar].n+' '+SLOTN[it.slot]+' &middot; '+itemStatText(it)+'</span></div>').join(''):'<div class="stat">None.</div>');
   h+='<div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="bt go" data-a="board" style="flex:1">CONTINUE</button><button class="bt" data-a="bag" style="flex:1">BAG</button>'+(G.pts?'<button class="bt" data-a="skills" style="flex:1">SKILLS &#9733;'+G.pts+'</button>':'')+'</div>';
   showModal(h);
 }
+function itemStatText(it){return it.dmg?it.dmg+' dmg':it.def?it.def+' def':(it.slot==='outfit'?'cosmetic':'trinket');}
 function renderMenu(){
   let h=hdr('MENU',goldStr())+saveWarnHtml();
   h+='<button class="bt go" data-a="close" style="width:100%;margin-bottom:8px">RESUME</button><button class="bt" data-a="bag" style="width:100%;margin-bottom:8px">BAG</button><button class="bt" data-a="skills" style="width:100%;margin-bottom:8px">SKILLS</button><button class="bt" data-a="savegame" style="width:100%;margin-bottom:8px">SAVE GAME</button><button class="bt" data-a="savecode" style="width:100%;margin-bottom:8px">EXPORT / IMPORT SAVE</button>';
@@ -300,7 +301,7 @@ document.querySelectorAll('#hb [data-m]').forEach(b=>b.addEventListener('pointer
 
 /* ================= SAVE UI (v0.7.1) ================= */
 function saveWarnHtml(){return SAVESTAT.ok?'':'<div class="card warn"><h4>PROGRESS CANNOT BE SAVED</h4><p>This browser is blocking storage (private mode or an embedded page). You can keep playing, but closing the page loses progress. Use EXPORT / IMPORT SAVE to keep a code.</p></div>';}
-function saveBanner(){const e=$('savewarn');if(!e)return;e.textContent='\u26A0 PROGRESS WON\u2019T BE SAVED HERE - tap MENU \u203A EXPORT SAVE';e.classList.add('on');clearTimeout(saveBanner.h);saveBanner.h=setTimeout(()=>e.classList.remove('on'),9000);}
+function saveBanner(){const e=$('savewarn');if(e){e.innerHTML='&#9888; NOT SAVING';e.classList.add('on');}toast('PROGRESS CAN\u2019T BE SAVED HERE - MENU > EXPORT SAVE');}
 SAVESTAT.onFail=saveBanner;
 const saveSummary=g=>'Level '+g.lvl+' \u00B7 '+(g.gold||0)+' gold \u00B7 '+Object.keys(g.done||{}).length+' missions done';
 function renderSaveCode(msg){
@@ -414,4 +415,4 @@ layout();storageProbe();if(hasSave())load();calc();showTitle();
 function startChapter(n){NOSAVE=true;newG();startGear();calc();$('title').style.display='none';hideModal();startMission('m0');if(n>1)loadMissionArea(n-1);}
 try{const cm=/[?&#]chapter=([1-7])\b/.exec((location.search||'')+(location.hash||''));if(cm)startChapter(+cm[1]);}catch(e){}
 requestAnimationFrame(frame);
-window.__G={S,P,G,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={itemStatText,S,P,G,gaitForSpeed,MOUNT_CFG,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};

@@ -72,6 +72,7 @@ function sanitizeSave(p){
   if(!('lvl' in p||'inv' in p||'flags' in p||'loc' in p))return null;
   const d=defaultsG();
   const notes=[],o=Object.assign({},d,p);
+  o.sq=p.sq?1:0; // a missing marker means a pre-squire-kit save, NOT the new-game default (migrateSave then treats it as knighted)
   const fix=(k,v)=>{if(o[k]!==v){notes.push(k);o[k]=v;}};
   fix('lvl',Math.floor(numOr(o.lvl,1,1,99)));fix('xp',numOr(o.xp,0,0));fix('pts',Math.floor(numOr(o.pts,0,0)));fix('gold',Math.floor(numOr(o.gold,0,0)));
   fix('day',Math.floor(numOr(o.day,1,1)));fix('kills',Math.floor(numOr(o.kills,0,0)));fix('c',numOr(o.c,0,-100,100));

@@ -41,7 +41,7 @@ button{font-family:inherit;touch-action:manipulation;-webkit-touch-callout:none}
 #cap b{color:#ffd34a;font-weight:900}
 #cap .tip{display:block;margin-top:5px;font:12px "Courier New",monospace;-webkit-text-stroke:0;color:#ccc}
 #ch{display:flex;flex-direction:column;gap:7px;margin-top:8px}
-.opt{font:inherit;text-align:left;background:rgba(20,14,8,.95);color:#f4e9c8;border:2px solid #c9a24a;border-radius:10px;padding:9px 12px;cursor:pointer}
+.opt{min-height:48px;font:inherit;text-align:left;background:rgba(20,14,8,.95);color:#f4e9c8;border:2px solid #c9a24a;border-radius:10px;padding:9px 12px;cursor:pointer}
 .opt b{display:block;color:#ffd34a;font-size:15px;-webkit-text-stroke:0}
 .opt small{display:block;font-size:12px;opacity:.85;margin-top:2px;font-weight:normal;-webkit-text-stroke:0}
 /* objective overlay: compact and readable on mobile */
@@ -68,8 +68,8 @@ body:not([data-mode=play]) #hud,body:not([data-mode=play]) #ctl,body:not([data-m
 .row2{display:flex;gap:8px}.row2 .bt{flex:1}
 .msg{min-height:16px;margin-top:6px;font-size:12px;color:#ff9c8a}
 .twarn{max-width:300px;margin:0 auto 8px;padding:8px 10px;border:2px solid #c0392b;border-radius:9px;background:rgba(70,20,16,.9);font-size:12px;line-height:1.35;color:#ffd9d2}
-#savewarn{pointer-events:none;position:fixed;left:50%;transform:translateX(-50%);top:max(4px,env(safe-area-inset-top));z-index:16;max-width:92vw;padding:6px 10px;border:2px solid #c0392b;border-radius:9px;background:rgba(70,20,16,.95);color:#ffd9d2;font:bold 11px "Courier New",monospace;text-align:center;display:none}
-#savewarn.on{display:block}
+#savewarn{pointer-events:none;position:fixed;left:50%;transform:translateX(-50%);top:max(6px,env(safe-area-inset-top));z-index:16;width:68px;padding:3px 2px;border:2px solid #c0392b;border-radius:8px;background:rgba(70,20,16,.95);color:#ffd9d2;font:bold 9px/1.15 "Courier New",monospace;text-align:center;display:none}
+body[data-mode=play] #savewarn.on{display:block}
 .mw{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 14px 50px}
 .mh{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .mh h2{margin:0;font:900 24px Impact,"Arial Black",sans-serif;color:#ffd34a;letter-spacing:1px}
@@ -252,6 +252,7 @@ function sanitizeSave(p){
   if(!('lvl' in p||'inv' in p||'flags' in p||'loc' in p))return null;
   const d=defaultsG();
   const notes=[],o=Object.assign({},d,p);
+  o.sq=p.sq?1:0; // a missing marker means a pre-squire-kit save, NOT the new-game default (migrateSave then treats it as knighted)
   const fix=(k,v)=>{if(o[k]!==v){notes.push(k);o[k]=v;}};
   fix('lvl',Math.floor(numOr(o.lvl,1,1,99)));fix('xp',numOr(o.xp,0,0));fix('pts',Math.floor(numOr(o.pts,0,0)));fix('gold',Math.floor(numOr(o.gold,0,0)));
   fix('day',Math.floor(numOr(o.day,1,1)));fix('kills',Math.floor(numOr(o.kills,0,0)));fix('c',numOr(o.c,0,-100,100));
@@ -1064,7 +1065,7 @@ const MISSIONS=[
   {t:'say',lines:[
     L('Ser Halvard','You made it back from the broken bridge, Corin. I feared you lost. The watchmen have now spotted blighted creatures near the northern gate.'),
     L('Corin','I found a path with Ione’s magic. The blight is on the roads too, and it is moving toward our village.'),
-    L('Ser Halvard','Then take your shield and the iron blade you earned at the lists. Keep them away from the castle walls.')
+    L('Ser Halvard','Then take your shield and the iron blade from our training in the yard. Keep them away from the castle walls.')
   ]},
   {t:'wave',intro:[L('Corin','There—among the broken carts!')],list:[{k:'blight',s:1,d:0},{k:'scout',s:1,d:1},{k:'blight',s:-1,d:2}],outro:[
     L('Corin','They came all this way. There must be more of them on the Greenmarch.')
@@ -1466,7 +1467,9 @@ function adventureUpdate(dt){
   if(a.mount){
     a.mount.ph+=dt*strideRate(gaitForSpeed(a.mount.speed),a.mount.speed);
     a.mount.halvX=lerp(a.mount.halvX,Math.max(94,P.x+86),Math.min(1,dt*1.8));
-    if(P.x>340&&a.mount.speed>66&&!G.flags.squireCanter){
+    const gait=gaitForSpeed(a.mount.speed);
+    a.mount.canterT=(gait==='canter'||gait==='gallop')?(a.mount.canterT||0)+dt:0; // a real canter gait held steadily
+    if(P.x>340&&a.mount.canterT>=MOUNT_CFG.canterHold&&!G.flags.squireCanter){
       G.flags.squireCanter=1;toast('HORSEMANSHIP: STEADY CANTER LEARNED');save();
     }
   }
@@ -1863,6 +1866,8 @@ const HGAIT={idle:{n:10,stride:0,lift:0,duty:1},walk:{n:12,stride:15,lift:5,duty
  halt:{n:6,stride:0,lift:0,duty:1},recoil:{n:8,stride:0,lift:0,duty:1},groom:{n:10,stride:0,lift:0,duty:1}};
 const HPH={walk:{bl:0,fl:.25,br:.5,fr:.75},trot:{fl:0,br:0,fr:.5,bl:.5},canter:{bl:0,br:.14,fl:.34,fr:.46},gallop:{bl:0,br:.12,fl:.3,fr:.42},charge:{bl:0,br:.12,fl:.3,fr:.42}};
 // Speed in px/s -> gait name; used by the joust engine and by roaming horses.
+/* Free-riding speeds (px/s). 'canter' sits inside gaitForSpeed's canter band (95-150) so holding forward really reaches it. */
+const MOUNT_CFG={canter:124,accel:1.3,canterHold:1.0};
 function gaitForSpeed(v){v=Math.abs(v);return v<8?'idle':v<50?'walk':v<95?'trot':v<150?'canter':'gallop';}
 // Stride cycles per second for a gait at a given speed (keeps hooves roughly planted).
 function strideRate(gait,v){const g=HGAIT[gait];if(!g||!g.stride)return 1.1;return clamp(Math.abs(v)/(g.stride*1.35),.7,5.2);}
@@ -3859,6 +3864,7 @@ function loadMissionArea(idx){
   S.pal=REG[area&&area.reg?area.reg:m.reg].pal;
   S.blight=S.pal==='fen'?.1:.06+.012*m.lvl;
   P.x=30;P.face=1;P.vx=0;P.inv=1;S.cam=0;P.guard=100;
+  P.w=G.eq.sword?0:G.eq.staff?1:G.eq.bow?2:0; // each area starts with the sword drawn, not whatever the last scene left equipped
   S.beats=(area?area.steps:m.steps).map((st,i)=>({x:30+i*270,st,i}));S.bi=0;
   S.beats.forEach(b=>{if(b.st.t==='chest')S.chests.push({x:b.x+46,open:false,bx:b.x});});
   FOL[0].x=2;FOL[1].x=-14;adventureBegin(area||{});const jump=$('jumpbtn');if(jump)jump.style.display='flex';buildLayers(S.pal);hud(true);missionHud(true);
@@ -4030,14 +4036,13 @@ function heroAboveEnemyFloor(e){
   return !!(S.adv&&P.grounded&&(P.py||0)<-12&&(e.py||0)>=-2);
 }
 function heroEnemyOverlap(e){
-  if(!S.adv)return true; // keep old flat missions unchanged
+  // v0.7.1: flat missions use the same airborne rules as the adventure engine (a jump clears low ground hits)
   if(heroAboveEnemyFloor(e))return false;
   const feet=P.py||0,ef=e.py||0;
   return feet-1>ef-enemyCombatHeight(e)+2&&feet-44<ef-2;
 }
 function hostileProjectileHitsHero(pr){
   if(Math.abs(pr.x-P.x)>=8)return false;
-  if(!S.adv)return true;
   if(P.grounded&&(P.py||0)<-12&&pr.originGround!==false)return false;
   const y=pr.y-GY,feet=P.py||0;
   return y>=feet-43&&y<=feet-2;
@@ -4102,7 +4107,7 @@ function attack(){
   else if(P.w===1){const cost=S.dusk?3:2;if(P.mp<cost){toast('Not enough mana');P.cd=.3;return;}
     P.mp-=cost;P.cd=.6;P.atk=P.atkMax=.26;
     fireProj(1,S.dusk?'dusk':'dawn',S.dusk?1.25*(1+S.m.duskDmg/100):.85,150,S.m.staffPierce?1:0);
-    if(S.dusk)G.c=clamp(G.c-1.5,-100,100);else G.c=clamp(G.c+.5,-100,100);sfx(S.dusk?110:520,.2,'triangle',.05);}
+    sfx(S.dusk?110:520,.2,'triangle',.05);}
   else{P.cd=.5*S.m.bowCd;P.atk=P.atkMax=.18;fireProj(2,'arrow',1,240,S.m.arrowPierce);sfx(320,.07,'square');}
 }
 function abilityId(){const w=P.w;if(w===0)return rank('whirl')?'whirl':rank('bash')?'bash':null;if(w===1)return rank('nova')?'nova':null;return rank('volley')?'volley':null;}
@@ -4117,7 +4122,7 @@ function useAbility(){
   else if(a==='nova'){if(P.mp<8){toast('Not enough mana');return;}P.mp-=8;P.ab=P.abMax=8;P.atk=P.atkMax=.3;sfx(S.dusk?90:620,.4,'triangle',.07);
     ring(P.x,GY-18,78,S.dusk?'#c070ff':'#ffe27a');
     for(const e of enemies){if(Math.abs(e.x-P.x)<80&&heroEnemyOverlap(e)){const [d,c]=rollHit(1,1.4*(S.dusk?1+S.m.duskDmg/100:1));hitEnemy(e,d,c,e.x>=P.x?1:-1,90);if(S.dusk)e.fear=S.m.fear+1.5;}}
-    if(!S.dusk){P.hp=Math.min(P.max,P.hp+P.max*.12);burst(P.x,GY-20,'#fff6b0',10,100);}else G.c=clamp(G.c-3,-100,100);}
+    if(!S.dusk){P.hp=Math.min(P.max,P.hp+P.max*.12);burst(P.x,GY-20,'#fff6b0',10,100);}}
   else if(a==='volley'){P.ab=P.abMax=8;sfx(340,.1,'square',.05);
     for(let i=0;i<5;i++)later(i*.1,()=>{if(S.mode!=='play')return;P.atk=P.atkMax=.14;fireProj(2,'arrow',.9,260,S.m.arrowPierce);sfx(320+i*20,.06,'square');});}
 }
@@ -4188,8 +4193,8 @@ function update(dt){
   const last=S.adv?S.adv.length:(S.beats.length?S.beats[S.beats.length-1].x+170:300);
   const maxX=S.arena?S.arenaR-12:last,minX=S.arena?S.arenaL+12:10;
   if(S.adv&&S.adv.mount&&!S.joust){
-    const horse=S.adv.mount,target=dir>0?94:dir<0?-43:0;
-    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir?1.8:2.5)));
+    const horse=S.adv.mount,target=dir>0?MOUNT_CFG.canter:dir<0?-43:0;
+    horse.speed=lerp(horse.speed,target,Math.min(1,dt*(dir>0?MOUNT_CFG.accel:dir<0?1.8:2.5)));
     P.mv=Math.abs(horse.speed)>5;
     P.x=clamp(P.x+horse.speed*dt+P.vx*dt,minX,maxX);
   }else{
@@ -4607,10 +4612,11 @@ function openResults(m,first){
   let h='<div class="mh"><h2>'+(first?'MISSION COMPLETE':'MISSION REPLAYED')+'</h2></div><div class="card"><h4>'+m.title+'</h4>';
   h+='<div class="stat">+'+r.xp+' XP &middot; +'+r.gold+' gold'+(r.lv?' &middot; <b style="color:#ffd34a">LEVEL UP x'+r.lv+'</b>':'')+'</div>';
   const dc=Math.round(G.c-r.c0);h+='<div class="stat">Compass: '+(dc>0?'+':'')+dc+' &rarr; '+tier(G.c)+'</div></div>';
-  h+='<div class="sec">LOOT ('+r.items.length+')</div>'+(r.items.length?r.items.map(it=>'<div class="card" style="border-color:'+itemCol(it)+';padding:6px 10px"><b style="color:'+itemCol(it)+'">'+it.name+'</b> <span class="stat">'+RAR[it.rar].n+' '+SLOTN[it.slot]+' &middot; '+(it.dmg?it.dmg+' dmg':it.def?it.def+' def':'trinket')+'</span></div>').join(''):'<div class="stat">None.</div>');
+  h+='<div class="sec">LOOT ('+r.items.length+')</div>'+(r.items.length?r.items.map(it=>'<div class="card" style="border-color:'+itemCol(it)+';padding:6px 10px"><b style="color:'+itemCol(it)+'">'+it.name+'</b> <span class="stat">'+RAR[it.rar].n+' '+SLOTN[it.slot]+' &middot; '+itemStatText(it)+'</span></div>').join(''):'<div class="stat">None.</div>');
   h+='<div class="row" style="display:flex;gap:8px;margin-top:10px"><button class="bt go" data-a="board" style="flex:1">CONTINUE</button><button class="bt" data-a="bag" style="flex:1">BAG</button>'+(G.pts?'<button class="bt" data-a="skills" style="flex:1">SKILLS &#9733;'+G.pts+'</button>':'')+'</div>';
   showModal(h);
 }
+function itemStatText(it){return it.dmg?it.dmg+' dmg':it.def?it.def+' def':(it.slot==='outfit'?'cosmetic':'trinket');}
 function renderMenu(){
   let h=hdr('MENU',goldStr())+saveWarnHtml();
   h+='<button class="bt go" data-a="close" style="width:100%;margin-bottom:8px">RESUME</button><button class="bt" data-a="bag" style="width:100%;margin-bottom:8px">BAG</button><button class="bt" data-a="skills" style="width:100%;margin-bottom:8px">SKILLS</button><button class="bt" data-a="savegame" style="width:100%;margin-bottom:8px">SAVE GAME</button><button class="bt" data-a="savecode" style="width:100%;margin-bottom:8px">EXPORT / IMPORT SAVE</button>';
@@ -4664,7 +4670,7 @@ document.querySelectorAll('#hb [data-m]').forEach(b=>b.addEventListener('pointer
 
 /* ================= SAVE UI (v0.7.1) ================= */
 function saveWarnHtml(){return SAVESTAT.ok?'':'<div class="card warn"><h4>PROGRESS CANNOT BE SAVED</h4><p>This browser is blocking storage (private mode or an embedded page). You can keep playing, but closing the page loses progress. Use EXPORT / IMPORT SAVE to keep a code.</p></div>';}
-function saveBanner(){const e=$('savewarn');if(!e)return;e.textContent='\u26A0 PROGRESS WON\u2019T BE SAVED HERE - tap MENU \u203A EXPORT SAVE';e.classList.add('on');clearTimeout(saveBanner.h);saveBanner.h=setTimeout(()=>e.classList.remove('on'),9000);}
+function saveBanner(){const e=$('savewarn');if(e){e.innerHTML='&#9888; NOT SAVING';e.classList.add('on');}toast('PROGRESS CAN\u2019T BE SAVED HERE - MENU > EXPORT SAVE');}
 SAVESTAT.onFail=saveBanner;
 const saveSummary=g=>'Level '+g.lvl+' \u00B7 '+(g.gold||0)+' gold \u00B7 '+Object.keys(g.done||{}).length+' missions done';
 function renderSaveCode(msg){
@@ -4778,7 +4784,7 @@ layout();storageProbe();if(hasSave())load();calc();showTitle();
 function startChapter(n){NOSAVE=true;newG();startGear();calc();$('title').style.display='none';hideModal();startMission('m0');if(n>1)loadMissionArea(n-1);}
 try{const cm=/[?&#]chapter=([1-7])\b/.exec((location.search||'')+(location.hash||''));if(cm)startChapter(+cm[1]);}catch(e){}
 requestAnimationFrame(frame);
-window.__G={S,P,G,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={itemStatText,S,P,G,gaitForSpeed,MOUNT_CFG,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
 })();
 </script>
 </body>

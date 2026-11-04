@@ -1,0 +1,76 @@
+# Consolidated CI (v0.7.1). Runs for every push to any branch and every pull request, so stacked
+# branches (v0.6.x -> v0.7.0 -> v0.7.1 -> v0.8.0) are all covered by one definition.
+# The older per-branch workflows are left in place until the stack is integrated (see docs/INTEGRATION_PLAN.md).
+name: CI
+on:
+  push:
+    branches: ['**']
+  pull_request:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-and-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: mkdir -p /tmp/shots
+      - name: Build standalone index.html from src/
+        run: npm run build
+      - name: index.html must be committed with its sources
+        run: git diff --exit-code -- index.html
+      - name: JS syntax check (no optional chaining)
+        run: npm run check
+      - name: Regression suite (boot, save, layout, riding, jump, fixes, chapters, magic, world, joust, art ...)
+        run: npm run test:ci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-evidence
+          path: /tmp/shots/*.png
+          if-no-files-found: ignore
+  golden-path:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        viewport: [{ tag: portrait, w: 390, h: 844 }, { tag: landscape, w: 844, h: 390 }]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Seven-chapter opening played through the on-screen buttons
+        run: node tests/golden_path.js ${{ matrix.viewport.w }} ${{ matrix.viewport.h }} ${{ matrix.viewport.tag }}
+        env:
+          SHOTS: /tmp/golden
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: golden-path-${{ matrix.viewport.tag }}
+          path: /tmp/golden/${{ matrix.viewport.tag }}/*.png
+          if-no-files-found: ignore
+  campaign-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - run: npx playwright install --with-deps chromium
+      - run: mkdir -p /tmp/shots
+      - run: npm run build
+      - name: Full campaign progression (all 21 missions, choices clicked)
+        run: npm run test:bot

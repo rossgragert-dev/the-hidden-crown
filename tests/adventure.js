@@ -37,6 +37,9 @@ const {pathToFileURL}=require('url'),path=require('path');
   const mount=await page.evaluate(()=>{
     const g=window.__G;
     g.P.x=355;g.S.adv.mount.speed=82;g.adventureUpdate(.05);
+    const trotOnly=!!g.G.flags.squireCanter; // v0.7.1: a trot must NOT count as the canter lesson
+    g.S.adv.mount.speed=124;for(let i=0;i<30;i++)g.adventureUpdate(.05);
+    if(trotOnly)return {variant:'trot-counted'};
     return {variant:g.S.adv.mount.v,gait:g.S.adv.mount.speed,lesson:g.G.flags.squireCanter};
   });
   assert.equal(mount.variant,'bay');assert.ok(mount.gait>65);

@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
 const path = require('path'), url = require('url');
 const URL_ = url.pathToFileURL(path.resolve(__dirname, '..', 'index.html')).href;
 let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
-const LEGACY = { lvl: 4, xp: 20, pts: 1, gold: 55, sk: {}, inv: [{ id: 'x1', slot: 'sword', name: 'Old Blade', dmg: 9 }], eq: { sword: { id: 'x2', slot: 'sword', name: 'Iron', dmg: 7 }, staff: null, bow: null, armor: null, trinket: null }, loc: 'hearth', day: 3, c: 12, flags: { knighted: 1, ionePathChoice: 'dusk' }, done: { m0: 1, m1: 1 }, kills: 9, ng: 0, hasSave: 1, checkpoint: null, shieldTier: 0 };
+const LEGACY = { lvl: 4, xp: 20, pts: 1, gold: 55, sk: {}, inv: [{ id: 'x1', slot: 'sword', name: 'Old Blade', dmg: 9 }], eq: { sword: { id: 'x2', slot: 'sword', name: 'Iron', dmg: 7 }, staff: null, bow: null, armor: null, trinket: null }, loc: 'hearth', day: 3, c: 12, flags: { ionePathChoice: 'dusk' }, done: { m0: 1, m1: 1 }, kills: 9, ng: 0, hasSave: 1, checkpoint: null, shieldTier: 0 };
 (async () => {
   const browser = await chromium.launch();
   const mk = async (init) => { const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true }); const page = await ctx.newPage(); page.errs = []; page.on('pageerror', e => { page.errs.push(e.message); console.log('PAGEERR', e.message); }); if (init) await page.addInitScript(init.fn, init.arg); await page.goto(URL_); await page.waitForSelector('#tbtns button',{timeout:15000}); return page; };
@@ -18,6 +18,12 @@ const LEGACY = { lvl: 4, xp: 20, pts: 1, gold: 55, sk: {}, inv: [{ id: 'x1', slo
   ok(await page.evaluate(() => JSON.parse(localStorage.getItem('hiddencrown.save.v2')).lvl === 4), 'stored legacy save not rewritten until the player saves');
   ok(page.errs.length === 0, 'no page errors (legacy)');
 
+  // 1b a v0.7.0-era squire save (sq:1, stash, no ver) stays a squire; legacy save without 'sq' becomes knighted (checked above)
+  const SQ = Object.assign({}, LEGACY, { sq: 1, stash: [{ id: 's1', slot: 'sword', name: 'Stashed Blade', dmg: 12 }], flags: {} });
+  const pageSq = await mk({ fn: s => { try { localStorage.setItem('hiddencrown.save.v2', s); } catch (e) {} }, arg: JSON.stringify(SQ) });
+  await pageSq.click('#bcont'); await pageSq.waitForTimeout(300);
+  const gs = await pageSq.evaluate(() => { const G = window.__G.G; return { sq: G.sq, kn: G.flags.knighted || 0, stash: G.stash.length }; });
+  ok(gs.sq === 1 && gs.kn === 0 && gs.stash === 1, 'squire-era save is not mistaken for a legacy save ' + JSON.stringify(gs));
   // 2 round trip: save -> export -> wipe -> import restores everything
   const code = await page.evaluate(() => window.__G.exportCode());
   ok(/^HC3-[A-Za-z0-9+/=]+-[0-9a-f]{8}$/.test(code), 'export code format');
