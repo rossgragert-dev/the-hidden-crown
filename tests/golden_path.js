@@ -151,6 +151,9 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       await tap('[data-w="0"]', 6); const sw = await byLab('STRAW DUMMY'); await walkTo(sw.x - 20, 5);
       for (let i = 0; i < 20 && !(await st()).flags.includes('squireSwordHit'); i++) { await tap('[data-k=atk]', 5, 60); await sleep(450); await talk(); }
       await shot('ch6-c-sword');
+      await walkTo(1000); // sparring partner
+      await down('[data-k=atk]', 5); for (let i = 0; i < 400; i++) { await sleep(40); const q = await st(); if (q.talk) await talk(); if (!q.arena && q.en === 0 && i > 8) break; const e = await page.evaluate(() => { const g = window.__G; return g.enemies[0] ? g.enemies[0].x - g.P.x : null; }); if (e !== null) { if (Math.abs(e) > 30) { await holdDir(e > 0 ? 'r' : 'l', 1); } else await releaseDir('r', 1), await releaseDir('l', 1); } }
+      await up('[data-k=atk]', 5); await releaseDir('r', 1); await releaseDir('l', 1); await shot('ch6-d-spar');
       await useAt(await byLab('BLUNT IRON')); await useAt(await byLab('RIDE HOME')); await sleep(1800); await talk();
     });
     await chapter(7, 'Bridge', async () => {

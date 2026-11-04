@@ -1,6 +1,6 @@
 {
   "name": "hidden-crown",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": true,
   "description": "The Hidden Crown: medieval fantasy mobile RPG, single-file HTML5 canvas",
   "scripts": {

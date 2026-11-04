@@ -195,7 +195,7 @@ function adventureUpdate(dt){
   // per checkpoint and distinct region-specific composition.
   for(const w of a.combatAt){
     if(!w.done&&P.x>=w.x&&!S.arena&&!S.talk){
-      w.done=true;wave(w.list,()=>{missionHud(true);});break;
+      w.done=true;wave(w.list,()=>{if(w.flag)G.flags[w.flag]=1;if(w.after)toast(w.after);missionHud(true);});break;
     }
   }
 }

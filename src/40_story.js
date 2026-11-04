@@ -120,6 +120,7 @@ const MISSIONS=[
   {id:'trainingyard',title:'The Ranger and the Sword',reg:'hearth',explore:{
     length:1230,scenery:'trainingyard',seed:36,
     platforms:[],
+    combatAt:[{x:985,flag:'squireSpar',list:[{k:'sparrer',s:-1,d:0}]}],
     objects:[
       {kind:'bow',label:'RANGER ELOWEN’S FIRST BOW',x:220,y:0,flag:'squireFirstBow'},
       {kind:'archerytarget',label:'ARCHERY BUTT — SHOOT WITH BOW',x:432,y:0,flag:'squireArcheryHit'},
@@ -128,19 +129,21 @@ const MISSIONS=[
       {kind:'guardtest',label:'BRACE AND GUARD',x:773,y:0,need:'squireShield',flag:'squireGuardLearned'},
       {kind:'swordtarget',label:'STRIKE THE STRAW DUMMY',x:913,y:0,need:'squireGuardLearned',
         flag:'squireSwordHit'},
-      {kind:'sword',label:'HALVARD’S BLUNT IRON BLADE',x:1040,y:0,need:'squireSwordHit',
+      {kind:'sword',label:'HALVARD’S BLUNT IRON BLADE',x:1090,y:0,need:'squireSpar',
         flag:'squireSwordAward'},
       {kind:'exit',label:'RIDE HOME',x:1171,y:0,
-        needFlags:['squireFirstBow','squireArcheryHit','squireGuardLearned','squireSwordHit','squireSwordAward']}
+        needFlags:['squireFirstBow','squireArcheryHit','squireGuardLearned','squireSwordHit','squireSpar','squireSwordAward']}
     ]
-  },steps:[{t:'explore',goal:'Receive a bow; shoot the target, guard and strike the sword dummy',intro:[
+  },steps:[{t:'explore',goal:'Receive a bow; shoot the target, guard, strike the dummy and win a sparring bout',intro:[
     N('Chapter 6 — Under the castle walls, targets stand among straw dummies. A cloaked ranger leans on her unstrung bow beside Ser Halvard.'),
     L('Ser Halvard','Corin, meet Ranger Elowen. She watched my back on the southern marches long before you were born.'),
     L('Ranger Elowen','And he still holds a bow like a broomstick. Try mine. Stand, draw, breathe out and let the arrow go when the target is still.'),
     L('Corin','I have never owned a bow.'),
     L('Ranger Elowen','You do now. Shoot the straw butt ahead using BOW and ATK. Then ask Halvard about the wooden shield.'),
+    L('Ser Halvard','She is the reason I came home from the marches. I would rather you hear that from me than guess it.'),
+    L('Corin','Then I will not waste what you are teaching me.'),
     L('Ser Halvard','First, raise GUARD to turn a blow. Then take your wooden practice sword and strike the dummy before I hand you iron.'),
-    N('Take the bow and fire at the archery butt. Collect the shield; hold GUARD while using the brace marker. Strike the sword dummy with SWORD and ATK.')
+    N('Take the bow and fire at the archery butt. Collect the shield; hold GUARD while using the brace marker. Strike the sword dummy with SWORD and ATK, then spar: chain ATK for a combo, GUARD just as a blow lands to turn it, or roll with DODGE.')
   ]}]},
   {id:'returnroad',title:'The Broken Bridge and Ione’s Garden',reg:'green',explore:{
     length:1270,scenery:'brokenbridge',seed:41,weather:'storm',time:'dusk',
@@ -221,7 +224,7 @@ const MISSIONS=[
  {t:'chest',boost:.4}
 ]},
 {id:'m6',type:'main',act:1,title:'The Relic Hums',reg:'night',lvl:4,req:'m5',desc:'A mage in the library knows what Corin carries.',steps:[
- {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. Corin returns to Magister Ione, who first taught him to wield his rowan staff in the rune garden.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
+ {t:'say',npc:{k:'ione',face:-1},lines:[N('Night at Hearthmoor. Corin returns to Magister Ione, who first taught him to wield his rowan staff in the rune garden.'),L('Magister Ione','You came back wet, frightened and still standing. Good. Fear is honest. Now hold out your hand: the Dawn will mend what the Dusk breaks, and the Dusk will answer faster than the Dawn ever will.'),L('Magister Ione','You carry something that should not exist, squire. Hold out your hand.'),L('Corin','It is only an old amulet Ser Halvard gave me.'),L('Magister Ione','It is a *shard* of the Oathcrown. And it is *singing*.'),N('*You* know whose blood it sings for.'),L('Magister Ione','Listen close. Magic comes in two tides: *Dawn* mends, *Dusk* devours. Try both. Use the toggle.')]},
  {t:'wave',list:[{k:'wisp',s:1,d:0},{k:'wisp',s:-1,d:.6},{k:'wisp',s:1,d:1.4},{k:'blight',s:-1,d:2.2},{k:'blight',s:1,d:3}],outro:[L('Magister Ione','Dawn heals. Dusk hits hard. Both answer to *you*. That is what troubles me.')]},
  {t:'choice',prompt:'Which tide does Corin trust first?',opts:[
   {label:'Dawn',desc:'Light, healing, and the long road.',c:6,cl:'Dawn',flag:'dawnFirst',xp:40,lines:[L('Magister Ione','A healer\'s instinct. It will serve you, and cost you *speed*.')]},
@@ -277,7 +280,7 @@ const MISSIONS=[
 ]},
 {id:'s5',type:'side',act:1,title:'The Armorer\'s Debt',reg:'hearth',lvl:4,after:'m5',desc:'Three Reavers took Tobren\'s forge over a debt he never owed.',steps:[
  {t:'say',npc:{k:'armorer',face:-1},lines:[L('Tobren','They took my forge. Three Reavers, a *debt* I never owed.')]},
- {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'bandit',s:-1,d:.7},{k:'bandit',s:1,d:1.4}],outro:[L('Tobren','You have my thanks, Ser. And my *gratitude*.')]},
+ {t:'wave',list:[{k:'bandit',s:1,d:0},{k:'sentry',s:-1,d:.7},{k:'bandit',s:1,d:1.4}],outro:[L('Tobren','You have my thanks, Ser. And my *gratitude*.')]},
  {t:'choice',prompt:'Tobren offers to repay the favor.',opts:[
   {label:'Forgive his debt',desc:'He has lost enough.',c:8,cl:'Kindness',loot:{slot:'armor',rar:2},lines:[L('Tobren','Take this. I made it for my *son*.')]},
   {label:'Collect what he owes',desc:'A fair wage for a fair fight.',c:-4,cl:'Cold',gold:90,lines:[N('Tobren counts the coins in silence.')]}]}
@@ -368,7 +371,7 @@ const MISSIONS=[
 ]},
 {id:'m12',type:'main',act:1,title:'The Southern Road',reg:'road',lvl:9,req:'m11',loc:'green',endLoc:'road',desc:'Act I finale. The road south leads to the truth, and the Ashen Hand is already waiting.',steps:[
  {t:'say',lines:()=>G.flags.halvardStands?[N('Dawn on the Southern Road. Three travelers, one fewer than set out.'),L('Magister Ione','He asked me to tell you something, Ser Corin. Not yet. *Not yet*.')]:[N('Dawn on the Southern Road. Halvard walks with a crutch of broken spear-shaft.'),L('Ser Halvard','Corin... there is something I should have told you. About the *fire*. About the night you came to Hearthmoor.'),L('Corin','Tell me.'),L('Ser Halvard','...Not yet. When we are *safe*.')]},
- {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'ashen',s:-1,d:.5},{k:'ashen',s:1,d:1},{k:'ashen',s:-1,d:1.5}]},
+ {t:'wave',list:[{k:'ashen',s:1,d:0},{k:'torchraider',s:-1,d:.5},{k:'ashen',s:1,d:1},{k:'sentry',s:-1,d:1.5}]},
  {t:'say',npc:{k:'veska',face:-1},lines:[L('Veska','Such a long way to run, little knight. And all for a *trinket*.'),L('Lysa','Corin, behind me!')]},
  {t:'wave',list:[{k:'ashen',s:1,d:0,boss:1,name:'Veska, Mistress of Knives',hpm:7,dmgm:1.3,sp:{col:'#3a2030',metal:'#4a3844',trim:'#c0402a',hair:'#d8d0e0',crest:'hood',mask:1,leg:'#2a1a24',look:0,w:4}},{k:'ashen',s:-1,d:2},{k:'ashen',s:1,d:3.5},{k:'ashen',s:-1,d:5}],outro:[N('Veska staggers, then vanishes into the smoke of a thrown vial.'),L('Veska','Prince *Corwen*. Lord Vane sends his regards. And his *patience* ends.'),L('Corin','What did she call me?'),L('Lysa','Corin...'),L('Magister Ione','Not here. Not yet.')]},
  {t:'chest',boost:2.5,out:.4},

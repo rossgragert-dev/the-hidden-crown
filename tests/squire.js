@@ -35,7 +35,7 @@ const {chromium}=require('playwright');const {pathToFileURL}=require('url');cons
  console.log(JSON.stringify(rat));assert.equal(rat.spawned>=2,true);assert.equal(rat.type,'Cellar Rat');assert.equal(rat.left,0);assert.ok(rat.hp);assert.ok(rat.swings>=2&&rat.swings<=10,'rats should take a few hits: '+rat.swings);
  // Blunt iron sword is earned at Halvard's chapter six training target.
  const bl=await page.evaluate(()=>{const g=window.__G;const before=g.G.eq.sword.name;
-  g.loadMissionArea(5);g.S.talk=false;g.S.q=[];g.G.flags.squireSwordHit=1;
+  g.loadMissionArea(5);g.S.talk=false;g.S.q=[];g.G.flags.squireSwordHit=1;g.G.flags.squireSpar=1;
   const o=g.S.adv.objects.find(x=>x.kind==='sword');g.P.x=o.x;g.P.py=0;g.adventureUse();
   return {before,after:g.G.eq.sword.name,dmg:g.G.eq.sword.dmg,flag:g.G.flags.bluntSword};});
  assert.equal(bl.before,'Wooden Practice Sword');assert.equal(bl.after,'Blunt Iron Sword');assert.ok(bl.dmg>6&&bl.dmg<=10);assert.equal(bl.flag,1);
