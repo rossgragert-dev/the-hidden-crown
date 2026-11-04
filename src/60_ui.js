@@ -1,7 +1,7 @@
 /* ================= MODALS ================= */
 const modal=$('modal'),mw=$('mw');
 const UI={tab:'knight',sel:null,selSk:null};
-function showModal(h){mw.innerHTML=h;modal.classList.add('on');modal.scrollTop=0;S.paused=true;}
+function showModal(h){mw.innerHTML=h;modal.classList.toggle('over',S.mode==='title');modal.classList.add('on');modal.scrollTop=0;S.paused=true;}
 function hideModal(){modal.classList.remove('on');S.paused=false;}
 const hdr=(t,r)=>'<div class="mh"><h2>'+t+'</h2><span>'+(r||'')+'</span><button class="xb" data-a="close">&#10005;</button></div>';
 const goldStr=()=>'Lv '+G.lvl+' &middot; '+G.gold+'g';
@@ -248,8 +248,8 @@ function openResults(m,first){
   showModal(h);
 }
 function renderMenu(){
-  let h=hdr('MENU',goldStr());
-  h+='<button class="bt go" data-a="close" style="width:100%;margin-bottom:8px">RESUME</button><button class="bt" data-a="bag" style="width:100%;margin-bottom:8px">BAG</button><button class="bt" data-a="skills" style="width:100%;margin-bottom:8px">SKILLS</button><button class="bt" data-a="savegame" style="width:100%;margin-bottom:8px">SAVE GAME</button>';
+  let h=hdr('MENU',goldStr())+saveWarnHtml();
+  h+='<button class="bt go" data-a="close" style="width:100%;margin-bottom:8px">RESUME</button><button class="bt" data-a="bag" style="width:100%;margin-bottom:8px">BAG</button><button class="bt" data-a="skills" style="width:100%;margin-bottom:8px">SKILLS</button><button class="bt" data-a="savegame" style="width:100%;margin-bottom:8px">SAVE GAME</button><button class="bt" data-a="savecode" style="width:100%;margin-bottom:8px">EXPORT / IMPORT SAVE</button>';
   if(S.mode==='play')h+='<button class="bt" data-a="abandon" style="width:100%;margin-bottom:8px">ABANDON MISSION</button>';
   if(S.mode!=='play')h+='<button class="bt" data-a="joustlab" style="width:100%;margin-bottom:8px">JOUST LAB (PREVIEW)</button>';
   h+='<button class="bt" data-a="jousteasy" style="width:100%;margin-bottom:8px">EASY JOUSTING: '+((G.opts&&G.opts.joustEasy)?'ON':'OFF')+'</button>';
@@ -279,7 +279,17 @@ const ACT={
   equip(v){const it=G.inv.find(x=>x.id===v);if(it){equipItem(it);UI.sel={loc:'eq',id:it.id};}renderBag();hud(true);},
   sell(v){const it=G.inv.find(x=>x.id===v);if(it)sellItem(it);UI.sel=null;renderBag();},
   sellcommon(){G.inv.filter(i=>i.rar===0).forEach(sellItem);UI.sel=null;renderBag();},
-  savegame(){save();toast('Game saved');},
+  savegame(){if(save())toast('Game saved');else{toast('COULD NOT SAVE - use EXPORT SAVE');renderMenu();}},
+  savecode(){renderSaveCode('');},
+  scclose(){hideModal();if(S.mode==='title')showTitle();else renderMenu();},
+  sccopy(){const t=$('sccode');if(!t)return;t.focus();t.select();try{t.setSelectionRange(0,t.value.length);}catch(e){}let ok=false;
+    try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(()=>toast('Code copied'),()=>toast('Press and hold the code to copy'));return;}}catch(e){}
+    try{ok=document.execCommand('copy');}catch(e){}toast(ok?'Code copied':'Press and hold the code to copy');},
+  scfile(){try{const b=new Blob([$('sccode').value],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='hidden-crown-save.txt';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);toast('Save file created');}catch(e){toast('Download unavailable - copy the code instead');}},
+  scimport(){importFlow($('scin').value);},
+  scconfirm(){doImport();},
+  scbackup(){if(restoreBackup()){calc();hideModal();toast('Backup restored');if(S.mode==='title')showTitle();else renderMenu();}else toast('No usable backup found');},
+  newyes(){hideModal();startNewGame();},
   joustlab(){hideModal();fade(()=>startMission('joustlab'));},
   jousteasy(){G.opts=G.opts||{};G.opts.joustEasy=!G.opts.joustEasy;save();renderMenu();},
   abandon(){hideModal();fade(()=>openBoard());},
@@ -288,15 +298,62 @@ const ACT={
 mw.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t)return;initAudio();const a=t.dataset.a;if(ACT[a])ACT[a](t.dataset.v);});
 document.querySelectorAll('#hb [data-m]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const k=b.dataset.m;if(S.mode!=='play')return;if(k==='bag')ACT.bag();else if(k==='skills')ACT.skills();else renderMenu();}));
 
+/* ================= SAVE UI (v0.7.1) ================= */
+function saveWarnHtml(){return SAVESTAT.ok?'':'<div class="card warn"><h4>PROGRESS CANNOT BE SAVED</h4><p>This browser is blocking storage (private mode or an embedded page). You can keep playing, but closing the page loses progress. Use EXPORT / IMPORT SAVE to keep a code.</p></div>';}
+function saveBanner(){const e=$('savewarn');if(!e)return;e.textContent='\u26A0 PROGRESS WON\u2019T BE SAVED HERE - tap MENU \u203A EXPORT SAVE';e.classList.add('on');clearTimeout(saveBanner.h);saveBanner.h=setTimeout(()=>e.classList.remove('on'),9000);}
+SAVESTAT.onFail=saveBanner;
+const saveSummary=g=>'Level '+g.lvl+' \u00B7 '+(g.gold||0)+' gold \u00B7 '+Object.keys(g.done||{}).length+' missions done';
+function renderSaveCode(msg){
+  const code=exportCode();
+  let h=hdr('SAVE CODE','')+saveWarnHtml();
+  h+='<div class="card"><h4>EXPORT</h4><p>Copy this code or save it as a file. It holds your inventory, character, missions and story choices.</p><textarea id="sccode" readonly rows="4" onclick="this.select()">'+code+'</textarea><div class="row2"><button class="bt go" data-a="sccopy">COPY CODE</button><button class="bt" data-a="scfile">SAVE AS FILE</button></div></div>';
+  h+='<div class="card"><h4>IMPORT</h4><p>Paste a code (or choose a saved file) to replace the current game. Your current progress is backed up first.</p><textarea id="scin" rows="3" placeholder="HC3-..."></textarea><input type="file" id="scfileIn" accept=".txt,text/plain"><div class="row2"><button class="bt go" data-a="scimport">IMPORT</button></div><div id="scmsg" class="msg">'+(msg||'')+'</div></div>';
+  if(hasBackup())h+='<div class="card"><h4>BACKUP</h4><p>A backup of the previous game is kept when you start a new game or import.</p><button class="bt" data-a="scbackup">RESTORE BACKUP</button></div>';
+  h+='<button class="bt" data-a="scclose" style="width:100%">BACK</button>';
+  showModal(h);
+  const f=$('scfileIn');if(f)f.onchange=()=>{const fl=f.files&&f.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>{$('scin').value=String(rd.result||'').trim();};rd.readAsText(fl);};
+}
+let PENDING=null;
+function importFlow(text){
+  const r=importCode(text);const m=$('scmsg');
+  if(!r.ok){if(m)m.textContent=r.err;return;}
+  PENDING=r;
+  let h=hdr('IMPORT SAVE','')+'<div class="card"><h4>REPLACE CURRENT GAME?</h4><p>The code contains: '+saveSummary(r.g)+'.</p>'+((hasSave()||SAVESTAT.mem)?'<p>Your current progress will be backed up first.</p>':'')+'</div><button class="bt go" data-a="scconfirm" style="width:100%;margin-bottom:8px">IMPORT AND REPLACE</button><button class="bt" data-a="savecode" style="width:100%">CANCEL</button>';
+  showModal(h);
+}
+function doImport(){
+  if(!PENDING)return;const r=PENDING;PENDING=null;
+  backupSave();applySave(r.g);calc();const ok=save();hideModal();
+  toast(ok?'Save imported':'Imported (storage blocked - not stored)');
+  if(S.mode==='title')showTitle();else{S.paused=false;fade(()=>openBoard());}
+}
+function startNewGame(){
+  initAudio();backupSave();newG();startGear();calc();save();$('title').style.display='none';fade(()=>startMission('m0'));
+}
+
 /* ================= TITLE / NEW GAME ================= */
 function showTitle(){
   S.resultsBackdrop=null;
   S.mode='title';document.body.dataset.mode='title';S.pal='day';buildLayers('day');$('boot').style.display='none';
   $('title').style.display='flex';let h='';
-  if(hasSave())h+='<button class="bt go" id="bcont">CONTINUE</button>';h+='<button class="bt" id="bnew">NEW GAME</button>';
-  $('tbtns').innerHTML=h;let armed=false;
-  const c=$('bcont');if(c)c.onclick=()=>{initAudio();if(load()){calc();$('title').style.display='none';openBoard();}};
-  $('bnew').onclick=function(){if(hasSave()&&!armed){armed=true;this.textContent='TAP AGAIN TO ERASE SAVE';return;}initAudio();newG();startGear();calc();save();$('title').style.display='none';fade(()=>startMission('m0'));};
+  if(!SAVESTAT.checked)storageProbe();
+  if(!SAVESTAT.ok)h+='<div class="twarn">\u26A0 This browser is blocking storage, so progress cannot be saved. Use EXPORT / IMPORT SAVE to keep a code.</div>';
+  else if(LOADINFO.src==='backup')h+='<div class="twarn">Your save was damaged; the backup copy was loaded.</div>';
+  if(hasSave()||(!SAVESTAT.ok&&SAVESTAT.mem))h+='<button class="bt go" id="bcont">CONTINUE</button>';
+  h+='<button class="bt" id="bnew">NEW GAME</button><button class="bt" id="bcode">EXPORT / IMPORT SAVE</button>';
+  if(hasBackup()&&!hasSave())h+='<button class="bt" id="bbak">RESTORE BACKUP</button>';
+  $('tbtns').innerHTML=h;
+  const c=$('bcont');if(c)c.onclick=()=>{initAudio();if(load()){calc();$('title').style.display='none';openBoard();}else{toast('Save could not be read');}};
+  $('bcode').onclick=()=>{initAudio();renderSaveCode('');};
+  const bk=$('bbak');if(bk)bk.onclick=()=>ACT.scbackup();
+  $('bnew').onclick=function(){
+    if(hasSave()||(!SAVESTAT.ok&&SAVESTAT.mem)){
+      let sum='';try{const r=parseSave(localStorage.getItem(SAVEKEY)||SAVESTAT.mem);if(r.ok)sum=saveSummary(r.g);}catch(e){}
+      showModal(hdr('START A NEW GAME?','')+'<div class="card"><h4>A SAVED GAME EXISTS</h4>'+(sum?'<p>'+sum+'</p>':'')+'<p>Starting over replaces it. A backup copy is kept so it can be restored from the title screen or the save-code menu.</p></div><button class="bt go" data-a="newyes" style="width:100%;margin-bottom:8px">START NEW GAME</button><button class="bt" data-a="scclose" style="width:100%">KEEP MY GAME</button>');
+      return;
+    }
+    startNewGame();
+  };
 }
 // New games begin in the Hearthmoor armory, inside Corin's lived experience.
 // The former narrated Night of Ash prologue is intentionally not played.
@@ -352,9 +409,9 @@ let rzT=0;addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{l
 /* ================= LOOP ================= */
 let last=performance.now();
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;update(dt);draw();hud();requestAnimationFrame(frame);}
-layout();if(hasSave())load();calc();showTitle();
+layout();storageProbe();if(hasSave())load();calc();showTitle();
 // Test shortcut: index.html?chapter=4 (or #chapter=4) starts a fresh, unsaved run at opening chapter 4.
 function startChapter(n){NOSAVE=true;newG();startGear();calc();$('title').style.display='none';hideModal();startMission('m0');if(n>1)loadMissionArea(n-1);}
 try{const cm=/[?&#]chapter=([1-7])\b/.exec((location.search||'')+(location.hash||''));if(cm)startChapter(+cm[1]);}catch(e){}
 requestAnimationFrame(frame);
-window.__G={S,P,G,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
+window.__G={S,P,G,SAVESTAT,exportCode,importCode,parseSave,sanitizeSave,save,load,backupSave,SAVE_VER,SAVEKEY,BAKKEY,get enemies(){return enemies;},get drops(){return drops;},get projectiles(){return proj;},combatTick:updateCombat,completeMission,knightCorin,startChapter,ACT,setW,toggleMode,adv,attack,startMission,openBoard,gainXP,genItem,addItem,calc,learn,keys,useAbility,renderBoard,renderBag,renderSkills,get W(){return W;},adventureUpdate,get H(){return H;},get GY(){return GY;},adventureJump,adventureUse,adventureNear,useMissionObject,loadMissionArea,missionHud,worldConfig,get pixelCacheSize(){return PIXEL_CACHE.size;},WORLD_ID,WORLD_AREAS,EN,joustCreate,joustStep,joustAct,joustDone,joustDraw,JOUST_CFG,drawHorse,drawMounted,drawLance,drawPerson,personParts,NPCS,heroOpts,interiorBackCam,prebakeHorse,horsePose,HCACHE,HGAIT,gctx:g,R,layout};
