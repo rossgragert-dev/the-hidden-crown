@@ -25,7 +25,9 @@ function adventureEnd(){
   const b=$('jumpbtn');if(b)b.style.display='none';
 }
 function adventureJump(){
-  if(S.talk||S.mode!=='play'||S.joust||!P.grounded)return false;
+  if(S.talk||S.mode!=='play'||S.joust||P.roll>0)return false;
+  if(!P.grounded&&!(P.coyote>0)){P.jbuf=COMBAT_CFG.jumpBuffer;return false;} // remembered, fires on landing
+  P.coyote=0;P.jbuf=0;P.jcut=0;
   P.vy=S.adv&&S.adv.mount?-235:-288;P.grounded=false;sfx(380,.09,'triangle',.025);return true;
 }
 function adventureNear(){

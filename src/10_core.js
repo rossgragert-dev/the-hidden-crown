@@ -133,9 +133,9 @@ function importCode(code){
 newG();
 
 /* ---------- runtime state ---------- */
-const keys={l:0,r:0,atk:0,abl:0,use:0,jump:0,block:0};
+const keys={l:0,r:0,atk:0,abl:0,use:0,jump:0,block:0,dodge:0};
 const S={mode:'title',t:0,cam:0,talk:false,choosing:false,q:[],qcb:null,arena:false,arenaL:0,arenaR:0,spawnQ:[],spawnT:0,curList:null,waveCb:null,dusk:false,blight:.08,npc:null,shake:0,mission:null,replay:false,beats:[],bi:0,chests:[],pal:'day',paused:false,pro:{x:60},rew:null,tm:[],m:{},ilvl:1,boost:0};
-const P={x:30,face:1,hp:100,max:100,mp:30,mmax:30,w:0,cd:0,atk:0,atkMax:.2,inv:0,hurt:0,vx:0,mv:false,ab:0,abMax:6,shield:0,lastHeal:0,py:0,vy:0,grounded:true,guard:100};
+const P={x:30,face:1,hp:100,max:100,mp:30,mmax:30,w:0,cd:0,atk:0,atkMax:.2,inv:0,hurt:0,vx:0,mv:false,ab:0,abMax:6,shield:0,lastHeal:0,py:0,vy:0,grounded:true,guard:100,guardT:0,roll:0,rollMax:.26,rollDir:1,rollCd:0,combo:0,comboT:0,counter:0,atkBuf:0,atkEdge:false,atkPrev:false,coyote:0,jbuf:0,jcut:0,land:0,wasAir:false,stage:0};
 const FOL=[{x:0,face:1,mv:false,k:'halv'},{x:0,face:1,mv:false,k:'lysa'}];
 let enemies=[],proj=[],parts=[],drops=[],fxs=[];
 const later=(s,fn)=>S.tm.push({t:s,fn});

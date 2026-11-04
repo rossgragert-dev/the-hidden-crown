@@ -398,6 +398,16 @@ function drawRegionCreature(e,px,py,def){
   }
 }
 function drawEnemy(e,cam,def){
+  drawEnemyBody(e,cam,def);
+  if(e.dead)return;
+  const px=Math.round(e.x-cam),top=GY-(def.h?60:def.rat?22:def.big?56:40)-(def.k?Math.round(14*(def.k-1)):0);
+  // Telegraphs: a blinking "!" while an attack winds up, a red lane for lunges and thrown fire, stars when staggered.
+  if(e.wind>0){const on=Math.floor(S.t*14)%2===0;R(px-4,top-10,9,11,on?'#ff3a2a':'#b02418');R(px-1,top-9,3,6,'#fff');R(px-1,top-2,3,2,'#fff');
+    if(e.dashPend||e.throwPend)R(e.face>0?px:px-44,GY-2,44,2,'rgba(255,58,42,.55)');}
+  if(e.stun>.15){for(let i=0;i<3;i++)R(px-9+Math.floor((S.t*26+i*6)%18),top-3+(i%2)*3,2,2,'#ffe27a');}
+  if(def.shield&&e.recov<=0&&e.stun<=0&&!(e.wind>0))R(px+(e.face>0?12:-13),GY-37,2,27,'#bfe0ff');
+}
+function drawEnemyBody(e,cam,def){
   const px=e.x-cam,py=GY,k=def.k||1,hit=e.hurt>0&&Math.floor(S.t*30)%2;
   if(def.rat){drawRat(e,px,py,hit);return;}
   if(def.creature){drawRegionCreature(e,px,py,def);return;}
