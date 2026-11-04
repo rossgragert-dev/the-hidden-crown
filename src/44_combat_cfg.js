@@ -17,7 +17,7 @@ const COMBAT_CFG={
   // Timed guard: pressing GUARD just before a hit deflects it and opens the attacker to a counter.
   parry:{window:.20,stagger:1.0,counterMul:1.8,counterTime:.9,guardRefund:25},
   // Platforming feel
-  coyote:.10,jumpBuffer:.12,jumpCut:.5,jumpCutV:-110,landSquash:.12,
+  coyote:.10,jumpBuffer:.12,jumpCut:.5,jumpCutV:-230,landSquash:.12,
   // Hit stop: world time scale while frozen
   hitStopScale:.04,
   // Archetypes

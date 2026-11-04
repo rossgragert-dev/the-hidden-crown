@@ -113,7 +113,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       await walkTo(310); // trigger rats
       await down('[data-k=atk]', 5); for (let i = 0; i < 250; i++) { await sleep(40); const s = await st(); if (s.talk) await talk(); if (!s.arena && s.en === 0 && i > 8) break; const e = await page.evaluate(() => { const g = window.__G; return g.enemies[0] ? g.enemies[0].x - g.P.x : null; }); if (e !== null) { if (Math.abs(e) > 22) { await holdDir(e > 0 ? 'r' : 'l', 1); } else await releaseDir('r', 1), await releaseDir('l', 1); } }
       await up('[data-k=atk]', 5); await releaseDir('r', 1); await releaseDir('l', 1); await shot('ch3-b-rats');
-      for (const l of ['TACK ROOM CHEST', 'GROOM HALVARD', 'TOURNAMENT SADDLE']) { const o = await byLab(l); await useAt(o); }
+      for (const l of ['TACK ROOM CHEST', 'GROOM HALVARD', 'TOURNAMENT SADDLE']) { const o = await byLab(l); if (!o) { console.log('MISSING', l, JSON.stringify(await st())); } await useAt(o); }
       const ex = await byLab('TO THE TOURNAMENT'); await useAt(ex); await sleep(1800); await talk();
     });
     await chapter(4, 'Tournament', async () => {

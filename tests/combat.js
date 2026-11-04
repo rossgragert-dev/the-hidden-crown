@@ -83,7 +83,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); 
     out.hold = Math.round(apex(true)); out.tap = Math.round(apex(false)); return out; });
   ok(pf.coyoteJump && !pf.lateJump, 'coyote time allows a late jump only inside the window ' + JSON.stringify(pf));
   ok(pf.buffered && pf.firedOnLanding, 'a jump pressed just before landing is buffered');
-  ok(pf.hold > pf.tap + 10 && pf.tap > 25, 'holding jumps higher than tapping (' + pf.hold + 'px vs ' + pf.tap + 'px)');
+  ok(pf.hold > pf.tap + 5 && pf.tap > 25, 'holding jumps higher than tapping (' + pf.hold + 'px vs ' + pf.tap + 'px)');
 
   // 7. defeat: encounter resets, rewards forfeited, nothing permanent lost
   const df = await page.evaluate(() => { const g = window.__G, G = g.G, P = g.P, S = g.S; g.startMission('m1'); S.q = []; S.talk = false; S.paused = false; document.getElementById('cap').classList.remove('show');
